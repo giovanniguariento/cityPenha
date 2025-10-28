@@ -1,0 +1,19 @@
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px var(--space-30) 0 var(--space-30);
+
+  div {
+    display: flex;
+    gap: 30px;
+
+    img {
+      width: 25px;
+    }
+  }
+}
+
+.logo {
+  width: 90px;
+  height: auto;
+}
