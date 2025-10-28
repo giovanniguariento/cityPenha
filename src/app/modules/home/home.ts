@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreData } from '../../shared/store/store';
+import { NavComponent } from '../../shared/components/nav/nav.component'
+import { HeaderComponent } from '../../shared/components/header/header.component'
+import { CardNoticiaComponent } from '../home/components/card-noticia/card-noticia.component'
+import { CardExpComponent } from '../home/components/card-exp/card-exp.component'
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [NavComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent],
   templateUrl: './home.html',
   standalone: true,
   styleUrl: './home.scss'})
