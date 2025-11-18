@@ -1,0 +1,247 @@
+:host {
+  display: block;
+}
+
+.news-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  //background-image: url('../../../assets/bg-example.jpg');
+  background-size: cover;
+  height: 47vh;
+  background-position: center;
+  box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, .2);
+
+  position: sticky;
+  top: -37%;
+}
+
+.header,
+.content {
+  padding: 13px 32px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+
+  button {
+    display: flex;
+    align-items: center;
+
+    background-color: transparent;
+    border: 2px solid #FFFFFF;
+    padding: 20px;
+    border-radius: 24px;
+
+    backdrop-filter: blur(4px);
+  }
+}
+
+.reading-time-bar,
+.progress {
+  border-radius: 20px;
+}
+
+.reading-time-bar {
+  height: 4px;
+  background: #D9D9D980;
+  margin: 13px 32px;
+
+
+  margin-bottom: 17px;
+
+  .progress {
+    background-color: #FFFFFFCC;
+    height: 100%;
+  }
+}
+
+.head-content {
+
+  border-radius: 36px 36px 0 0;
+
+  height: 5vh;
+  background-color: #FCFCFC;
+  //background-color: black;
+}
+
+.content {
+  background-color: #FCFCFC;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .tag-xp {
+    align-self: flex-start;
+    border: 1px solid #FF1500;
+    border-radius: 20px;
+
+    padding: 7px 20px;
+
+    font-family: Lato;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 100%;
+    color: #FF1500;
+  }
+
+  .title {
+    font-family: Lato;
+    font-weight: 700;
+    font-style: Bold;
+    font-size: 32px;
+    line-height: 100%;
+    letter-spacing: 0px;
+    color: #000000;
+  }
+
+  .description {
+    font-family: Lato;
+    font-weight: 400;
+    font-style: Regular;
+    font-size: 18px;
+    line-height: 120%;
+    letter-spacing: 0%;
+    color: #858585;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .details {
+      display: flex;
+      gap: 22px;
+
+      font-family: Lato;
+      font-weight: 500;
+      font-style: Medium;
+      font-size: 10px;
+      line-height: 16px;
+      letter-spacing: 0px;
+      color: #6B6B6B;
+
+    }
+  }
+
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    img {
+      border-radius: 100%;
+      width: 44px;
+      height: 44px;
+
+      object-fit: cover;
+    }
+
+    span {
+      font-family: Lato;
+      font-weight: 700;
+      font-style: Bold;
+      font-size: 16px;
+      line-height: 22px;
+      letter-spacing: 0px;
+      color: #4E4E4E;
+
+    }
+
+    button {
+      padding: 10px 24px;
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: 16px;
+
+    button {
+      padding: 14px 16px;
+    }
+  }
+
+  .actions button,
+  .author button {
+    background: none;
+
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    border: 1px solid #E9E9E9;
+    border-radius: 24px;
+
+    font-family: Lato;
+    font-weight: 400;
+    font-style: Regular;
+    font-size: 12px;
+    line-height: 100%;
+    letter-spacing: 0px;
+    color: #6B6B6B;
+
+  }
+
+  p {
+    font-family: Roboto Slab;
+    font-weight: 400;
+    font-style: Regular;
+    font-size: 16px;
+    line-height: 132%;
+    letter-spacing: 0%;
+
+    color: #262626;
+  }
+
+  .subtitle {
+    font-family: Roboto Slab;
+    font-weight: 700;
+    font-style: Bold;
+    font-size: 20px;
+    line-height: 132%;
+    letter-spacing: 0%;
+  }
+
+  .cite {
+    font-family: Roboto Slab;
+    font-weight: 400;
+    font-style: Regular;
+    font-size: 16px;
+    line-height: 132%;
+    letter-spacing: 0%;
+    vertical-align: middle;
+    color: #6D6D6D;
+
+    border-left: 2px solid #6D6D6D;
+    padding-left: 24px;
+  }
+
+  .img-post {
+    border-radius: 30px;
+  }
+
+  .container-tag {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .tag {
+      font-family: Lato;
+      font-weight: 400;
+      font-style: Regular;
+      font-size: 14px;
+      line-height: 100%;
+      letter-spacing: 0px;
+      color: #828282;
+
+      background-color: #F2F2F2;
+
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+  }
+}

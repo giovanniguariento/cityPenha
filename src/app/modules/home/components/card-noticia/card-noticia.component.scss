@@ -1,5 +1,5 @@
 .container {
-  background-image: url('../../../../../assets/bg-example.jpg');
+  //background-image: url('../../../../../assets/bg-example.jpg');
   background-size: cover;
   background-position: center;
 
@@ -17,8 +17,8 @@
 
 
   img {
-    width: 32px;
-    height: 32px;
+    width: 22px;
+    height: 22px;
     border-radius: 32px;
   }
 }
@@ -31,7 +31,7 @@
   color: #FF1500;
 }
 
-.content  {
+.content {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -67,4 +67,3 @@
     }
   }
 }
-
