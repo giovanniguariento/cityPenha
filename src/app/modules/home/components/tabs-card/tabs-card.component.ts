@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { FeedItem } from '../../../../shared/interface/home.interface';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -9,6 +8,6 @@ import { RouterLink } from '@angular/router';
   styleUrl: './tabs-card.component.scss'
 })
 export class TabsCardComponent {
-  @Input() card!: FeedItem;
-
+  @Input() card!: any;
+  @Input() category!: string;
 }

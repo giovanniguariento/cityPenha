@@ -1,0 +1,65 @@
+<div class="profile-container" *ngIf="this.user.avatarUrl">
+
+  <header class="header">
+    <div class="top-bar">
+      <button (click)="logout()" class="icon-btn"><i class="fa fa-pencil"></i>SAIR</button>
+      <div class="actions">
+        <button class="icon-btn"><i class="fa fa-share-alt"></i></button>
+        <button class="icon-btn"><i class="fa fa-cog"></i></button>
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <div class="avatar-wrapper">
+        <div class="avatar-border">
+          <img referrerpolicy="no-referrer" [src]="user.avatarUrl" alt="Foto de perfil">
+        </div>
+        <span class="level-badge">Nível {{ user.level }}</span>
+      </div>
+
+      <h1>{{ user.name }}</h1>
+      <p class="role">{{ user.role }}</p>
+      <p class="desc">{{ user.description }}</p>
+    </div>
+
+    <nav class="profile-tabs">
+      <button class="tab active">Geral</button>
+      <button class="tab">Missões</button>
+      <button class="tab">Loja</button>
+    </nav>
+  </header>
+
+  <main class="content">
+
+    <div class="stats-grid">
+      @for (stat of stats; track stat.label) {
+      <div class="stat-card">
+        <div class="icon-wrapper">
+          <span class="icon">{{ stat.icon }}</span>
+        </div>
+        <div class="stat-info">
+          <strong>{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="medals-section">
+      <div class="section-header">
+        <h2>Medalhas</h2>
+        <a href="#" class="edit-link">Editar</a>
+      </div>
+
+      <div class="medals-container">
+        <div class="hexagon filled"></div>
+        <div class="hexagon empty"></div>
+        <div class="hexagon empty"></div>
+        <div class="hexagon empty"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <app-nav></app-nav>
+</div>

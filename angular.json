@@ -3,12 +3,33 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "cityPenha": {
+    "citypenha": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss",
           "type": "component"
+        },
+        "@schematics/angular:directive": {
+          "type": "directive"
+        },
+        "@schematics/angular:service": {
+          "type": "service"
+        },
+        "@schematics/angular:guard": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:module": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+          "typeSeparator": "."
         }
       },
       "root": "",
@@ -59,7 +80,13 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -68,10 +95,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "cityPenha:build:production"
+              "buildTarget": "citypenha:build:production"
             },
             "development": {
-              "buildTarget": "cityPenha:build:development"
+              "buildTarget": "citypenha:build:development"
             }
           },
           "defaultConfiguration": "development"

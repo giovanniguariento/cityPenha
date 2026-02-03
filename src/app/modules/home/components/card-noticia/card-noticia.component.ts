@@ -1,23 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router'
-import { ids } from '../../../news/news.page';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-card-noticia',
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   templateUrl: './card-noticia.component.html',
   standalone: true,
   styleUrl: './card-noticia.component.scss'
 })
-export class CardNoticiaComponent {
-  newsId;
-  newsDestaque;
+export class CardNoticiaComponent implements OnInit {
+  newsDestaque!: any;
+  @Input() post!: any;
 
-  constructor() {
-    const idsDestaque = ["artigo-100", "artigo-101", "artigo-102", "artigo-103", "artigo-104"]
-    const random = Math.floor(Math.random() * (4 - 0 + 1));
-    this.newsId = idsDestaque[random];
-    this.newsDestaque = ids[this.newsId]
+  constructor() { }
+
+  ngOnInit(): void {
+    // const random = Math.floor(Math.random() * (this.posts.length - 0 + 1));
+    this.newsDestaque = this.post;
   }
 }

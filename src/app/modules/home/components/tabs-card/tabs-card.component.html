@@ -3,25 +3,24 @@
   <div class="card-content">
 
     <div class="card-meta-top">
-      <span class="xp">+{{card.reward.amount}} XP</span>
-      <span class="level">{{card.levelRequirement}}</span>
+      <span class="xp">+10 XP</span>
+      <span class="level">Nivel 3+</span>
     </div>
 
-    <h2 class="card-title" [routerLink]="'/news/' + card.id">
-      {{card.title}}
+    <h2 class="card-title" [routerLink]="'/news/' + card.slug" [innerHTML]="card.title">
     </h2>
 
     <div class="card-author">
       <div class="author-info">
         <img class="author-avatar" [src]="card.author.avatarUrl" alt="Avatar de Lorelai Gilmore">
         <span class="author-name">{{card.author.name}}</span>
-        <span class="author-category">{{card.category}}</span>
+        <span class="author-category">{{category}}</span>
       </div>
     </div>
 
     <div class="card-footer">
       <div class="card-stats">
-        <span class="read-time">{{card.estimatedReadTimeMinutes}} Min leitura</span>
+        <span class="read-time">{{ card.readingTime }}m leitura</span>
 
         <span class="views">
           <img src="assets/view.svg" alt="">
@@ -46,9 +45,8 @@
     </div>
 
   </div>
-
-  <figure class="card-image" [routerLink]="'/news/' + card.id">
-    <img [src]="card.thumbnailUrl" alt="Duas pessoas em uma reunião, analisando gráficos em um tablet">
+  <figure class="card-image" [class.only-video]="card.onlyVideo" [routerLink]="'/news/' + card.slug">
+    <img [src]="card.image" alt="">
   </figure>
 
 </article>

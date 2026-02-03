@@ -1,0 +1,284 @@
+// Variáveis
+$primary-red: #ff1200; // Vermelho vibrante da imagem
+$text-white: #ffffff;
+$text-dark: #333333;
+$text-gray: #888888;
+$bg-gray: #f5f7fa;
+$card-radius: 16px;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-container {
+  background-color: $bg-gray;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif; // Fonte sugerida
+  position: relative;
+  padding-bottom: 80px; // Espaço para a nav bar
+}
+
+// --- Header ---
+.header {
+  background-color: $primary-red;
+  color: $text-white;
+  padding: 20px 20px 10px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  text-align: center;
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 15px;
+    }
+  }
+
+  .profile-info {
+    .avatar-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 15px;
+
+      .avatar-border {
+        width: 100%;
+        height: 100%;
+        padding: 4px;
+        background: rgba(255, 255, 255, 0.2); // Borda translúcida
+        border-radius: 24px; // Arredondamento suave (squircle)
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 20px;
+        }
+      }
+
+      .level-badge {
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        color: $primary-red;
+        font-weight: bold;
+        font-size: 0.8rem;
+        padding: 4px 12px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 10px 0 5px;
+      font-weight: 700;
+    }
+
+    .role {
+      font-size: 0.9rem;
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .desc {
+      font-size: 0.8rem;
+      margin: 0 0 20px;
+      opacity: 0.8;
+      max-width: 250px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .profile-tabs {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: 10px;
+
+    .tab {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      padding: 8px 24px;
+      border-radius: 20px;
+      cursor: pointer;
+
+      &.active {
+        background: white;
+        color: $primary-red;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+// --- Conteúdo Principal ---
+.content {
+  padding: 20px;
+
+  // Grid Stats
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: $card-radius;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+
+      .icon-wrapper {
+        font-size: 1.5rem;
+        color: $primary-red;
+      }
+
+      .stat-info {
+        display: flex;
+        flex-direction: column;
+
+        strong {
+          font-size: 1.1rem;
+          color: $text-dark;
+          line-height: 1;
+        }
+
+        span {
+          font-size: 0.75rem;
+          color: $text-gray;
+        }
+      }
+    }
+  }
+
+  // Seção Medalhas
+  .medals-section {
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+
+      h2 {
+        font-size: 1.1rem;
+        color: $text-dark;
+        margin: 0;
+      }
+
+      .edit-link {
+        color: $primary-red;
+        font-size: 0.85rem;
+        text-decoration: none;
+        font-weight: 600;
+      }
+    }
+
+    .medals-container {
+      background: linear-gradient(135deg, #d31000, #ff2a00); // Gradiente sutil
+      padding: 20px;
+      border-radius: 24px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      .hexagon {
+        width: 50px;
+        height: 55px;
+        background-color: white;
+        // Clip-path cria a forma de hexágono
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+
+        &.filled {
+          // Exemplo se tivesse ícone dentro
+          @include flex-center;
+        }
+      }
+    }
+  }
+}
+
+// --- Bottom Navigation ---
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 10px 20px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: $text-gray;
+    font-size: 0.7rem;
+    gap: 4px;
+    cursor: pointer;
+    width: 60px;
+
+    i {
+      font-size: 1.2rem;
+    }
+
+    &.active {
+      color: $text-dark; // Ou vermelho se preferir
+    }
+  }
+
+  .fab-wrapper {
+    position: relative;
+    width: 60px;
+
+    .fab {
+      position: absolute;
+      top: -45px; // Faz o botão "flutuar" para fora da barra
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 56px;
+      background-color: $primary-red;
+      border-radius: 50%;
+      border: 4px solid #f5f7fa; // Simula o corte transparente no fundo cinza
+      color: white;
+      @include flex-center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255, 18, 0, 0.4);
+
+      &:active {
+        transform: translateX(-50%) scale(0.95);
+      }
+    }
+  }
+}

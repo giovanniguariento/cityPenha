@@ -17,6 +17,15 @@
   top: -37%;
 }
 
+.only-video {
+  height: auto;
+  position: unset;
+}
+
+::ng-deep .wp-block-embed {
+  margin-top: -86px;
+}
+
 .header,
 .content {
   padding: 13px 32px;
@@ -25,6 +34,7 @@
 .header {
   display: flex;
   justify-content: space-between;
+  z-index: 1;
 
   button {
     display: flex;
@@ -67,7 +77,7 @@
   //background-color: black;
 }
 
-.content {
+::ng-deep .content {
   background-color: #FCFCFC;
   display: flex;
   flex-direction: column;
@@ -97,7 +107,7 @@
     color: #000000;
   }
 
-  .description {
+  .description p {
     font-family: Lato;
     font-weight: 400;
     font-style: Regular;
@@ -197,27 +207,33 @@
     color: #262626;
   }
 
-  .subtitle {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: Roboto Slab;
-    font-weight: 700;
-    font-style: Bold;
     font-size: 20px;
     line-height: 132%;
-    letter-spacing: 0%;
   }
 
-  .cite {
+  blockquote {
     font-family: Roboto Slab;
     font-weight: 400;
-    font-style: Regular;
     font-size: 16px;
     line-height: 132%;
-    letter-spacing: 0%;
     vertical-align: middle;
     color: #6D6D6D;
 
     border-left: 2px solid #6D6D6D;
     padding-left: 24px;
+  }
+
+  img {
+    box-sizing: border-box;
+    height: auto;
+    max-width: 100%;
+    vertical-align: bottom;
   }
 
   .img-post {
@@ -244,4 +260,8 @@
       border-radius: 20px;
     }
   }
+}
+
+.divider {
+  border: 2px solid #E3E3E3;
 }

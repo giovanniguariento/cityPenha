@@ -1,91 +1,123 @@
 .card {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 
-    margin-top: 24px;
+  margin-top: 24px;
+  justify-content: space-between;
+}
+
+.card-content {
+  width: 50%;
 }
 
 .card-image img {
-    width: 137.87327575683594px;
-    height: 116px;
-    opacity: 1;
-    border-radius: 24px;
+  width: 137.87327575683594px;
+  height: 116px;
+  opacity: 1;
+  border-radius: 24px;
+  object-fit: cover;
+}
 
+.only-video::before {
+  content: url('../../../../../assets/play.svg');
+  display: inline-block;
+  z-index: 1;
+  position: relative;
+  bottom: 5rem;
+  left: 2rem;
+  background-color: black;
+  border-radius: 30px;
 }
 
 .views svg,
 .comments svg {
-    width: 14px;
+  width: 14px;
 }
 
 .views,
 .comments {
-    display: flex;
-    align-items: center;
-    gap: 1px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
 }
 
 .author-avatar {
-    width: 15px;
-    height: 15px;
+  width: 15px;
+  height: 15px;
 
-    border-radius: 20px;
+  border-radius: 20px;
 }
 
 .author-info,
 .card-stats {
-    font-family: Lato;
-    font-weight: 400;
-    font-style: Regular;
-    font-size: 8px;
-    line-height: 22px;
-    letter-spacing: 0px;
-    color: #686A6E;
+  font-family: Lato;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 8px;
+  line-height: 22px;
+  letter-spacing: 0px;
+  color: #686A6E;
 
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .card-meta-top {
-    display: flex;
-    gap: 12px;
-    font-family: Lato;
-    font-weight: 500;
-    font-style: Medium;
-    font-size: 10px;
-    line-height: 100%;
-    letter-spacing: 0px;
-    vertical-align: middle;
-    color: #FF1500;
-    margin-bottom: 5px;
+  display: flex;
+  gap: 12px;
+  font-family: Lato;
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 10px;
+  line-height: 100%;
+  letter-spacing: 0px;
+  vertical-align: middle;
+  color: #FF1500;
+  margin-bottom: 5px;
 }
 
 .card-title {
-    font-family: Lato;
-    font-weight: 700;
-    font-style: Bold;
-    font-size: 16px;
-    line-height: 22px;
-    letter-spacing: 0px;
-    color: #686A6E;
-    width: 90%;
+  font-family: Lato;
+  font-weight: 700;
+  font-style: Bold;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: 0px;
+  color: #686A6E;
+  width: 90%;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .card-menu-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 377px) {
+  .only-video::before {
+    display: block;
+    width: fit-content;
+
+    top: 0.7rem;
+    left: 0.6rem;
+    margin-bottom: -1.4rem;
+  }
 }

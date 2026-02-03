@@ -1,4 +1,4 @@
-<div class="news-page" *ngIf="this.news" [style.backgroundImage]="`url('${this.news.img}')`">
+<div class="news-page" *ngIf="this.news && !this.news.onlyVideo" [style.backgroundImage]="`url('${this.news.image}')`">
   <div class="header">
     <button type="button" routerLink="/home">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -24,21 +24,48 @@
   </div>
 </div>
 
-<div class="content">
+<div class="news-page only-video" *ngIf="this.news && this.news.onlyVideo">
+  <div class="header">
+    <button type="button" routerLink="/home">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15.84 6.92V8.92H3.84L9.34 14.42L7.92 15.84L0 7.92L7.92 0L9.34 1.42L3.84 6.92H15.84Z" fill="white" />
+      </svg>
+    </button>
+
+    <button type="button" (click)="share()">
+      <svg width="16" height="16" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.34C12.11 16.55 12.08 16.77 12.08 17C12.08 18.61 13.39 19.91 15 19.91C16.61 19.91 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2ZM3 11C2.45 11 2 10.55 2 10C2 9.45 2.45 9 3 9C3.55 9 4 9.45 4 10C4 10.55 3.55 11 3 11ZM15 18C14.45 18 14 17.55 14 17C14 16.45 14.45 16 15 16C15.55 16 16 16.45 16 17C16 17.55 15.55 18 15 18Z"
+          fill="white" />
+      </svg>
+    </button>
+  </div>
+
+  <main [outerHTML]="news.content"></main>
+
+  <!-- <div class="footer">
+    <div class="reading-time-bar">
+      <div class="progress" [style.width]="readingTime + '%'"></div>
+    </div>
+
+    <div class="head-content"></div>
+  </div> -->
+</div>
+
+<div class="content" *ngIf="news">
   <span class="tag-xp">+10 XP</span>
   <h1 class="title">{{news.title}}</h1>
-  <p class="description">Para muitos, ouvir a própria voz em uma gravação ou filmagem é uma experiência
-    desconfortável...</p>
+  <div class="description" [innerHTML]="news.resume"></div>
   <div class="info">
     <div class="details">
-      <span>20 Min Leitura</span>
-      <span>15 de Julho, 2025</span>
-      <span>Comportamento</span>
+      <span>{{news.readingTime}} Min Leitura</span>
+      <span>{{news.date | date:"dd 'de' MMMM, yyyy"}}</span>
+      <span>{{news.categoryName}}</span>
     </div>
 
     <div class="author">
-      <img src="assets/profile-author.jpg" alt="">
-      <span>Fabiana borges</span>
+      <img [src]="news.author.avatarUrl" alt="">
+      <span>{{news.author.name}}</span>
       <button type="button" (click)="this.following = !this.following">{{following ? "Seguindo" : "Seguir"}}</button>
     </div>
 
@@ -86,86 +113,11 @@
     </div>
   </div>
 
-  <p class="subtitle">A ciência por trás da nossa voz</p>
-
-  <p>
-    A diferença entre a voz que ouvimos ao falar e a que escutamos em uma gravação está ligada à maneira como o som é
-    transmitido para o ouvido interno. Quando falamos, o som chega ao nosso ouvido de duas formas distintas: pelas
-    vibrações que viajam pelo ar e pelas vibrações que percorrem os ossos do crânio. Esse fenômeno é conhecido como
-    transmissão óssea.
-  </p>
-
-  <p>
-    O som que ouvimos de outras pessoas ou em gravações chega aos nossos ouvidos através do ar. passando pelo canal
-    auditivo até a membrana timpânica, onde provoca vibrações que ativam pequenos ossos dentro do ouvido médio. Esses
-    ossos, conhecidos como martelo, bigorna e estribo. transmitem a vibração para a cóclea, a parte interna do ouvido,
-    que converte essas vibrações em impulsos nervosos enviados ao cérebro.
-  </p>
-
-  <p>
-    No entanto, quando falamos, as vibrações das nossas cordas vocais não se limitam ao ar. Elas também são
-    transmitidas
-    através dos ossos da cabeça, o que cria uma ressonância adicional, proporcionando uma percepção de voz mais grave e
-    “cheia” – conforme explica o otorrinolaringologista Dr. Alexandre Enoki
-  </p>
-
-  <p class="cite">
-    “A vibração que ocorre no crânio dá uma tonalidade mais grave à nossa voz, o que faz com que a voz que ouvimos
-    falar
-    pareça mais ‘encorpada’ do que aquela que é captada em gravações.”
-  </p>
-
-  <p>
-    Por outro lado, a voz gravada é captada apenas pelas ondas de som que viajam pelo ar, o que a toran mais aguda, já
-    que ela não possui ressonância dos ossos do crânio. Este fenômeno é a razão pela qual muitas pessoas estranham o som
-    da própria voz em gravações: ela soa mais fina e distante do que estamos acostumados.
-    No entanto, ao ouvir a gravação, você está ouvindo algo mais próximo daquilo que outras pessoas escutam quando você
-    fala.
-  </p>
-
-  <p class="cite">
-    “A voz que você escuta na gravação é, por tanto, mais próxima da percepção que os outros têm de sua fala”, afirma o
-    Dr. Enoki.
-  </p>
-
-  <p class="subtitle">Porque as vozes são diferentes entre as pessoas?</p>
-
-  <p>
-    A voz de cada pessoa é única, e há vários fatores que influemciam essa individualidade. O comprimento e a espessura
-    das pregas vocais, por exemplo, variam de pessoa para pessoa, assim como as diferenças anatômicas da garganta, Essas
-    variações explicam por que até gêmeos idênticos têm vozes diferentes.
-  </p>
-
-  <p>
-    Além disso, fatores hormonais, especialmente durante a adolescência, e a atividade vocal ao longo da vida também
-    impactam o timbre e a tonalidade da voz. <strong>As mulheres, por exemplo, tendem a ter vozes mais agudas devido o
-      tamanho
-      menor de suas cordas vocais.</strong> Com o envelhecimento, a voz de uma pessoa tende a mudar, já que as cordas
-    vocais e os
-    tecidos que as revestem enfraquecem o que resulta em uma voz mais fraca.
-  </p>
-
-  <img src="assets/img-news.jpg" alt="" class="img-post">
-
-  <p class="subtitle">
-    Aceite a sua voz, ela é única!
-  </p>
-
-  <p>
-    E no final das contas, a voz que você ouve em uam gravação é a mesma que todos ao seu redor escutam quando você
-    fala. Pode ser que, ao começar a se acostumar com ela, você perceba que não já nada de errado ou estranho nisso -
-    pelo contrário, <strong><u>sua voz é uma parte especial de quem você é</u>”</strong> Ela é única, refeltindo não
-    apenas a sua
-    anatomia, mas
-    também as suas experiências e emoções. Então, da próxima vez que ouvir sua voz gravada, tende não se assustar.
-    Afinal, ela é só mais um reflexo do seu jeitinho único de se comunicar com o mundo.
-  </p>
+  <main [outerHTML]="news.content" *ngIf="!this.news.onlyVideo"></main>
 
   <div class="container-tag">
-    <span class="tag">Comportamento</span>
-    <span class="tag">Bem-estar</span>
-    <span class="tag">Saúde</span>
-    <span class="tag">Educação</span>
-    <span class="tag">Psicologia</span>
+    @for (tag of news.tags; track tag) {
+    <span class="tag">{{tag}}</span>
+    }
   </div>
 </div>

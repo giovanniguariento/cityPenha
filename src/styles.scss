@@ -3,6 +3,7 @@
 // components according to the Material 3 design spec.
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
+@use 'assets/wordpress-blocks';
 @use '@angular/material' as mat;
 
 html {
@@ -78,9 +79,9 @@ center,
 dl,
 dt,
 dd,
-ol,
-ul,
-li,
+// ol,
+// ul,
+// li,
 fieldset,
 form,
 label,
@@ -141,7 +142,7 @@ body {
 
 ol,
 ul {
-  list-style: none;
+  // padding: none;
 }
 
 blockquote,
@@ -164,6 +165,8 @@ table {
 
 :root {
   --space-30: 31px;
+  --swiper-pagination-bullet-inactive-color: #D9D9D980;
+  --swiper-pagination-color: #DD1907;
 }
 
 html,
