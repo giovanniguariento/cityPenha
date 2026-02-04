@@ -2,12 +2,12 @@
 <main>
   <app-card-exp></app-card-exp>
   <swiper-container class="mySwiper" pagination="true" loop="true">
-    @for (post of posts; track post) {
+    @for (post of posts(); track trackByPostId($index, post)) {
     <swiper-slide>
       <app-card-noticia [post]="post"></app-card-noticia>
     </swiper-slide>
     }
   </swiper-container>
-  <app-tabs [tabs]="tabs"></app-tabs>
+  <app-tabs [tabs]="tabs()"></app-tabs>
 </main>
 <app-nav></app-nav>

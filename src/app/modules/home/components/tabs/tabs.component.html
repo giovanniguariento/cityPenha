@@ -1,7 +1,7 @@
 <mat-tab-group>
-  @for (tab of tabs; track tab) {
+  @for (tab of tabs; track trackByTabId($index, tab)) {
   <mat-tab [label]="tab.name" *ngIf="tab.posts.length > 0">
-    @for(card of tab.posts; track card) {
+    @for(card of tab.posts; track trackByCardId($index, card)) {
     <app-tabs-card [card]="card" [category]="tab.name"></app-tabs-card>
     }
   </mat-tab>

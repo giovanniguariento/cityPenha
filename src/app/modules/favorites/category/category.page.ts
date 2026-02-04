@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-category',
   imports: [],
   templateUrl: './category.page.html',
-  styleUrl: './category.page.scss'
+  styleUrl: './category.page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoryPage {
 

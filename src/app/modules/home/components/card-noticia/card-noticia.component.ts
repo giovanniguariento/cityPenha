@@ -1,23 +1,20 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router'
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
+import { Post } from '../../../../shared/interface/home.interface';
 
 @Component({
   selector: 'app-card-noticia',
   imports: [RouterLink, CommonModule],
   templateUrl: './card-noticia.component.html',
   standalone: true,
-  styleUrl: './card-noticia.component.scss'
+  styleUrl: './card-noticia.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CardNoticiaComponent implements OnInit {
-  newsDestaque!: any;
-  @Input() post!: any;
+export class CardNoticiaComponent {
+  @Input({ required: true }) post!: Post;
 
-  constructor() { }
-
-  ngOnInit(): void {
-    // const random = Math.floor(Math.random() * (this.posts.length - 0 + 1));
-    this.newsDestaque = this.post;
+  get newsDestaque(): Post {
+    return this.post;
   }
 }

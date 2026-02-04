@@ -1,4 +1,4 @@
-<div class="profile-container" *ngIf="this.user.avatarUrl">
+<div class="profile-container" *ngIf="user().avatarUrl">
 
   <header class="header">
     <div class="top-bar">
@@ -12,14 +12,14 @@
     <div class="profile-info">
       <div class="avatar-wrapper">
         <div class="avatar-border">
-          <img referrerpolicy="no-referrer" [src]="user.avatarUrl" alt="Foto de perfil">
+          <img referrerpolicy="no-referrer" [src]="user().avatarUrl" alt="Foto de perfil">
         </div>
-        <span class="level-badge">Nível {{ user.level }}</span>
+        <span class="level-badge">Nível {{ user().level }}</span>
       </div>
 
-      <h1>{{ user.name }}</h1>
-      <p class="role">{{ user.role }}</p>
-      <p class="desc">{{ user.description }}</p>
+      <h1>{{ user().name }}</h1>
+      <p class="role">{{ user().role }}</p>
+      <p class="desc">{{ user().description }}</p>
     </div>
 
     <nav class="profile-tabs">

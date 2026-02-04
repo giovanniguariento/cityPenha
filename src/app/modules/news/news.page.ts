@@ -1,37 +1,51 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router'
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HomeService } from '../home/services/home.service';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { takeUntil } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { PostDetail } from '../../shared/interface/home.interface';
+import { Destroyable } from '../../shared/utils/destroyable';
 
 @Component({
   selector: 'app-news-page',
   imports: [RouterLink, CommonModule],
   templateUrl: './news.page.html',
-  styleUrl: './news.page.scss'
+  styleUrl: './news.page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewsPageComponent implements OnInit {
-  homeService: HomeService = inject(HomeService);
-  activatedRoute = inject(ActivatedRoute);
-  newsId: string = "";
-  news: any;
-  following: boolean = false;
-  bookmarked: boolean = false;
+export class NewsPageComponent extends Destroyable implements OnInit {
+  private readonly homeService = inject(HomeService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly sanitizer = inject(DomSanitizer);
+  private scrollHandler?: () => void;
 
-  readingTime: number = 0;
+  news = signal<PostDetail | null>(null);
+  following = signal<boolean>(false);
+  bookmarked = signal<boolean>(false);
+  readingTime = signal<number>(0);
 
-
-  constructor(private sanitizer: DomSanitizer) {
-    this.activatedRoute.params.subscribe((params) => {
-      this.homeService.getPost(params['slug']).subscribe((post) => {
-        post.content = this.sanitizer.bypassSecurityTrustHtml(post.content);
-        this.news = post;
-      })
-    });
+  constructor() {
+    super();
+    this.activatedRoute.params
+      .pipe(
+        switchMap((params) => this.homeService.getPost(params['slug'])),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((post) => {
+        const sanitizedPost: PostDetail = {
+          ...post,
+          content: typeof post.content === 'string'
+            ? this.sanitizer.bypassSecurityTrustHtml(post.content)
+            : post.content
+        };
+        this.news.set(sanitizedPost);
+      });
   }
 
   ngOnInit(): void {
-    window.addEventListener('scroll', () => {
+    this.scrollHandler = () => {
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
@@ -40,24 +54,38 @@ export class NewsPageComponent implements OnInit {
         scrolled = 100;
       }
 
-      this.readingTime = Math.min(100, Math.max(0, scrolled));
-    });
+      this.readingTime.set(Math.min(100, Math.max(0, scrolled)));
+    };
+
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
   }
 
-  getBackgroundImageUrl(): string {
-    return `url('${this.news.img}')`;
+  override ngOnDestroy(): void {
+    // call base teardown for destroy$
+    super.ngOnDestroy();
+    if (this.scrollHandler) {
+      window.removeEventListener('scroll', this.scrollHandler);
+    }
   }
+
 
   async share(): Promise<void> {
+    if (!navigator.share) {
+      return;
+    }
+
     try {
       const shareData = {
-        title: "Acesse o CityPenha",
-        text: "Veja agora essa noticia",
+        title: 'Acesse o CityPenha',
+        text: 'Veja agora essa noticia',
         url: window.location.href,
       };
       await navigator.share(shareData);
     } catch (error) {
-      alert(error)
+      // User cancelled or error occurred - silently fail
+      if (error instanceof Error && error.name !== 'AbortError') {
+        // Could log to error service in production
+      }
     }
   }
 }

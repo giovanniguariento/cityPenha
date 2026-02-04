@@ -9,8 +9,6 @@ export const authGuard: CanActivateFn = () => {
 
   return authService.user$.pipe(
     map((user) => {
-      console.log(user)
-
       if (user) {
         return true;
       } else {
@@ -19,5 +17,4 @@ export const authGuard: CanActivateFn = () => {
       }
     })
   );
-
 };

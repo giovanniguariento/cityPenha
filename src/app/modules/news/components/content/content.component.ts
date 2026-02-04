@@ -1,22 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, OnDestroy, signal } from '@angular/core';
+import { PostDetail } from '../../../../shared/interface/home.interface';
 
 @Component({
   selector: 'app-content',
   imports: [CommonModule],
   templateUrl: './content.component.html',
-  styleUrl: './content.component.scss'
+  styleUrl: './content.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContentComponent implements OnInit {
-  @Input() news!: any;
+export class ContentComponent implements OnInit, OnDestroy {
+  @Input({ required: true }) news!: PostDetail;
 
-  following: boolean = false;
-  bookmarked: boolean = false;
-
-  readingTime: number = 0;
+  following = signal<boolean>(false);
+  bookmarked = signal<boolean>(false);
+  readingTime = signal<number>(0);
+  private scrollHandler?: () => void;
 
   ngOnInit(): void {
-    window.addEventListener('scroll', () => {
+    this.scrollHandler = () => {
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
@@ -25,24 +27,39 @@ export class ContentComponent implements OnInit {
         scrolled = 100;
       }
 
-      this.readingTime = Math.min(100, Math.max(0, scrolled));
-    });
+      this.readingTime.set(Math.min(100, Math.max(0, scrolled)));
+    };
+
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
+  }
+
+  ngOnDestroy(): void {
+    if (this.scrollHandler) {
+      window.removeEventListener('scroll', this.scrollHandler);
+    }
   }
 
   getBackgroundImageUrl(): string {
-    return `url('${this.news.img}')`;
+    return this.news?.img ? `url('${this.news.img}')` : '';
   }
 
   async share(): Promise<void> {
+    if (!navigator.share) {
+      return;
+    }
+
     try {
       const shareData = {
-        title: "Acesse o CityPenha",
-        text: "Veja agora essa noticia",
+        title: 'Acesse o CityPenha',
+        text: 'Veja agora essa noticia',
         url: window.location.href,
       };
       await navigator.share(shareData);
     } catch (error) {
-      alert(error)
+      // User cancelled or error occurred - silently fail
+      if (error instanceof Error && error.name !== 'AbortError') {
+        // Could log to error service in production
+      }
     }
   }
 }

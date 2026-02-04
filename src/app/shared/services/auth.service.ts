@@ -6,24 +6,23 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private auth: Auth = inject(Auth);
-  authentication!: UserCredential
-  user$: Observable<User | null>;
+  private readonly auth: Auth = inject(Auth);
+  readonly user$: Observable<User | null>;
 
   constructor() {
     this.user$ = user(this.auth);
   }
 
-  async loginWithGoogle(): Promise<void> {
+  async loginWithGoogle(): Promise<UserCredential> {
     const provider = new GoogleAuthProvider();
     try {
-      this.authentication = await signInWithPopup(this.auth, provider);
-      const user = this.authentication.user;
+      const authentication = await signInWithPopup(this.auth, provider);
+      const user = authentication.user;
       if (!user) {
-        throw new Error('Google-Login error');
+        throw new Error('Google-Login error: No user returned');
       }
+      return authentication;
     } catch (error) {
-      console.error('Google-Login error:', error);
       throw error;
     }
   }

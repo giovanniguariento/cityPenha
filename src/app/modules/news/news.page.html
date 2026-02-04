@@ -1,4 +1,4 @@
-<div class="news-page" *ngIf="this.news && !this.news.onlyVideo" [style.backgroundImage]="`url('${this.news.image}')`">
+<div class="news-page" *ngIf="news() && !news()?.onlyVideo" [style.backgroundImage]="`url('${this.news()?.image}')`">
   <div class="header">
     <button type="button" routerLink="/home">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,14 +17,14 @@
 
   <div class="footer">
     <div class="reading-time-bar">
-      <div class="progress" [style.width]="readingTime + '%'"></div>
+      <div class="progress" [style.width]="readingTime() + '%'"></div>
     </div>
 
     <div class="head-content"></div>
   </div>
 </div>
 
-<div class="news-page only-video" *ngIf="this.news && this.news.onlyVideo">
+<div class="news-page only-video" *ngIf="news() && news()?.onlyVideo">
   <div class="header">
     <button type="button" routerLink="/home">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -41,7 +41,7 @@
     </button>
   </div>
 
-  <main [outerHTML]="news.content"></main>
+  <main [outerHTML]="news()?.content"></main>
 
   <!-- <div class="footer">
     <div class="reading-time-bar">
@@ -52,21 +52,21 @@
   </div> -->
 </div>
 
-<div class="content" *ngIf="news">
+<div class="content" *ngIf="news()">
   <span class="tag-xp">+10 XP</span>
-  <h1 class="title">{{news.title}}</h1>
-  <div class="description" [innerHTML]="news.resume"></div>
+  <h1 class="title">{{news()?.title}}</h1>
+  <div class="description" [innerHTML]="news()?.resume"></div>
   <div class="info">
     <div class="details">
-      <span>{{news.readingTime}} Min Leitura</span>
-      <span>{{news.date | date:"dd 'de' MMMM, yyyy"}}</span>
-      <span>{{news.categoryName}}</span>
+      <span>{{news()?.readingTime}} Min Leitura</span>
+      <span>{{news()?.date | date:"dd 'de' MMMM, yyyy"}}</span>
+      <span>{{news()?.categoryName}}</span>
     </div>
 
     <div class="author">
-      <img [src]="news.author.avatarUrl" alt="">
-      <span>{{news.author.name}}</span>
-      <button type="button" (click)="this.following = !this.following">{{following ? "Seguindo" : "Seguir"}}</button>
+      <img [src]="news()?.author?.avatarUrl" alt="">
+      <span>{{news()?.author?.name}}</span>
+      <button type="button" (click)="following.set(!following())">{{following() ? "Seguindo" : "Seguir"}}</button>
     </div>
 
     <div class="actions">
@@ -83,8 +83,8 @@
 
         <span>Ouvir</span>
       </button>
-      <button type="button" (click)="this.bookmarked = !this.bookmarked">
-        @if(bookmarked){
+      <button type="button" (click)="bookmarked.set(!bookmarked())">
+        @if(bookmarked()){
         <svg width="10" height="12" viewBox="0 0 15 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M0 7.50606C0 5.51022 0 4.5123 0.262197 3.70469C0.792114 2.07245 2.07078 0.792755 3.70169 0.262409C4.50865 0 5.50577 0 7.5 0C9.49423 0 10.4913 0 11.2983 0.262409C12.9292 0.792755 14.2079 2.07245 14.7378 3.70469C15 4.5123 15 5.51022 15 7.50606V15.4275C15 17.4832 15 18.5111 14.6336 19.0547C14.186 19.7187 13.4059 20.0778 12.6109 19.9858C11.96 19.9104 11.1802 19.2415 9.62069 17.9036C8.93419 17.3147 8.59094 17.0203 8.21391 16.8869C7.75196 16.7236 7.24804 16.7236 6.78609 16.8869C6.40906 17.0203 6.06581 17.3147 5.37931 17.9036C3.81975 19.2415 3.03997 19.9104 2.38914 19.9858C1.59405 20.0778 0.813973 19.7187 0.366381 19.0547C0 18.5111 0 17.4832 0 15.4275V7.50606Z"
@@ -113,10 +113,10 @@
     </div>
   </div>
 
-  <main [outerHTML]="news.content" *ngIf="!this.news.onlyVideo"></main>
+  <main [outerHTML]="news()?.content" *ngIf="!news()?.onlyVideo"></main>
 
   <div class="container-tag">
-    @for (tag of news.tags; track tag) {
+    @for (tag of news()?.tags; track tag) {
     <span class="tag">{{tag}}</span>
     }
   </div>
