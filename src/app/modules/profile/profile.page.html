@@ -35,7 +35,8 @@
       @for (stat of stats; track stat.label) {
       <div class="stat-card">
         <div class="icon-wrapper">
-          <span class="icon">{{ stat.icon }}</span>
+          <img *ngIf="isAssetIcon(stat.icon)" [src]="stat.icon" [alt]="stat.label" />
+          <span *ngIf="!isAssetIcon(stat.icon)" class="icon" [innerHTML]="stat.icon"></span>
         </div>
         <div class="stat-info">
           <strong>{{ stat.value }}</strong>

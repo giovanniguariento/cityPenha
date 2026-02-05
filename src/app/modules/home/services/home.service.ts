@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, shareReplay, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { BlogResponse, PostDetail, SignupRequest, SignupResponse } from '../../../shared/interface/home.interface';
+import { BlogResponse, PostDetail, SignupRequest, SignupResponse, GetUserResponse } from '../../../shared/interface/home.interface';
 import { UserCredential } from '@angular/fire/auth';
 
 @Injectable({
@@ -50,5 +50,26 @@ export class HomeService {
     };
 
     return this.http.post<SignupResponse>(`${environment.apiUrl}/user/signup`, signupData);
+  }
+
+  /**
+   * Notify backend that a user finished reading a post.
+   * Endpoint: POST /users/read/:postId
+   * Body: { userId: "<user-id>", slug?: "<post-slug>" }
+   */
+  markPostRead(postId: number, userId: string, slug?: string) {
+    const body: any = { userId };
+    if (slug) {
+      body.slug = slug;
+    }
+    return this.http.post(`${environment.apiUrl}/user/read/${postId}`, body);
+  }
+
+  /**
+   * Get user by backend id.
+   * Endpoint: GET /user/:id
+   */
+  getUser(id: string): Observable<GetUserResponse> {
+    return this.http.get<GetUserResponse>(`${environment.apiUrl}/user/${id}`);
   }
 }

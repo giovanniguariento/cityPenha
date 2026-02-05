@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { HomeService } from '../home/services/home.service';
+import { SignupResponse } from '../../shared/interface/home.interface';
 import { first } from 'rxjs/operators';
 
 @Component({
@@ -32,7 +33,15 @@ export class LoginPage {
       this.homeService.signup(authentication)
         .pipe(first())
         .subscribe({
-          next: () => {
+          next: (res: SignupResponse) => {
+            // store returned user id (if provided) for later requests
+            if (res && res.id) {
+              try {
+                localStorage.setItem('userId', res.id);
+              } catch {
+                // ignore storage errors
+              }
+            }
             this.router.navigate(['/home']);
           },
           error: () => {

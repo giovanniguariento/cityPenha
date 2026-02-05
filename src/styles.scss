@@ -3,6 +3,7 @@
 // components according to the Material 3 design spec.
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
+@use 'styles/variables' as vars;
 @use 'assets/wordpress-blocks';
 @use '@angular/material' as mat;
 
@@ -15,39 +16,31 @@ html {
     ));
 }
 
-:root {
-  --space-30: 31px;
-  --swiper-pagination-bullet-inactive-color: #D9D9D980;
-  --swiper-pagination-color: #DD1907;
-}
-
-html,
 body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
   color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  line-height: 1;
+
+  // Reset the user agent margin.
+  margin: 0;
 }
 
-// CSS Reset
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
+/* You can add global styles to this file, and also import other style files */
 html,
 body,
 div,
 span,
+applet,
+object,
+iframe,
 h1,
 h2,
 h3,
@@ -87,9 +80,9 @@ center,
 dl,
 dt,
 dd,
-ol,
-ul,
-li,
+// ol,
+// ul,
+// li,
 fieldset,
 form,
 label,
@@ -128,6 +121,7 @@ video {
   vertical-align: baseline;
 }
 
+/* HTML5 display-role reset for older browsers */
 article,
 aside,
 details,
@@ -142,9 +136,14 @@ section {
   display: block;
 }
 
+body {
+  line-height: 1;
+  font-family: Lato;
+}
+
 ol,
 ul {
-  list-style: none;
+  padding: 0;
 }
 
 blockquote,
@@ -152,10 +151,10 @@ q {
   quotes: none;
 }
 
-blockquote::before,
-blockquote::after,
-q::before,
-q::after {
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
   content: '';
   content: none;
 }
@@ -165,7 +164,22 @@ table {
   border-spacing: 0;
 }
 
-// Animations
+:root {
+  --space-30: 31px;
+  --swiper-pagination-bullet-inactive-color: #{vars.$swiper-inactive};
+  --swiper-pagination-color: #{vars.$swiper-color};
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -190,6 +204,7 @@ table {
   }
 }
 
+
 // ::view-transition-old(root) {
 //   animation: 90ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
 //     300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;
@@ -200,12 +215,13 @@ table {
 //     300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
 // }
 
-// Button styles
 button {
-  transition: all 0.2s ease-in-out;
+  transition: all .2s ease-in-out;
 }
 
 button:active {
+  // background-color: #3e8e41;
+  // box-shadow: 0 5px #666;
   transform: scale(1.1);
-  transition: 0.1s;
+  transition: .1s;
 }

@@ -79,4 +79,28 @@ export interface SignupRequest {
 export interface SignupResponse {
   success: boolean;
   message?: string;
+  // ID returned by the backend for the created/recognized user
+  id?: string;
+}
+
+// Backend user representation (returned by GET /user/:id)
+export interface BackendUser {
+  id: string;
+  email: string;
+  name: string;
+  photoUrl?: string | null;
+  firebaseUid?: string | null;
+  wordpressId?: number | null;
+  xp?: number | null;
+  coins?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface GetUserResponse {
+  success: boolean;
+  data: {
+    user: BackendUser;
+    completedMissionsCount: number;
+  };
 }

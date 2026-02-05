@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Destroyable } from '../../utils/destroyable';
-import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { takeUntil } from 'rxjs';
+import { UserStateService } from '../../../core/state/user-state.service';
 
 @Component({
   selector: 'app-nav',
@@ -13,14 +13,14 @@ import { Subject, takeUntil } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavComponent extends Destroyable {
-  private readonly authService = inject(AuthService);
+  private readonly userState = inject(UserStateService);
   readonly router = inject(Router);
   currentPath = signal<string>(this.router.url);
   photoURL = signal<string | null>(null);
 
   constructor() {
     super();
-    this.authService.user$
+    this.userState.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
         this.photoURL.set(user?.photoURL || null);
