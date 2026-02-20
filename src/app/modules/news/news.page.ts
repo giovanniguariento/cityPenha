@@ -7,10 +7,12 @@ import { takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { PostDetail } from '../../shared/interface/home.interface';
 import { Destroyable } from '../../shared/utils/destroyable';
+import { MatDialog } from '@angular/material/dialog';
+import { LoginRequiredDialogComponent } from '../../shared/components/login-required-dialog/login-required-dialog.component';
 
 @Component({
   selector: 'app-news-page',
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, LoginRequiredDialogComponent],
   templateUrl: './news.page.html',
   styleUrl: './news.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -30,6 +32,10 @@ export class NewsPageComponent extends Destroyable implements OnInit {
   following = signal<boolean>(false);
   bookmarked = signal<boolean>(false);
   readingTime = signal<number>(0);
+  // no local modal flag — use Material dialog
+  private readonly dialog = inject(MatDialog);
+  private dialogOpen = false;
+  private firstRenderAt = 0;
 
   constructor() {
     super();
@@ -48,6 +54,8 @@ export class NewsPageComponent extends Destroyable implements OnInit {
         this.news.set(sanitizedPost);
         // Ensure reading progress is calculated after the content is set and rendered.
         // Use a microtask to wait for the DOM update.
+        // record render time so we can avoid immediately treating fit-to-viewport as "read"
+        this.firstRenderAt = Date.now();
         setTimeout(() => this.updateReadingProgress(), 0);
       });
   }
@@ -95,8 +103,15 @@ export class NewsPageComponent extends Destroyable implements OnInit {
     if (this.readingTime() >= 100) {
       const post = this.news();
       if (post && !this.readAttemptedForPost.has(post.id)) {
-        this.readAttemptedForPost.add(post.id);
-        this.tryMarkAsRead();
+        // avoid immediately triggering on initial render when content fits viewport
+        const winScroll = (window.pageYOffset ?? document.documentElement.scrollTop ?? document.body.scrollTop ?? 0) as number;
+        const TIME_THRESHOLD_MS = 700;
+        const sinceRender = Date.now() - (this.firstRenderAt || 0);
+        // require either the user has scrolled, or a brief time has passed since render
+        if (winScroll > 0 || sinceRender > TIME_THRESHOLD_MS) {
+          this.readAttemptedForPost.add(post.id);
+          this.tryMarkAsRead();
+        }
       }
     }
   }
@@ -145,7 +160,9 @@ export class NewsPageComponent extends Destroyable implements OnInit {
       }
     })();
 
+    // If user not logged, show a lightweight modal explaining points reward (throttled)
     if (!userId) {
+      this.maybeShowEarnPointsModal(post);
       return;
     }
 
@@ -163,4 +180,100 @@ export class NewsPageComponent extends Destroyable implements OnInit {
         }
       });
   }
+
+  private maybeShowEarnPointsModal(post: PostDetail) {
+    // Guard: avoid opening multiple dialogs at once.
+    if (this.dialogOpen) {
+      return;
+    }
+    this.dialogOpen = true;
+    const dialogRef = this.dialog.open(LoginRequiredDialogComponent, {
+      data: { postId: post.id, points: 10 }
+    });
+    dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.dialogOpen = false;
+    });
+  }
+
+
+  private openLoginDialogWithAction(post: PostDetail, actionLabel: string, points = 10) {
+    if (this.dialogOpen) {
+      return;
+    }
+    this.dialogOpen = true;
+    const dialogRef = this.dialog.open(LoginRequiredDialogComponent, {
+      data: { postId: post.id, points, actionLabel }
+    });
+    dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe((result) => {
+      this.dialogOpen = false;
+      if (result === 'login') {
+        // user chose to login; navigation is handled by the dialog
+      }
+    });
+  }
+
+  onFollowClick() {
+    const userId = (() => {
+      try {
+        return localStorage.getItem('userId');
+      } catch {
+        return null;
+      }
+    })();
+
+    const post = this.news();
+    if (userId) {
+      this.following.set(!this.following());
+    } else if (post) {
+      this.openLoginDialogWithAction(post, 'seguir este autor', 5);
+    }
+  }
+
+  onListenClick() {
+    const userId = (() => {
+      try {
+        return localStorage.getItem('userId');
+      } catch {
+        return null;
+      }
+    })();
+    const post = this.news();
+    if (userId) {
+      // If you have audio player integration, trigger it here.
+      // fallback: do nothing
+    } else if (post) {
+      this.openLoginDialogWithAction(post, 'ouvir o conteúdo', 2);
+    }
+  }
+
+  onSaveClick() {
+    const userId = (() => {
+      try {
+        return localStorage.getItem('userId');
+      } catch {
+        return null;
+      }
+    })();
+    const post = this.news();
+    if (userId) {
+      this.bookmarked.set(!this.bookmarked());
+    } else if (post) {
+      this.openLoginDialogWithAction(post, 'salvar esta notícia', 10);
+    }
+  }
+
+  onMoreClick() {
+    const post = this.news();
+    // Always open the "more" menu for both logged and anonymous users.
+    // We intentionally do NOT show the login-required dialog here.
+    this.openMoreMenu();
+  }
+
+  private openMoreMenu() {
+    // TODO: wire this to the actual "more" menu/action sheet in the app.
+    // For now, it's a no-op placeholder to preserve existing behavior.
+    // Example: this.actionSheetCtrl.create(...).then(sheet => sheet.present());
+  }
+
+
 }

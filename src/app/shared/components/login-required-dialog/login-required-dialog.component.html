@@ -1,0 +1,32 @@
+<div class="login-modal-container" role="dialog" aria-modal="true">
+  <h2 mat-dialog-title class="dialog-title">
+    <mat-icon class="title-icon color-primary" aria-label="Ícone de conquistas">emoji_events</mat-icon>
+    Ganhe pontos e descontos
+  </h2>
+
+  <div mat-dialog-content class="dialog-content">
+    <div class="message-wrapper">
+      <p class="main-text" *ngIf="actionLabel; else defaultText">
+        Ao <strong>{{actionLabel}}</strong>, você teria ganho <strong>+{{points}} pontos</strong> se estivesse logado.
+      </p>
+      <ng-template #defaultText>
+        <p class="main-text">
+          Ao terminar de ler esta notícia, você teria ganho <strong>+{{points}} pontos</strong> se estivesse logado.
+        </p>
+      </ng-template>
+      <p class="sub-text">
+        Crie uma conta para que seus pontos sejam creditados e possam ser trocados por benefícios e descontos em
+        produtos reais.
+      </p>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button (click)="close()" class="btn-cancel">
+      Agora não
+    </button>
+    <button mat-flat-button color="primary" (click)="login()" class="btn-login">
+      Fazer Login
+    </button>
+  </div>
+</div>

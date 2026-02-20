@@ -28,6 +28,11 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
+    try {
+      localStorage.removeItem('userId');
+    } catch {
+      // ignore storage errors
+    }
     return await signOut(this.auth);
   }
 }
