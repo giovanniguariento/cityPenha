@@ -1,21 +1,62 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavComponent } from '../../shared/components/nav/nav.component';
 import { RouterLink } from '@angular/router';
-import { CategoryCard } from '../../shared/interface/home.interface';
+import { CategoryCard, UserFolder } from '../../shared/interface/home.interface';
+import { HomeService } from '../home/services/home.service';
+import { Auth } from '@angular/fire/auth';
+
+const FOLDER_CARD_PLACEHOLDER_IMAGE =
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=500&auto=format&fit=crop';
+
+function folderToCategoryCard(folder: UserFolder): CategoryCard {
+  return {
+    id: folder.id,
+    title: folder.name,
+    count: folder.itemCount ?? 0,
+    image: folder.coverImageUrl ?? FOLDER_CARD_PLACEHOLDER_IMAGE,
+  };
+}
 
 @Component({
   selector: 'app-favorites',
+  standalone: true,
   imports: [NavComponent, RouterLink],
   templateUrl: './favorites.page.html',
   styleUrl: './favorites.page.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FavoritesPage {
-  readonly categories: CategoryCard[] = [
-    { id: 1, title: 'Referências', count: 8, image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=500&auto=format&fit=crop' },
-    { id: 2, title: 'Comportamento', count: 1, image: 'https://images.unsplash.com/photo-1507537297725-24a1c434b6b8?q=80&w=500&auto=format&fit=crop' },
-    { id: 3, title: 'Tecnologia', count: 2, image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=500&auto=format&fit=crop' },
-    { id: 4, title: 'Notícias Boas', count: 3, image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=500&auto=format&fit=crop' },
-    { id: 5, title: 'Estudos', count: 1, image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=500&auto=format&fit=crop' },
-  ];
+export class FavoritesPage implements OnInit {
+  private readonly homeService = inject(HomeService);
+  private readonly auth = inject(Auth);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly categories = signal<CategoryCard[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+
+  ngOnInit(): void {
+    if (!this.auth.currentUser) {
+      this.loading.set(false);
+      this.error.set('Faça login para ver suas pastas.');
+      return;
+    }
+    this.homeService
+      .getUserFolders()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+      next: (folders) => {
+        if (Array.isArray(folders)) {
+          this.categories.set(folders.map(folderToCategoryCard));
+        } else {
+          this.categories.set([]);
+        }
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.error.set('Não foi possível carregar suas pastas.');
+      },
+    });
+  }
 }

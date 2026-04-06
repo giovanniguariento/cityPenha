@@ -1,7 +1,7 @@
 <div class="login-container">
 
   <header class="top-bar">
-    <button class="btn-skip" (click)="onSkip();logout()">Pular</button>
+    <button type="button" class="btn-skip" [disabled]="submitting()" (click)="onSkip();logout()">Pular</button>
   </header>
 
   <main class="content">
@@ -22,22 +22,27 @@
 
     <div class="actions">
 
-      <button class="btn btn-primary" (click)="onLogin('email')">
+      <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="onLogin('email')">
         <img src="assets/email-icon.svg" alt="" srcset="">
         <span>Continue com o E-mail</span>
       </button>
 
-      <button class="btn btn-social" (click)="googleLogin()">
+      <button type="button" class="btn btn-social" [disabled]="submitting()" [attr.aria-busy]="submitting()"
+        (click)="googleLogin()">
+        @if (submitting()) {
+        <mat-spinner diameter="22" />
+        } @else {
         <img src="assets/gmail-icon.svg" alt="" srcset="">
-        <span>Continue com Google</span>
+        }
+        <span>{{ submitting() ? 'Entrando…' : 'Continue com Google' }}</span>
       </button>
 
-      <button class="btn btn-social" (click)="onLogin('apple')">
+      <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('apple')">
         <img src="assets/email-icon.svg" alt="" srcset="">
         <span>Continue com a Apple</span>
       </button>
 
-      <button class="btn btn-social" (click)="onLogin('facebook')">
+      <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('facebook')">
         <img src="assets/facebook-icon.svg" alt="" srcset="">
         <span>Continue com o Facebook</span>
       </button>

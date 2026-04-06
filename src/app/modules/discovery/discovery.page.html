@@ -1,0 +1,126 @@
+<div class="discovery">
+  <header class="discovery__top">
+    <h1 class="discovery__title">Descoberta</h1>
+    <div class="discovery__search" role="search">
+      <img class="discovery__search-icon" src="assets/search.svg" alt="" width="20" height="20" />
+      <input type="search" class="discovery__search-input" placeholder="Pesquisar" autocomplete="off"
+        aria-label="Pesquisar" />
+      <button type="button" class="discovery__search-filter" aria-label="Filtros">
+        <img src="assets/filter-sliders.svg" alt="" width="16" height="14" />
+      </button>
+    </div>
+  </header>
+
+  <main class="discovery__main">
+    @if (error(); as err) {
+    <div class="discovery__alert" role="alert">
+      <p class="discovery__alert-text">{{ err }}</p>
+      <button type="button" class="discovery__alert-retry" (click)="retry()">Tentar novamente</button>
+    </div>
+    }
+
+    <button type="button" class="discovery__banner" aria-label="Descubra novas experiências">
+      <span class="discovery__banner-text">Descubra novas experiências</span>
+    </button>
+
+    <section class="discovery__bento" aria-label="Categorias">
+      <button type="button" class="discovery__bento-card discovery__bento-card--tall discovery__bento-card--editors"
+        [attr.aria-label]="'Escolha dos editores'">
+        <img class="discovery__bento-img" src="assets/escolha-editores.jpg" alt="" loading="lazy" decoding="async" />
+        <span class="discovery__bento-label">Escolha dos editores</span>
+      </button>
+      <a routerLink="/discovery/topics" class="discovery__bento-card discovery__bento-card--topics"
+        [attr.aria-label]="topics().length ? 'Tópicos, ' + topics().length + ' categorias' : 'Tópicos'">
+        <img class="discovery__bento-img" src="assets/topicos.jpg" alt="" loading="lazy" decoding="async" />
+        <span class="discovery__bento-label">Tópicos</span>
+      </a>
+      <button type="button" class="discovery__bento-card discovery__bento-card--world"
+        [attr.aria-label]="worldNews().length ? 'Notícias do mundo, ' + worldNews().length + ' publicações' : 'Notícias do mundo'">
+        <img class="discovery__bento-img" src="assets/noticias-mundo.jpg" alt="" loading="lazy" decoding="async" />
+        <span class="discovery__bento-label">Notícias do mundo</span>
+      </button>
+    </section>
+
+    <section class="discovery__section discovery__section--trending" aria-labelledby="trending-heading">
+      <div class="discovery__section-head">
+        <h2 id="trending-heading" class="discovery__section-title">Tópicos em alta</h2>
+      </div>
+
+      @if (loading()) {
+      <div class="discovery__skeleton" aria-busy="true" aria-label="A carregar tópicos em alta">
+        @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="discovery__skeleton-row">
+          <div class="discovery__skeleton-index discovery__skeleton--pulse"></div>
+          <div class="discovery__skeleton-body">
+            <div class="discovery__skeleton-line discovery__skeleton-line--title discovery__skeleton--pulse"></div>
+            <div class="discovery__skeleton-line discovery__skeleton-line--short discovery__skeleton--pulse"></div>
+            <div class="discovery__skeleton-line discovery__skeleton-line--meta discovery__skeleton--pulse"></div>
+          </div>
+        </div>
+        }
+      </div>
+      } @else if (!error() && !trendingTopics().length) {
+      <p class="discovery__empty">Ainda não há tópicos em alta para mostrar.</p>
+      } @else if (!error()) {
+      <ul class="discovery__article-list">
+        @for (post of trendingTopics(); track trackByPostId($index, post); let idx = $index) {
+        <li class="discovery__article">
+          <a class="discovery__article-link" [routerLink]="['/news', post.slug]">
+            <span class="discovery__article-index" aria-hidden="true">{{ indexLabel(idx) }}</span>
+            <div class="discovery__article-body">
+              <p class="discovery__article-title">{{ post.title | decodeHtmlEntities }}</p>
+              <div class="discovery__article-author-row">
+                @if (post.author.avatarUrl) {
+                <img class="discovery__article-avatar discovery__article-avatar--img" [src]="post.author.avatarUrl"
+                  alt="" width="16" height="16" loading="lazy" decoding="async" />
+                } @else {
+                <span class="discovery__article-avatar" aria-hidden="true"></span>
+                }
+                <span class="discovery__article-author">{{ post.author.name }}</span>
+              </div>
+              <p class="discovery__article-meta">{{ articleMeta(post) }}</p>
+            </div>
+          </a>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+
+    <section class="discovery__section" aria-labelledby="authors-heading">
+      <div class="discovery__section-head">
+        <h2 id="authors-heading" class="discovery__section-title">Autores populares</h2>
+      </div>
+
+      @if (loading()) {
+      <div class="discovery__authors-scroll discovery__authors-scroll--skeleton" aria-hidden="true">
+        @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="discovery__author-card discovery__author-card--skeleton">
+          <div class="discovery__skeleton-avatar discovery__skeleton--pulse"></div>
+          <div class="discovery__skeleton-line discovery__skeleton-line--name discovery__skeleton--pulse"></div>
+          <div class="discovery__skeleton-pill discovery__skeleton--pulse"></div>
+        </div>
+        }
+      </div>
+      } @else if (!error() && !popularAuthors().length) {
+      <p class="discovery__empty">Ainda não há autores populares para mostrar.</p>
+      } @else if (!error()) {
+      <div class="discovery__authors-scroll">
+        @for (author of popularAuthors(); track trackByAuthorId($index, author)) {
+        <div class="discovery__author-card">
+          @if (author.avatarUrl) {
+          <img class="discovery__author-avatar discovery__author-avatar--img" [src]="author.avatarUrl" alt=""
+            width="72" height="72" loading="lazy" decoding="async" />
+          } @else {
+          <span class="discovery__author-avatar" aria-hidden="true"></span>
+          }
+          <p class="discovery__author-name">{{ author.name }}</p>
+          <p class="discovery__author-likes">{{ author.totalLikes }} curtidas</p>
+        </div>
+        }
+      </div>
+      }
+    </section>
+  </main>
+</div>
+<app-nav></app-nav>

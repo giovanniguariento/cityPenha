@@ -1,4 +1,10 @@
-<div class="profile-container" *ngIf="user().avatarUrl">
+@if (apiLoading()) {
+<p class="profile-state profile-state--loading" aria-busy="true">A carregar perfil…</p>
+} @else if (apiError()) {
+<p class="profile-state profile-state--error">{{ apiError() }}</p>
+}
+
+<div class="profile-container" *ngIf="user().avatarUrl && !apiLoading()">
 
   <header class="header">
     <div class="top-bar">
@@ -24,7 +30,7 @@
 
     <nav class="profile-tabs">
       <button class="tab active">Geral</button>
-      <button class="tab">Missões</button>
+      <a routerLink="/missions" class="tab">Missões</a>
       <button class="tab">Loja</button>
     </nav>
   </header>

@@ -13,6 +13,17 @@ $card-radius: 16px;
   justify-content: center;
 }
 
+.profile-state {
+  padding: 48px 24px;
+  text-align: center;
+  line-height: 1.5;
+  color: $text-gray;
+
+  &--error {
+    color: #b3261e;
+  }
+}
+
 .profile-container {
   background-color: $bg-gray;
   min-height: 100vh;
@@ -122,6 +133,9 @@ $card-radius: 16px;
       padding: 8px 24px;
       border-radius: 20px;
       cursor: pointer;
+      text-decoration: none;
+      font-family: inherit;
+      font-size: inherit;
 
       &.active {
         background: white;

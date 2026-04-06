@@ -9,10 +9,10 @@
   <div class="content">
     <div class="details">
       <img src="assets/play.svg" alt="" srcset="" *ngIf="newsDestaque.onlyVideo">
-      <span class="tag">{{newsDestaque.categoryName}}</span>
+      <span class="tag">{{ tagLabel | decodeHtmlEntities }}</span>
       <span class="reading-time">{{newsDestaque.readingTime}} Min Leitura</span>
     </div>
-    <h1 class="title">{{newsDestaque.title}}</h1>
+    <h1 class="title">{{ newsDestaque.title | decodeHtmlEntities }}</h1>
     <div class="author">
       <img [src]="newsDestaque.author.avatarUrl" alt=" foto do author">
       <span class="name">{{newsDestaque.author.name}}</span>

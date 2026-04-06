@@ -58,6 +58,23 @@ $accent-red: #ff3b30;
   }
 }
 
+.state-msg {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 12px 0;
+  font-size: 15px;
+  color: $gray-medium;
+
+  &--error {
+    color: $accent-red;
+  }
+
+  &--empty {
+    text-align: center;
+    padding: 8px 0 16px;
+  }
+}
+
 // Grid de Layout
 .grid {
   display: grid;

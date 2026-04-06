@@ -1,5 +1,17 @@
 import { SafeHtml } from '@angular/platform-browser';
 
+/** HTTP 200 body shape from cityPenha-back (`{ data, meta? }`). */
+export interface ApiSuccessEnvelope<T> {
+  data: T;
+  meta?: unknown;
+}
+
+export interface ApiErrorBody {
+  error: string;
+  message: string;
+  details: unknown;
+}
+
 // Define a estrutura do autor do post
 export interface Author {
   name: string;
@@ -11,23 +23,27 @@ export interface Post {
   slug: string;
   id: number;
   title: string;
+  /** Feed: `"post"` | `"anuncio"` (API §2.1). */
+  type?: 'post' | 'anuncio';
   author: Author;
-  tags: number[]; // Array de IDs das tags
+  /** Feed: tag IDs; detalhe: nomes das tags (strings). */
+  tags: number[] | string[];
   readingTime: number;
   image: string;
   categories: number[]; // Array de IDs das categorias
   categoryName: string;
+  /**
+   * GET /post/:slug com Bearer opcional: estado de curtida e contagem.
+   */
+  liked?: boolean;
+  likesCount?: number;
   onlyVideo?: boolean;
+  viewed?: boolean;
+  /** Texto relativo de publicação (ex.: GET /discovery — FeedItem). */
+  publishedAtRelative?: string;
 }
 
-// Define a estrutura da categoria, que contém uma lista de posts
-export interface Category {
-  id: number;
-  name: string;
-  posts: Post[];
-}
-
-// Interface raiz que representa a resposta completa da API/JSON
+// Interface raiz que representa o conteúdo de `data` em GET /home
 export interface BlogResponse {
   categories: Category[];
   carousel: Post[];
@@ -40,17 +56,87 @@ export interface PostDetail extends Post {
   resume?: string;
   date?: string;
   onlyVideo?: boolean;
+  /** Pastas do usuário que contêm o post (logado cadastrado). */
+  savedFolderIds?: string[];
+}
+
+/** Payload útil de POST /post/:wordpressPostId/like (após unwrap de `data`). */
+export interface PostLikePayload {
+  liked: boolean;
+  likesCount: number;
+  missions?: MissionApiItem[];
+  level?: UserLevel | null;
+  user?: BackendUser;
+  completedMissionsCount?: number;
+}
+
+/** Primeira leitura — POST /user/read/:postId (unwrap `data`). */
+export interface ReadPostFirstResponse {
+  already?: false;
+  user?: BackendUser;
+  completedMissionsCount?: number;
+  daysWithReads?: string[];
+  missions?: MissionApiItem[];
+  level?: UserLevel | null;
+}
+
+/** Leitura já registrada. */
+export interface ReadPostAlreadyResponse {
+  already: true;
+  daysWithReads?: string[];
+  missions?: MissionApiItem[];
+}
+
+export type ReadPostResult = ReadPostFirstResponse | ReadPostAlreadyResponse;
+
+// Define a estrutura da categoria, que contém uma lista de posts
+export interface Category {
+  id: number;
+  name: string;
+  posts: Post[];
 }
 
 // Category card interface (for favorites)
 export interface CategoryCard {
-  id: number;
+  id: string;
   title: string;
   count: number;
   image: string;
 }
 
-// User interface
+/** Item of GET /user/me/folders */
+export interface UserFolder {
+  id: string;
+  userId: string;
+  name: string;
+  internalKey: string | null;
+  createdAt: string;
+  coverImageUrl: string | null;
+  lastWordpressPostId: number | null;
+  itemCount: number;
+}
+
+/** Item of GET /user/me/folders/:folderId/posts */
+export interface FolderPostCategory {
+  id: number;
+  name: string;
+}
+
+/** Nested post payload; may be WordPress REST shape or normalized fields. */
+export interface FolderPostItem {
+  wordpressPostId: number;
+  post: Record<string, unknown>;
+  categories: FolderPostCategory[];
+  /** URL da imagem do card (prioridade sobre campos dentro de `post`). */
+  image?: string;
+}
+
+export interface FolderPostsData {
+  folderId: string;
+  posts: FolderPostItem[];
+}
+
+// User interface (UI perfil)
 export interface User {
   name: string;
   role: string;
@@ -67,23 +153,15 @@ export interface UserStat {
   color: string;
 }
 
-// Signup request interface
+// Signup request — API exige campos truthy; o serviço aplica fallbacks.
 export interface SignupRequest {
-  email: string | null;
+  email: string;
   firebaseUid: string;
-  name: string | null;
-  photoUrl: string | null;
+  name: string;
+  photoUrl: string;
 }
 
-// Signup response interface
-export interface SignupResponse {
-  success: boolean;
-  message?: string;
-  // ID returned by the backend for the created/recognized user
-  id?: string;
-}
-
-// Backend user representation (returned by GET /user/:id)
+// Backend user representation
 export interface BackendUser {
   id: string;
   email: string;
@@ -97,10 +175,65 @@ export interface BackendUser {
   updatedAt?: string | null;
 }
 
-export interface GetUserResponse {
-  success: boolean;
-  data: {
-    user: BackendUser;
-    completedMissionsCount: number;
-  };
+export interface UserLevel {
+  levelNumber: number;
+  minXp: number;
+  minCompletedMissions: number;
+}
+
+/** Conteúdo de `data` em GET /user/me (após unwrap). */
+export interface UserMePayload {
+  user: BackendUser;
+  completedMissionsCount: number;
+  daysWithReads: string[];
+  missions: MissionApiItem[];
+  level: UserLevel | null;
+}
+
+/** Conteúdo de `data` em GET /user/me/frequency (após unwrap). */
+export interface FrequencyData {
+  daysWithReads: string[];
+  today: string;
+}
+
+/** Item em `topics` de GET /discovery (§3.3). */
+export interface DiscoveryTopic {
+  id: number;
+  name: string;
+  slug: string;
+  newsCount: number;
+  /** URL da imagem do post mais recente deste tópico (opcional). */
+  latestPostImageUrl?: string | null;
+}
+
+/** Item em `popularAuthors` de GET /discovery. */
+export interface DiscoveryPopularAuthor {
+  wordpressUserId: number;
+  name: string;
+  avatarUrl: string | null;
+  totalLikes: number;
+}
+
+/** Conteúdo de `data` em GET /discovery. */
+export interface DiscoveryResponse {
+  newExperiences: unknown[];
+  editorsChoice: unknown[];
+  topics: DiscoveryTopic[];
+  worldNews: Post[];
+  trendingTopics: Post[];
+  popularAuthors: DiscoveryPopularAuthor[];
+}
+
+/** Mission item returned by GET /mission */
+export interface MissionApiItem {
+  id: string;
+  key: string;
+  title: string;
+  description: string | null;
+  target: number;
+  coinReward: number;
+  xpReward: number;
+  progress: number;
+  completed: boolean;
+  completedAt: string | null;
 }

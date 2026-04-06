@@ -1,10 +1,15 @@
-import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
-import { InMemoryScrollingOptions, provideRouter, withInMemoryScrolling, withViewTransitions } from '@angular/router';
+import { ApplicationConfig, importProvidersFrom, LOCALE_ID, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
+import { InMemoryScrollingOptions, provideRouter, withInMemoryScrolling, withPreloading } from '@angular/router';
 
 import { routes } from './app.routes';
+import { IdlePreloadStrategy } from './core/routing/idle-preload.strategy';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { StoreData } from './shared/store/store';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { authApiInterceptor } from './core/interceptors/auth-api.interceptor';
 import localePt from '@angular/common/locales/pt';
 import { registerLocaleData } from '@angular/common';
 import { initializeApp, provideFirebaseApp, FirebaseOptions } from '@angular/fire/app';
@@ -31,14 +36,22 @@ const firebaseConfig: any = {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideAnimations(),
+    importProvidersFrom(MatSnackBarModule),
+    {
+      provide: MAT_DIALOG_DEFAULT_OPTIONS,
+      useValue: { enterAnimationDuration: '200ms', exitAnimationDuration: '150ms' },
+    },
     StoreData,
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes, withViewTransitions(), inMemoryScrollingFeature),
-    provideClientHydration(withEventReplay()),
-    provideHttpClient(
-      withFetch(),
+    provideRouter(
+      routes,
+      inMemoryScrollingFeature,
+      withPreloading(IdlePreloadStrategy)
     ),
+    provideClientHydration(withEventReplay()),
+    provideHttpClient(withFetch(), withInterceptors([authApiInterceptor])),
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth())

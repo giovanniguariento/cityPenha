@@ -3,8 +3,9 @@
     <img [src]="currentPath().includes('home') ? 'assets/home-filled.svg' : 'assets/home.svg'" alt="">
     <span>inicio</span>
   </div>
-  <div class="button-container button-radius-right" [class.selected]="currentPath().includes('discovery')">
-    <img src="assets/search.svg" alt="">
+  <div class="button-container button-radius-right" routerLink="/discovery"
+    [class.selected]="currentPath().includes('discovery')">
+    <img [src]="currentPath().includes('discovery') ? 'assets/search-filled.svg' : 'assets/search.svg'" alt="">
     <span>descubra</span>
   </div>
   <div class="container-center">

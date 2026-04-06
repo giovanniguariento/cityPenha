@@ -1,4 +1,11 @@
-<div class="container">
+<div
+  class="container"
+  role="link"
+  tabindex="0"
+  aria-label="Ver missões e começar"
+  (click)="onMissionsActivate()"
+  (keydown.enter)="onMissionsActivate()"
+  (keydown.space)="onMissionsActivate($event)">
   <div class="left">
     <h1>Bem-vindo a sua comunidade CityPenha!</h1>
     <p>Explore quatro maneiras pelas quais você pode subir de nível.</p>

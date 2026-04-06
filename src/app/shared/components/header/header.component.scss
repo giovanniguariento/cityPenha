@@ -5,11 +5,36 @@ header {
 
   div {
     display: flex;
+    align-items: center;
     gap: 30px;
 
     img {
       width: 25px;
     }
+  }
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  img {
+    width: 25px;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary, currentColor);
+    outline-offset: 2px;
   }
 }
 

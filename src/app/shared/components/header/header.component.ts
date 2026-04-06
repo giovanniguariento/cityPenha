@@ -1,13 +1,30 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { LoginRequiredDialogComponent } from '../login-required-dialog/login-required-dialog.component';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-header',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeaderComponent {
+  private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly auth = inject(Auth);
 
+  onFrequenciaClick(): void {
+    const firebaseUser = this.auth.currentUser;
+    if (firebaseUser) {
+      this.router.navigate(['/frequencia']);
+    } else {
+      this.dialog.open(LoginRequiredDialogComponent, {
+        data: { points: 10, actionLabel: 'acessar a frequência', noRedirect: true, isFrequencyContext: true }
+      });
+    }
+  }
 }

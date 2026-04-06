@@ -7,6 +7,7 @@
 @use 'assets/wordpress-blocks';
 @use '@angular/material' as mat;
 
+
 html {
   @include mat.theme((color: (primary: mat.$rose-palette,
         tertiary: mat.$red-palette,
@@ -216,12 +217,47 @@ body {
 // }
 
 button {
-  transition: all .2s ease-in-out;
+  transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-button:active {
-  // background-color: #3e8e41;
-  // box-shadow: 0 5px #666;
-  transform: scale(1.1);
-  transition: .1s;
+button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--mat-sys-primary, #c2185b);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+// Customize the entire app. Change :root to your selector if you want to scope the styles.
+:root {
+  @include mat.snack-bar-overrides((container-color: #ffffff,
+      supporting-text-color: #2f2f2f,
+    ));
+}
+
+.app-feedback-snackbar .mat-mdc-snack-bar-label {
+  animation: app-snack-in 0.22s ease-out;
+}
+
+@keyframes app-snack-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-content-enter {
+  transition: opacity 0.2s ease-out;
 }

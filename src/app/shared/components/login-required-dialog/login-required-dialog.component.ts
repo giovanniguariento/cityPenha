@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,11 +10,19 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
   templateUrl: './login-required-dialog.component.html',
-  styleUrls: ['./login-required-dialog.component.scss']
+  styleUrls: ['./login-required-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginRequiredDialogComponent {
   points = 10;
   actionLabel = '';
+  /** When true, buttons only close the dialog without navigating. */
+  noRedirect = false;
+  /** When true, show the frequency-page message (earn points by visiting daily and reading). */
+  isFrequencyContext = false;
+  /** When true, show missions-entry copy (login required + general points/benefits). */
+  isMissionsGateContext = false;
+
   constructor(
     private router: Router,
     private dialogRef: MatDialogRef<LoginRequiredDialogComponent>,
@@ -26,6 +34,15 @@ export class LoginRequiredDialogComponent {
     if (data && data.actionLabel) {
       this.actionLabel = data.actionLabel;
     }
+    if (data && data.noRedirect === true) {
+      this.noRedirect = true;
+    }
+    if (data && data.isFrequencyContext === true) {
+      this.isFrequencyContext = true;
+    }
+    if (data && data.isMissionsGateContext === true) {
+      this.isMissionsGateContext = true;
+    }
   }
 
   close() {
@@ -34,7 +51,9 @@ export class LoginRequiredDialogComponent {
 
   login() {
     this.dialogRef.close('login');
-    this.router.navigate(['/login']);
+    if (!this.noRedirect) {
+      this.router.navigate(['/login']);
+    }
   }
 }
 

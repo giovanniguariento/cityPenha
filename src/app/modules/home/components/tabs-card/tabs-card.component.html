@@ -7,8 +7,7 @@
       <span class="level">Nivel 3+</span>
     </div>
 
-    <h2 class="card-title" [routerLink]="'/news/' + card.slug" [innerHTML]="card.title">
-    </h2>
+    <h2 class="card-title" [routerLink]="'/news/' + card.slug">{{ card.title | decodeHtmlEntities }}</h2>
 
     <div class="card-author">
       <div class="author-info">

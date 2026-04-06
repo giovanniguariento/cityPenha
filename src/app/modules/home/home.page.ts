@@ -5,14 +5,15 @@ import { HeaderComponent } from '../../shared/components/header/header.component
 import { CardNoticiaComponent } from '../home/components/card-noticia/card-noticia.component'
 import { CardExpComponent } from '../home/components/card-exp/card-exp.component'
 import { TabsComponent } from '../home/components/tabs/tabs.component'
+import { HomeSkeletonComponent } from '../../shared/components/home-skeleton/home-skeleton.component';
 import { HomeService } from './services/home.service';
-import { AsyncPipe } from '@angular/common';
 import { Category, Post } from '../../shared/interface/home.interface';
 import { takeUntil } from 'rxjs';
+import { apiErrorMessage } from '../../shared/utils/api-error-message';
 
 @Component({
   selector: 'app-home',
-  imports: [NavComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent, TabsComponent, AsyncPipe],
+  imports: [NavComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent, TabsComponent, HomeSkeletonComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
@@ -23,16 +24,33 @@ export class HomePage extends Destroyable {
 
   tabs = signal<Category[]>([]);
   posts = signal<Post[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
   homeData$ = this.homeService.getResourcesHome();
 
   constructor() {
     super();
     this.homeData$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        this.tabs.set(response.categories);
-        this.posts.set(response.carousel);
+      .subscribe({
+        next: (response) => {
+          this.tabs.set(response.categories);
+          this.posts.set(response.carousel);
+          this.loading.set(false);
+          this.error.set(null);
+        },
+        error: (err: unknown) => {
+          this.loading.set(false);
+          this.error.set(apiErrorMessage(err, 'Não foi possível carregar o início.'));
+        },
       });
+  }
+
+  hasFeedContent(): boolean {
+    if (this.posts().length > 0) {
+      return true;
+    }
+    return this.tabs().some((t) => (t.posts?.length ?? 0) > 0);
   }
 
   trackByPostId(_index: number, post: Post): number | string {

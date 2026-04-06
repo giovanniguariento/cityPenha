@@ -15,13 +15,23 @@
 
   <div class="grid">
 
-    @for (item of categories; track item.id) {
-    <div class="card" [style.background-image]="'url(' + item.image + ')'" [routerLink]="'/favorites' + item.id">
+    @if (loading()) {
+    <p class="state-msg">Carregando pastas...</p>
+    } @else if (error()) {
+    <p class="state-msg state-msg--error">{{ error() }}</p>
+    } @else {
+    @if (categories().length === 0) {
+    <p class="state-msg state-msg--empty">Ainda não tem pastas. Guarde artigos para os ver aqui.</p>
+    }
+    @for (item of categories(); track item.id) {
+    <div class="card" [style.background-image]="'url(' + item.image + ')'" [routerLink]="['/favorites', item.id]"
+      [state]="{ folderName: item.title }">
       <div class="card-overlay">
         <span class="card-title">{{ item.title }}</span>
         <span class="card-count">{{ item.count }} {{ item.count === 1 ? 'Artigo' : 'Artigos' }}</span>
       </div>
     </div>
+    }
     }
 
     <div class="card add-new">

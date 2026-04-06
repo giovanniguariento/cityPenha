@@ -1,0 +1,70 @@
+<div class="topics">
+  <header class="topics__top">
+    <div class="topics__header">
+      <a routerLink="/discovery" class="topics__back" aria-label="Voltar para descoberta">
+        <svg class="topics__back-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <h1 class="topics__title">Tópicos</h1>
+    </div>
+
+    <div class="topics__search" role="search">
+      <img class="topics__search-icon" src="assets/search.svg" alt="" width="20" height="20" />
+      <input type="search" class="topics__search-input" placeholder="Pesquisar" autocomplete="off" aria-label="Pesquisar"
+        [value]="searchQuery()" (input)="onSearchInput($event)" />
+    </div>
+  </header>
+
+  <main class="topics__main">
+    @if (error(); as err) {
+    <div class="topics__alert" role="alert">
+      <p class="topics__alert-text">{{ err }}</p>
+      <button type="button" class="topics__alert-retry" (click)="retry()">Tentar novamente</button>
+    </div>
+    }
+
+    @if (loading()) {
+    <div class="topics__skeleton-list" aria-busy="true" aria-label="A carregar tópicos">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+      <div class="topics__skeleton-row">
+        <div class="topics__skeleton-thumb topics__skeleton--pulse"></div>
+        <div class="topics__skeleton-text">
+          <div class="topics__skeleton-line topics__skeleton-line--title topics__skeleton--pulse"></div>
+          <div class="topics__skeleton-line topics__skeleton-line--sub topics__skeleton--pulse"></div>
+        </div>
+        <div class="topics__skeleton-pill topics__skeleton--pulse"></div>
+      </div>
+      }
+    </div>
+    } @else if (!error()) {
+    @if (!filteredTopics().length) {
+    <p class="topics__empty">Nenhum tópico encontrado.</p>
+    } @else {
+    <ul class="topics__list">
+      @for (topic of filteredTopics(); track trackByTopicId($index, topic); let i = $index) {
+      <li class="topics__item">
+        <img class="topics__thumb" [src]="topicImage(topic, i)" alt="" width="64" height="64" loading="lazy"
+          decoding="async" />
+        <div class="topics__body">
+          <p class="topics__name">{{ topic.name }}</p>
+          <p class="topics__meta">{{ topic.newsCount }} artigos</p>
+        </div>
+        @if (isFollowing(topic)) {
+        <button type="button" class="topics__btn topics__btn--following" (click)="toggleFollow(topic, $event)">
+          Seguindo
+        </button>
+        } @else {
+        <button type="button" class="topics__btn topics__btn--follow" (click)="toggleFollow(topic, $event)">
+          Seguir
+        </button>
+        }
+      </li>
+      }
+    </ul>
+    }
+    }
+  </main>
+</div>
+<app-nav></app-nav>
