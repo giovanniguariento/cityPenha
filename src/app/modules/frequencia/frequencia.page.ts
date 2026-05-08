@@ -23,11 +23,34 @@ export interface DayStatus {
   isTodayNotRead: boolean;
 }
 
+/** Local calendar YYYY-MM-DD (avoid UTC `toISOString` day shifts). */
+function toYmdLocal(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 /** Returns the previous day in YYYY-MM-DD format. */
 function previousDayKey(dateKey: string): string {
   const d = new Date(dateKey + 'T12:00:00');
   d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
+  return toYmdLocal(d);
+}
+
+/** Sunday (start) of the week containing `dateKey` (UI week: Sun–Sat). */
+function sundayOfWeekContaining(dateKey: string): string {
+  const d = new Date(dateKey + 'T12:00:00');
+  const dow = d.getDay();
+  d.setDate(d.getDate() - dow);
+  return toYmdLocal(d);
+}
+
+/** Saturday (end) of the week containing `dateKey`. */
+function saturdayOfWeekContaining(dateKey: string): string {
+  const d = new Date(sundayOfWeekContaining(dateKey) + 'T12:00:00');
+  d.setDate(d.getDate() + 6);
+  return toYmdLocal(d);
 }
 
 @Component({
@@ -79,19 +102,48 @@ export class FrequenciaPage implements OnInit {
     return result;
   });
 
-  /** Weekdays (0=Sun..6=Sat) that appear in the consecutive streak only — drives day-cell checkmarks. */
-  readonly streakWeekdays = computed(() => {
-    const dateSet = this.consecutiveStreakDateSet();
-    const weekdays = new Set<number>();
-    for (const dateStr of dateSet) {
-      const day = new Date(dateStr + 'T12:00:00').getDay();
-      if (!Number.isNaN(day)) weekdays.add(day);
-    }
-    return weekdays;
+  /** True when the most recent read falls in the week of `today` (summary card + week row only). */
+  private readonly lastReadInCurrentWeek = computed(() => {
+    const todayStr = this.currentStreakDateString();
+    const last = this.lastStreakDate();
+    if (!todayStr || !last) return false;
+    const weekStart = sundayOfWeekContaining(todayStr);
+    const weekEnd = saturdayOfWeekContaining(todayStr);
+    return last >= weekStart && last <= weekEnd;
   });
 
-  /** Number of consecutive days (current streak). */
-  readonly streakDays = computed(() => this.consecutiveStreakDateSet().size);
+  /**
+   * True when the most recent read is today or yesterday (no calendar gap without a read before today).
+   * If the last read was earlier, the streak is broken even if the tail block has length 1.
+   */
+  private readonly lastReadContiguousWithToday = computed(() => {
+    const todayStr = this.currentStreakDateString();
+    const last = this.lastStreakDate();
+    if (!todayStr || !last) return false;
+    if (last === todayStr) return true;
+    return last === previousDayKey(todayStr);
+  });
+
+  /** Seven YYYY-MM-DD keys (Sun→Sat) for the week containing `today`. */
+  private readonly currentWeekDateKeys = computed(() => {
+    const todayStr = this.currentStreakDateString();
+    if (!todayStr) return [] as string[];
+    const sun = new Date(sundayOfWeekContaining(todayStr) + 'T12:00:00');
+    const keys: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sun);
+      d.setDate(sun.getDate() + i);
+      keys.push(toYmdLocal(d));
+    }
+    return keys;
+  });
+
+  /** Consecutive streak length for the summary; 0 if last read is not this week or not today/yesterday. */
+  readonly streakDays = computed(() =>
+    this.lastReadInCurrentWeek() && this.lastReadContiguousWithToday()
+      ? this.consecutiveStreakDateSet().size
+      : 0
+  );
 
   /** Streak number with leading zero when < 10 (e.g. 05, 09). */
   readonly streakDaysFormatted = computed(() => {
@@ -151,7 +203,11 @@ export class FrequenciaPage implements OnInit {
   });
 
   isChecked(weekdayIndex: number): boolean {
-    return this.streakWeekdays().has(weekdayIndex);
+    if (!this.lastReadInCurrentWeek() || !this.lastReadContiguousWithToday()) return false;
+    const keys = this.currentWeekDateKeys();
+    const dateStr = keys[weekdayIndex];
+    if (!dateStr) return false;
+    return this.consecutiveStreakDateSet().has(dateStr);
   }
 
   /** True when this weekday is today and today is not in daysWithReads (show gray circle). */
@@ -183,6 +239,26 @@ export class FrequenciaPage implements OnInit {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
+  private dayStatusForDateKey(
+    dateKey: string,
+    dateDisplay: number,
+    isCurrentMonth: boolean,
+    cellKey: string,
+    streakSet: Set<string>,
+    todayStr: string
+  ): DayStatus {
+    const isInStreak = streakSet.has(dateKey);
+    const isToday = dateKey === todayStr;
+    return {
+      cellKey,
+      date: dateDisplay,
+      isCurrentMonth,
+      isActive: isInStreak,
+      isTodayOrCurrent: isToday && isInStreak,
+      isTodayNotRead: isToday && !isInStreak,
+    };
+  }
+
   private buildCalendar(): void {
     const month = this.currentMonth();
     const year = month.getFullYear();
@@ -194,57 +270,36 @@ export class FrequenciaPage implements OnInit {
     const daysInMonth = last.getDate();
 
     const streakSet = new Set(this.streakDateStrings());
-    const currentDateStr = this.currentStreakDateString();
+    const todayStr = this.currentStreakDateString();
 
     const days: DayStatus[] = [];
 
-    const todayStr = currentDateStr; // today from API
-
-    // Leading empty cells
+    // Leading cells (previous month) — same read/today rules as current month
     for (let i = 0; i < startWeekday; i++) {
       const prevMonth = new Date(year, monthIndex, -startWeekday + i + 1);
       const pk = this.dateKey(prevMonth.getFullYear(), prevMonth.getMonth(), prevMonth.getDate());
-      days.push({
-        cellKey: `cal-${pk}`,
-        date: prevMonth.getDate(),
-        isCurrentMonth: false,
-        isActive: false,
-        isTodayOrCurrent: false,
-        isTodayNotRead: false,
-      });
+      days.push(
+        this.dayStatusForDateKey(pk, prevMonth.getDate(), false, `cal-${pk}`, streakSet, todayStr)
+      );
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = this.dateKey(year, monthIndex, d);
-      const isInStreak = streakSet.has(dateStr);
-      const isToday = dateStr === todayStr;
-      const isTodayOrCurrent = isToday && isInStreak; // current (red) only when today and read
-      const isTodayNotRead = isToday && !isInStreak;  // today but not read → gray
-      days.push({
-        cellKey: dateStr,
-        date: d,
-        isCurrentMonth: true,
-        isActive: isInStreak,
-        isTodayOrCurrent,
-        isTodayNotRead,
-      });
+      days.push(
+        this.dayStatusForDateKey(dateStr, d, true, dateStr, streakSet, todayStr)
+      );
     }
 
-    // Trailing empty cells to complete the grid (6 rows * 7)
+    // Trailing cells (next month)
     const total = days.length;
     const remainder = total % 7;
     const fill = remainder === 0 ? 0 : 7 - remainder;
     for (let i = 0; i < fill; i++) {
       const nextCell = new Date(year, monthIndex, daysInMonth + i + 1);
       const nk = this.dateKey(nextCell.getFullYear(), nextCell.getMonth(), nextCell.getDate());
-      days.push({
-        cellKey: `cal-${nk}`,
-        date: nextCell.getDate(),
-        isCurrentMonth: false,
-        isActive: false,
-        isTodayOrCurrent: false,
-        isTodayNotRead: false,
-      });
+      days.push(
+        this.dayStatusForDateKey(nk, nextCell.getDate(), false, `cal-${nk}`, streakSet, todayStr)
+      );
     }
 
     this.calendarDays.set(days);

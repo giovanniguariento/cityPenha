@@ -1,0 +1,80 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Missões</h1>
+      <p>{{ filtered().length }} de {{ missions().length }} missão(ões) listada(s).</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="btn-primary" routerLink="/admin/missions/new">+ Nova missão</a>
+    </div>
+  </header>
+
+  <div class="admin-toolbar">
+    <div class="filter-tabs" role="tablist" aria-label="Filtrar por estado">
+      <button type="button" role="tab" [class.active]="statusFilter() === 'all'"
+        (click)="setStatusFilter('all')">Todas</button>
+      <button type="button" role="tab" [class.active]="statusFilter() === 'active'"
+        (click)="setStatusFilter('active')">Ativas</button>
+      <button type="button" role="tab" [class.active]="statusFilter() === 'inactive'"
+        (click)="setStatusFilter('inactive')">Inativas</button>
+    </div>
+    <div class="input-search list-search">
+      <input class="input" type="search" placeholder="Buscar por chave, título ou métrica…"
+        [value]="query()" (input)="setQuery($any($event.target).value)" />
+    </div>
+  </div>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando missões…</p>
+  } @else if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  } @else if (filtered().length === 0) {
+  <p class="admin-empty">Nenhuma missão encontrada com os filtros aplicados.</p>
+  } @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Missão</th>
+          <th>Métrica</th>
+          <th class="num">Alvo</th>
+          <th class="num">Recompensa</th>
+          <th>Estado</th>
+          <th class="actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of filtered(); track m.id) {
+        <tr>
+          <td data-label="Missão">
+            <div class="admin-table__title">
+              <strong>{{ m.title }}</strong>
+              <span><code>{{ m.key }}</code>@if (m.category) { · {{ m.category }} }</span>
+            </div>
+          </td>
+          <td data-label="Métrica"><code>{{ m.metricKey }}</code></td>
+          <td data-label="Alvo" class="num">{{ m.target }}</td>
+          <td data-label="Recompensa" class="num">+{{ m.xpReward }} XP · +{{ m.coinReward }} 🪙</td>
+          <td data-label="Estado">
+            <div class="admin-table__chips">
+              <span class="admin-chip" [class.admin-chip--success]="m.isActive"
+                [class.admin-chip--warn]="!m.isActive">{{ m.isActive ? 'ATIVA' : 'INATIVA' }}</span>
+              @if (m.isReversible) { <span class="admin-chip admin-chip--brand">REVERSÍVEL</span> }
+              @if (m.criteria) { <span class="admin-chip admin-chip--info">CRITÉRIO</span> }
+              @if (m.startsAt || m.endsAt) { <span class="admin-chip">SAZONAL</span> }
+            </div>
+          </td>
+          <td data-label="Ações" class="actions">
+            <a class="btn-ghost" [routerLink]="['/admin/missions', m.id]">Editar</a>
+            <button class="btn-ghost" type="button" [disabled]="busyId() === m.id"
+              (click)="toggleActive(m)">{{ m.isActive ? 'Desativar' : 'Ativar' }}</button>
+            <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busyId() === m.id"
+              (click)="remove(m)">Excluir</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</section>

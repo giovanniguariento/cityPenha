@@ -1,0 +1,118 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Recompute</h1>
+      <p>Force a engine a reavaliar todas as missões, insígnias e level de um usuário. Útil após alterar regras.</p>
+    </div>
+  </header>
+
+  <div class="recompute-layout">
+    <div class="form-column">
+      <div class="admin-card">
+        <h3 class="admin-card__title">Usuário-alvo</h3>
+        <form (submit)="$event.preventDefault(); run()">
+          <div class="field">
+            <label for="rc-uid">UUID do usuário</label>
+            <input id="rc-uid" class="input" type="text" placeholder="ex.: 8b76e0a0-…"
+              [value]="userId()" (input)="setUserId($any($event.target).value)" autocomplete="off" />
+            <span class="hint">Pegue do banco ou da resposta de <code>GET /user/me</code>.</span>
+          </div>
+          <button type="submit" class="btn-primary recompute-button" [disabled]="loading()">
+            @if (loading()) { <span>Recomputando…</span> } @else { <span>Recomputar usuário</span> }
+          </button>
+        </form>
+      </div>
+
+      <div class="admin-card admin-card--info">
+        <h3 class="admin-card__title">Quando usar</h3>
+        <ul class="info-list">
+          <li>Após editar regras de uma missão/insígnia em uso.</li>
+          <li>Quando uma métrica nova é adicionada e usuários antigos precisam ser revaliados.</li>
+          <li>Para diagnosticar inconsistências antes de reportar bug.</li>
+        </ul>
+        <p class="admin-card__hint">Não há job em massa: a operação é por usuário.</p>
+      </div>
+    </div>
+
+    <div class="result-column">
+      @if (error()) {
+      <p class="admin-state admin-state--error">{{ error() }}</p>
+      }
+
+      @if (result(); as r) {
+      <div class="admin-card">
+        <header class="result-header">
+          <h3 class="admin-card__title">Snapshot atualizado</h3>
+          <span class="admin-chip admin-chip--success">RECOMPUTADO</span>
+        </header>
+
+        <div class="result-stats">
+          <div class="result-stat">
+            <span class="label">Usuário</span>
+            <strong class="value">{{ r.user.name }}</strong>
+            <code>{{ r.user.id }}</code>
+          </div>
+          <div class="result-stat">
+            <span class="label">XP</span>
+            <strong class="value">{{ r.user.xp ?? 0 }}</strong>
+          </div>
+          <div class="result-stat">
+            <span class="label">Moedas</span>
+            <strong class="value">{{ r.user.coins ?? 0 }}</strong>
+          </div>
+          <div class="result-stat">
+            <span class="label">Missões concluídas</span>
+            <strong class="value">{{ r.completedMissionsCount }}</strong>
+          </div>
+          <div class="result-stat">
+            <span class="label">Nível atual</span>
+            <strong class="value">
+              @if (r.level) { Nível {{ r.level.levelNumber }} } @else { — }
+            </strong>
+          </div>
+          @if (r.levelProgress) {
+          <div class="result-stat">
+            <span class="label">Progresso para próximo nível</span>
+            <strong class="value">{{ r.levelProgress.percentage }}%</strong>
+          </div>
+          }
+        </div>
+      </div>
+
+      @if (r.missions.length) {
+      <div class="admin-card">
+        <h3 class="admin-card__title">{{ r.missions.length }} missão(ões) reavaliada(s)</h3>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Chave</th>
+                <th class="num">Progresso</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of r.missions; track m.id) {
+              <tr>
+                <td data-label="Chave"><code>{{ m.key }}</code></td>
+                <td data-label="Progresso" class="num">{{ m.progress }}/{{ m.target }}</td>
+                <td data-label="Estado">
+                  @if (m.completed) {
+                  <span class="admin-chip admin-chip--success">CONCLUÍDA</span>
+                  } @else {
+                  <span class="admin-chip">EM ANDAMENTO</span>
+                  }
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      }
+      } @else if (!error() && !loading()) {
+      <p class="admin-empty">Cole o UUID do usuário e clique em Recomputar para forçar a reavaliação.</p>
+      }
+    </div>
+  </div>
+</section>

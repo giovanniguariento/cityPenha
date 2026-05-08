@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { StoreData } from './shared/store/store';
+import { MissionFeedbackService } from './shared/services/mission-feedback.service';
 
 @Component({
   selector: 'app-root',
@@ -11,8 +12,9 @@ import { StoreData } from './shared/store/store';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App implements OnInit {
-
-  constructor(private store: StoreData) { }
+  constructor(private store: StoreData) {
+    inject(MissionFeedbackService);
+  }
 
   ngOnInit(): void {
     this.store.set('data', { name: 'City Penha', description: 'A beautiful city in Brazil' });

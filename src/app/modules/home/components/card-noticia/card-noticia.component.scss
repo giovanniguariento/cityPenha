@@ -8,7 +8,7 @@
 
   height: 416px;
   border-radius: 32px;
-  padding: 20px 20px;
+  padding: 24px;
   margin: 0 1px;
 
   display: flex;
@@ -24,15 +24,13 @@
     z-index: 0;
     border-radius: inherit;
     pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.12) 0%,
-      rgba(0, 0, 0, 0.35) 45%,
-      rgba(0, 0, 0, 0.72) 100%
-    );
+    background: linear-gradient(180deg,
+        rgba(0, 0, 0, 0.12) 0%,
+        rgba(0, 0, 0, 0.35) 45%,
+        rgba(0, 0, 0, 0.72) 100%);
   }
 
-  > * {
+  >* {
     position: relative;
     z-index: 1;
   }
@@ -61,7 +59,7 @@
 
   .details {
     display: flex;
-    align-items: center;
+    align-items: anchor-center;
     gap: 15px;
 
     img {
@@ -92,6 +90,11 @@
 
   .reading-time {
     font-size: 10px;
+  }
+
+  .viewed-hint {
+    font-size: 10px;
+    white-space: nowrap;
   }
 
   .author {

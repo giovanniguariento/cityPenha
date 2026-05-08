@@ -11,6 +11,12 @@
       <img src="assets/play.svg" alt="" srcset="" *ngIf="newsDestaque.onlyVideo">
       <span class="tag">{{ tagLabel | decodeHtmlEntities }}</span>
       <span class="reading-time">{{newsDestaque.readingTime}} Min Leitura</span>
+      <span
+        *ngIf="newsDestaque.viewed && newsDestaque.type !== 'anuncio'"
+        class="viewed-hint"
+        role="status"
+        title="Você já leu esta notícia"
+        >Lido</span>
     </div>
     <h1 class="title">{{ newsDestaque.title | decodeHtmlEntities }}</h1>
     <div class="author">

@@ -1,0 +1,21 @@
+<div class="toast-root" role="status" aria-live="polite">
+  <span class="emoji" aria-hidden="true">🏆</span>
+  <div class="text">
+    <div class="title">Missão concluída!</div>
+    <div class="mission-name">{{ data.title }}</div>
+    @if (hasRewards) {
+      <div class="rewards">
+        @if ((data.coinReward ?? 0) > 0) {
+          <span>+{{ data.coinReward }} moedas</span>
+        }
+        @if ((data.coinReward ?? 0) > 0 && (data.xpReward ?? 0) > 0) {
+          <span class="sep">·</span>
+        }
+        @if ((data.xpReward ?? 0) > 0) {
+          <span>+{{ data.xpReward }} XP</span>
+        }
+      </div>
+    }
+    <div class="hint">Continue ganhando pontos e explorando novas missões.</div>
+  </div>
+</div>

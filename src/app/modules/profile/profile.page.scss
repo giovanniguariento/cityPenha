@@ -3,7 +3,7 @@ $primary-red: #ff1200; // Vermelho vibrante da imagem
 $text-white: #ffffff;
 $text-dark: #333333;
 $text-gray: #888888;
-$bg-gray: #f5f7fa;
+$bg-gray: #ffffff;
 $card-radius: 16px;
 
 // Mixins
@@ -30,118 +30,119 @@ $card-radius: 16px;
   font-family: 'Poppins', sans-serif; // Fonte sugerida
   position: relative;
   padding-bottom: 80px; // Espaço para a nav bar
-}
 
-// --- Header ---
-.header {
-  background-color: $primary-red;
-  color: $text-white;
-  padding: 20px 20px 10px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  text-align: center;
-
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-
-    .icon-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    .actions {
-      display: flex;
-      gap: 15px;
-    }
-  }
+  // Zona do header vermelho: invólucro em ProfilePageHeaderComponent
 
   .profile-info {
     .avatar-wrapper {
       position: relative;
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 15px;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 22px;
 
-      .avatar-border {
+      .progress-ring {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
-        padding: 4px;
-        background: rgba(255, 255, 255, 0.2); // Borda translúcida
-        border-radius: 24px; // Arredondamento suave (squircle)
+        fill: none;
+        overflow: visible;
+        pointer-events: none;
+
+        .progress-track {
+          stroke: rgba(255, 255, 255, 0.28);
+          stroke-width: 4;
+        }
+
+        .progress-bar {
+          stroke: #ffffff;
+          stroke-width: 4;
+          stroke-linecap: round;
+          transition: stroke-dasharray 0.6s ease;
+        }
+      }
+
+      .avatar-inner {
+        position: absolute;
+        inset: 10px;
+        border-radius: 22px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.08);
 
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          border-radius: 20px;
+          display: block;
         }
       }
 
       .level-badge {
         position: absolute;
-        bottom: -10px;
+        bottom: -12px;
         left: 50%;
         transform: translateX(-50%);
         background: white;
         color: $primary-red;
-        font-weight: bold;
-        font-size: 0.8rem;
-        padding: 4px 12px;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-weight: 700;
+        font-size: 0.78rem;
+        line-height: 1;
+        padding: 6px 14px;
+        border-radius: 999px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        white-space: nowrap;
       }
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin: 10px 0 5px;
+      font-size: 1.6rem;
+      margin: 18px 0 4px;
       font-weight: 700;
+      letter-spacing: -0.01em;
     }
 
-    .role {
-      font-size: 0.9rem;
-      margin: 0;
-      opacity: 0.9;
-    }
-
-    .desc {
-      font-size: 0.8rem;
-      margin: 0 0 20px;
-      opacity: 0.8;
-      max-width: 250px;
-      margin-left: auto;
-      margin-right: auto;
+    .about {
+      font-size: 0.85rem;
+      line-height: 1.25;
+      margin: 4px auto 22px;
+      opacity: 0.95;
+      max-width: 240px;
+      font-weight: 400;
     }
   }
 
   .profile-tabs {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-    padding-bottom: 10px;
+    gap: 18px;
+    padding-bottom: 4px;
 
     .tab {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.7);
-      font-weight: 600;
-      padding: 8px 24px;
-      border-radius: 20px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 8px 22px;
+      border-radius: 999px;
       cursor: pointer;
       text-decoration: none;
       font-family: inherit;
-      font-size: inherit;
+      line-height: 1;
 
       &.active {
-        background: white;
+        background: #ffffff;
         color: $primary-red;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       }
+    }
+
+    .tab-sep {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.55);
+      display: inline-block;
     }
   }
 }
@@ -159,12 +160,12 @@ $card-radius: 16px;
 
     .stat-card {
       background: white;
-      padding: 15px;
-      border-radius: $card-radius;
+      padding: 16px;
+      border-radius: 24px;
+      border: 1px solid #E8E8E8;
       display: flex;
       align-items: center;
-      gap: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      gap: 10px;
 
       .icon-wrapper {
         font-size: 1.5rem;
@@ -176,14 +177,21 @@ $card-radius: 16px;
         flex-direction: column;
 
         strong {
-          font-size: 1.1rem;
-          color: $text-dark;
-          line-height: 1;
+          font-family: 'Lato', sans-serif;
+          font-size: 21.06px;
+          line-height: 27.25px;
+          font-weight: 800;
+          letter-spacing: 0;
+          color: #5C5C5C;
         }
 
         span {
-          font-size: 0.75rem;
-          color: $text-gray;
+          font-family: 'Lato', sans-serif;
+          font-size: 14.86px;
+          line-height: 1;
+          font-weight: 500;
+          letter-spacing: 0.02px;
+          color: #9098A3;
         }
       }
     }
@@ -216,20 +224,157 @@ $card-radius: 16px;
       padding: 20px;
       border-radius: 24px;
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
+      gap: 12px;
 
-      .hexagon {
+      .medal-slot {
         width: 50px;
         height: 55px;
-        background-color: white;
-        // Clip-path cria a forma de hexágono
-        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        border-radius: 14px;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-        &.filled {
-          // Exemplo se tivesse ícone dentro
-          @include flex-center;
+        &--locked {
+          filter: grayscale(1);
+          opacity: 0.68;
         }
+
+        &--empty {
+          background: rgba(255, 255, 255, 0.16);
+        }
+
+        .medal-image {
+          width: 50px;
+          height: 55px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .medal-fallback {
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          border: 2px solid rgba(255, 255, 255, 0.7);
+          color: #ffffff;
+          font-size: 20px;
+          font-weight: 700;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .hexagon {
+          width: 50px;
+          height: 55px;
+          background-color: white;
+          // Clip-path cria a forma de hexágono
+          clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+      }
+    }
+  }
+
+  .missions-section {
+    .missions-header {
+      margin-bottom: 10px;
+
+      h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1f1f1f;
+      }
+    }
+
+    .missions-empty {
+      margin: 16px 0 0;
+      color: $text-gray;
+      font-size: 0.9rem;
+    }
+
+    .mission-progress-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .mission-progress-card {
+      background: #ffffff;
+      border: 1px solid #e6e6e6;
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .mission-progress-title {
+      margin: 0 0 10px;
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 600;
+      letter-spacing: 0;
+      color: #686A6E;
+      vertical-align: middle;
+    }
+
+    .mission-progress-bar {
+      position: relative;
+      height: 26px;
+      border-radius: 999px;
+      background: #fde5e3;
+      overflow: hidden;
+    }
+
+    .mission-progress-fill {
+      height: 100%;
+      min-width: 0;
+      border-radius: 999px;
+      background: $primary-red;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: width 0.4s ease;
+    }
+
+    .mission-progress-text {
+      color: #ffffff;
+      font-size: 0.8rem;
+      line-height: 1;
+      font-weight: 700;
+      white-space: nowrap;
+      padding: 0 8px;
+    }
+
+    .mission-progress-text--zero {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: $primary-red;
+      z-index: 1;
+    }
+
+    .mission-progress-check {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mission-progress-card.completed {
+      .mission-progress-title {
+        color: #C3C3C3;
+        text-decoration: line-through;
+        text-decoration-thickness: 1.5px;
       }
     }
   }

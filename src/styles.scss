@@ -4,6 +4,7 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use 'styles/variables' as vars;
+@use 'app/modules/admin/admin-shared';
 @use 'assets/wordpress-blocks';
 @use '@angular/material' as mat;
 
@@ -142,10 +143,10 @@ body {
   font-family: Lato;
 }
 
-ol,
-ul {
-  padding: 0;
-}
+// ol,
+// ul {
+//   padding: 0;
+// }
 
 blockquote,
 q {
@@ -206,15 +207,6 @@ body {
 }
 
 
-// ::view-transition-old(root) {
-//   animation: 90ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
-//     300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;
-// }
-
-// ::view-transition-new(root) {
-//   animation: 210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
-//     300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
-// }
 
 button {
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -260,4 +252,23 @@ button:disabled {
 
 .page-content-enter {
   transition: opacity 0.2s ease-out;
+}
+
+.admin-mission-preview-dialog .mat-mdc-dialog-surface {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-dialog-dark .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: #1b1f29;
+}
+
+.admin-dialog-dark .mat-mdc-dialog-container :is(input, textarea, select) {
+  color: #f1f5f9;
+  caret-color: #f1f5f9;
+}
+
+.admin-dialog-dark .mat-mdc-dialog-container :is(input, textarea, select)::placeholder {
+  color: #9da9be;
 }

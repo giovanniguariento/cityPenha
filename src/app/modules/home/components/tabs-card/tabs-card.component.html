@@ -4,7 +4,13 @@
 
     <div class="card-meta-top">
       <span class="xp">+10 XP</span>
-      <span class="level">Nivel 3+</span>
+      <span class="level">Nivel 1+</span>
+      <span
+        *ngIf="card.viewed && card.type !== 'anuncio'"
+        class="viewed-hint"
+        role="status"
+        title="Você já leu esta notícia"
+        >Lido</span>
     </div>
 
     <h2 class="card-title" [routerLink]="'/news/' + card.slug">{{ card.title | decodeHtmlEntities }}</h2>

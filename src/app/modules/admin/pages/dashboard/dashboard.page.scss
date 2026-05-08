@@ -1,0 +1,150 @@
+@use '../../../../../styles/variables' as v;
+
+:host {
+  display: block;
+}
+
+.stat-card--link {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+
+  small {
+    font-size: 0.95rem;
+    color: var(--admin-text-soft);
+    font-weight: 600;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 21, 0, 0.4);
+  }
+}
+
+.dashboard-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 18px;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Quick actions
+.quick-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quick-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-card-border);
+  background: var(--admin-card-bg);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(255, 21, 0, 0.3);
+    background: var(--admin-hover-brand);
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &[data-accent='brand'] .quick-item__icon {
+    background: rgba(255, 21, 0, 0.1);
+    color: v.$brand-primary;
+  }
+
+  &[data-accent='amber'] .quick-item__icon {
+    background: var(--admin-warning-soft);
+    color: var(--admin-warning);
+  }
+
+  &[data-accent='blue'] .quick-item__icon {
+    background: var(--admin-info-soft);
+    color: var(--admin-info);
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--admin-text);
+    }
+
+    span {
+      font-size: 0.82rem;
+      color: var(--admin-text-muted);
+      line-height: 1.35;
+    }
+  }
+
+  &__chevron {
+    color: var(--admin-text-soft);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+}
+
+// Operations list
+.op-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.op-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-card-border);
+  background: var(--admin-card-bg);
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    border-color: rgba(255, 21, 0, 0.3);
+    background: var(--admin-hover-brand);
+  }
+
+  strong {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--admin-text);
+  }
+
+  span {
+    font-size: 0.82rem;
+    color: var(--admin-text-muted);
+    line-height: 1.35;
+  }
+}

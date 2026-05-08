@@ -1,0 +1,36 @@
+@use '../../../../../styles/variables' as v;
+
+:host {
+  display: block;
+}
+
+.filter-tabs {
+  display: inline-flex;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 3px;
+
+  button {
+    border: none;
+    background: transparent;
+    color: var(--admin-text-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    line-height: 1;
+
+    &.active {
+      background: v.$brand-primary;
+      color: #ffffff;
+    }
+  }
+}
+
+.list-search {
+  flex: 1;
+  max-width: 360px;
+}

@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LoginRequiredDialogComponent } from '../../shared/components/login-required-dialog/login-required-dialog.component';
 import { ReadRewardToastComponent } from '../../shared/components/read-reward-toast/read-reward-toast.component';
+import { MissionFeedbackService } from '../../shared/services/mission-feedback.service';
 import { DecodeHtmlEntitiesPipe } from '../../shared/pipes/decode-html-entities.pipe';
 import { NewsSkeletonComponent } from '../../shared/components/news-skeleton/news-skeleton.component';
 import { Auth } from '@angular/fire/auth';
@@ -72,6 +73,7 @@ export class NewsPageComponent extends Destroyable implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly feedback = inject(FeedbackService);
+  private readonly missionFeedback = inject(MissionFeedbackService);
   private readonly auth = inject(Auth);
   private dialogOpen = false;
   private firstRenderAt = 0;
@@ -81,6 +83,10 @@ export class NewsPageComponent extends Destroyable implements OnInit {
   readonly loadError = signal<string | null>(null);
   /** Compact back/share bar when the hero header is off-screen. */
   readonly floatingNavVisible = signal(false);
+  /** Brief “thank you” line after the user likes (auto-dismiss). */
+  readonly likeFeedbackThankYou = signal(false);
+  /** Browser `setTimeout` id (number); avoids Node `Timeout` vs DOM mismatch in typings. */
+  private likeThankYouClearTimer: number | null = null;
 
   constructor() {
     super();
@@ -91,6 +97,8 @@ export class NewsPageComponent extends Destroyable implements OnInit {
           this.loadError.set(null);
           this.news.set(null);
           this.floatingNavVisible.set(false);
+          this.clearLikeThankYouTimer();
+          this.likeFeedbackThankYou.set(false);
         }),
         switchMap((params) => this.homeService.getPost(params['slug'])),
         takeUntil(this.destroy$)
@@ -142,11 +150,29 @@ export class NewsPageComponent extends Destroyable implements OnInit {
       cancelAnimationFrame(this.scrollRafId);
       this.scrollRafId = 0;
     }
+    this.clearLikeThankYouTimer();
     // call base teardown for destroy$
     super.ngOnDestroy();
     if (this.scrollHandler) {
       window.removeEventListener('scroll', this.scrollHandler);
     }
+  }
+
+  private clearLikeThankYouTimer(): void {
+    if (this.likeThankYouClearTimer != null) {
+      clearTimeout(this.likeThankYouClearTimer);
+      this.likeThankYouClearTimer = null;
+    }
+  }
+
+  /** Shows “Obrigado pelo feedback!” for a few seconds after a successful like gesture. */
+  private scheduleLikeThankYou(durationMs = 4000): void {
+    this.clearLikeThankYouTimer();
+    this.likeFeedbackThankYou.set(true);
+    this.likeThankYouClearTimer = window.setTimeout(() => {
+      this.likeFeedbackThankYou.set(false);
+      this.likeThankYouClearTimer = null;
+    }, durationMs);
   }
 
   /**
@@ -246,11 +272,19 @@ export class NewsPageComponent extends Destroyable implements OnInit {
           this.readSentForPost.add(post.id);
           this.readPendingForPost.delete(post.id);
 
+          this.homeService.invalidateHomeFeedCache();
+
           if (res && 'already' in res && res.already) {
             return;
           }
 
-          // Show toast informing the user they earned points for reading the full article.
+          const hadNewMission = this.missionFeedback.handleMissionsUpdate(res.missions);
+
+          // Toast de leitura: só se não celebrámos já uma missão nesta mesma resposta.
+          if (hadNewMission) {
+            return;
+          }
+
           try {
             this.snackBar.openFromComponent(ReadRewardToastComponent, {
               data: { points: 10 },
@@ -260,7 +294,6 @@ export class NewsPageComponent extends Destroyable implements OnInit {
               panelClass: ['read-reward-snackbar']
             });
           } catch {
-            // Fallback to simple text if the component can't be opened for any reason.
             this.snackBar.open('Você recebeu 10 pontos! 🎉', 'Fechar', { duration: 4000, panelClass: ['read-reward-snackbar'], verticalPosition: 'bottom' });
           }
         },
@@ -391,8 +424,9 @@ export class NewsPageComponent extends Destroyable implements OnInit {
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: () => {
+        next: (res) => {
           this.savePending.set(false);
+          this.missionFeedback.handleMissionsUpdate(res.missions);
         },
         error: (err: unknown) => {
           this.savePending.set(false);
@@ -418,9 +452,16 @@ export class NewsPageComponent extends Destroyable implements OnInit {
       const targetPostId = post.id;
       const previousLiked = this.liked();
       const previousLikesCount = this.likesCount();
+      const willLike = !previousLiked;
       // Instant heart toggle (same UX as before); server response confirms/adjusts.
-      this.liked.set(!previousLiked);
+      this.liked.set(willLike);
       this.likesCount.set(Math.max(0, previousLikesCount + (previousLiked ? -1 : 1)));
+      if (willLike) {
+        this.scheduleLikeThankYou();
+      } else {
+        this.clearLikeThankYouTimer();
+        this.likeFeedbackThankYou.set(false);
+      }
 
       this.likePending.set(true);
       this.homeService
@@ -435,12 +476,18 @@ export class NewsPageComponent extends Destroyable implements OnInit {
             if (res == null || typeof res.liked !== 'boolean') {
               this.liked.set(previousLiked);
               this.likesCount.set(previousLikesCount);
+              this.clearLikeThankYouTimer();
+              this.likeFeedbackThankYou.set(false);
               return;
             }
             const liked = Boolean(res.liked);
             const likesCount = res.likesCount;
             this.liked.set(liked);
             this.likesCount.set(likesCount);
+            if (!liked) {
+              this.clearLikeThankYouTimer();
+              this.likeFeedbackThankYou.set(false);
+            }
             this.news.update((n) =>
               n && n.id === targetPostId ? { ...n, liked, likesCount } : n
             );
@@ -448,6 +495,7 @@ export class NewsPageComponent extends Destroyable implements OnInit {
             if (slug) {
               this.homeService.invalidatePostCache(slug);
             }
+            this.missionFeedback.handleMissionsUpdate(res.missions);
           },
           error: (err: unknown) => {
             this.likePending.set(false);
@@ -456,6 +504,8 @@ export class NewsPageComponent extends Destroyable implements OnInit {
             }
             this.liked.set(previousLiked);
             this.likesCount.set(previousLikesCount);
+            this.clearLikeThankYouTimer();
+            this.likeFeedbackThankYou.set(false);
             this.feedback.showError(apiErrorMessage(err, 'Não foi possível atualizar a curtida.'));
           }
         });

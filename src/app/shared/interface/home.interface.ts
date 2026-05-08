@@ -136,11 +136,20 @@ export interface FolderPostsData {
   posts: FolderPostItem[];
 }
 
-// User interface (UI perfil)
+/** Resposta de POST/DELETE em pasta — pastas sistema podem incluir gamificação (API §2.5). */
+export interface FolderPostMutationPayload {
+  folderId: string;
+  wordpressPostId: number;
+  missions?: MissionApiItem[];
+  level?: UserLevel | null;
+  user?: BackendUser;
+  completedMissionsCount?: number;
+}
+
+// User interface (UI perfil) — bio alinhada a `User.about` da API (GET/PATCH /user/me).
 export interface User {
   name: string;
-  role: string;
-  description: string;
+  about: string;
   level: number;
   avatarUrl: string;
 }
@@ -167,6 +176,8 @@ export interface BackendUser {
   email: string;
   name: string;
   photoUrl?: string | null;
+  nickname?: string | null;
+  about?: string | null;
   firebaseUid?: string | null;
   wordpressId?: number | null;
   xp?: number | null;
@@ -175,10 +186,63 @@ export interface BackendUser {
   updatedAt?: string | null;
 }
 
+/** Body de PATCH /user/me (pelo menos um campo na requisição real). */
+export interface UpdateMeRequest {
+  name?: string;
+  nickname?: string | null;
+  about?: string | null;
+}
+
+export interface UserLevelAxisProgress {
+  current: number;
+  required: number;
+  remaining: number;
+  /** 0-1: fraction relative to the jump from current level floor to next level requirement. */
+  fraction: number;
+}
+
+export interface UserLevelProgressToNextLevel {
+  nextLevelNumber: number;
+  minXp: number;
+  minCompletedMissions: number;
+  xp: UserLevelAxisProgress;
+  missions: UserLevelAxisProgress;
+}
+
 export interface UserLevel {
   levelNumber: number;
   minXp: number;
   minCompletedMissions: number;
+  /** Presente apenas em GET /user/me; `null` quando não há próximo nível. */
+  progressToNextLevel?: UserLevelProgressToNextLevel | null;
+}
+
+export interface UserLevelProgressSnapshot {
+  percentage: number;
+  currentLevel: number;
+  nextLevel: number | null;
+  xp: {
+    current: number;
+    requiredForNext: number | null;
+  };
+  missions: {
+    current: number;
+    requiredForNext: number | null;
+  };
+}
+
+/** Badge item returned by GET /user/me and GET /user/me/badges */
+export interface BadgeApiItem {
+  id: string;
+  key: string;
+  title: string;
+  description: string | null;
+  iconUrl: string | null;
+  metricKey: string | null;
+  threshold: number | null;
+  earned: boolean;
+  earnedAt: string | null;
+  progress: number | null;
 }
 
 /** Conteúdo de `data` em GET /user/me (após unwrap). */
@@ -187,7 +251,9 @@ export interface UserMePayload {
   completedMissionsCount: number;
   daysWithReads: string[];
   missions: MissionApiItem[];
+  badges: BadgeApiItem[];
   level: UserLevel | null;
+  levelProgress: UserLevelProgressSnapshot | null;
 }
 
 /** Conteúdo de `data` em GET /user/me/frequency (após unwrap). */

@@ -1,0 +1,168 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>{{ title() }}</h1>
+      <p>Configure os dados da missão. Use a métrica primária para a barra de progresso e, opcionalmente, um critério custom.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a routerLink="/admin/missions" class="btn-ghost">← Voltar</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando…</p>
+  } @else if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  } @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-layout">
+      <div class="form-main">
+        <div class="admin-card">
+          <h3 class="admin-card__title">Identificação</h3>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="m-key">Chave (slug)</label>
+              <input id="m-key" class="input" type="text" formControlName="key" placeholder="ex.: read_economia_5"
+                [class.invalid]="form.controls.key.touched && form.controls.key.invalid" />
+              @if (form.controls.key.touched && form.controls.key.errors?.['keyFormat']) {
+              <p class="field-error">Use apenas letras minúsculas, números e underscore.</p>
+              }
+              @if (form.controls.key.touched && form.controls.key.errors?.['required']) {
+              <p class="field-error">Chave obrigatória.</p>
+              }
+            </div>
+
+            <div class="field">
+              <label for="m-title">Título</label>
+              <input id="m-title" class="input" type="text" formControlName="title" placeholder="Ler 5 publicações" />
+              @if (form.controls.title.touched && form.controls.title.errors?.['required']) {
+              <p class="field-error">Título obrigatório.</p>
+              }
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="m-desc">Descrição</label>
+            <textarea id="m-desc" class="textarea" formControlName="description" rows="3"
+              placeholder="O que o usuário precisa fazer?"></textarea>
+          </div>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="m-icon">URL do ícone</label>
+              <input id="m-icon" class="input" type="url" formControlName="iconUrl" placeholder="https://…" />
+            </div>
+            <div class="field">
+              <label for="m-cat">Categoria</label>
+              <input id="m-cat" class="input" type="text" formControlName="category"
+                placeholder="daily, weekly, achievement…" />
+              <span class="hint">Texto livre. Usado para agrupar na UI.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Métrica e meta</h3>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="m-metric">Métrica primária</label>
+              <select id="m-metric" class="select" formControlName="metricKey">
+                <option value="" disabled>Selecione…</option>
+                @for (m of metrics(); track m.key) {
+                <option [value]="m.key">{{ m.key }}</option>
+                }
+              </select>
+              @if (selectedMetric(); as sel) {
+              <span class="hint">{{ sel.description }}</span>
+              }
+            </div>
+            <div class="field">
+              <label for="m-target">Alvo (target)</label>
+              <input id="m-target" class="input" type="number" min="1" formControlName="target" />
+            </div>
+          </div>
+
+          @if (selectedMetric()?.acceptedParams?.length) {
+          <div class="field">
+            <label>Parâmetros da métrica</label>
+            <app-metric-params-fields [acceptedParams]="selectedMetric()!.acceptedParams"
+              formControlName="metricParams"></app-metric-params-fields>
+          </div>
+          }
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Critério customizado (opcional)</h3>
+          <p class="admin-card__hint">Sem critério, o backend usa <code>metricKey ≥ target</code>. Use o builder para
+            combinar regras.</p>
+          <app-criteria-editor [metrics]="metrics()" formControlName="criteria"></app-criteria-editor>
+        </div>
+      </div>
+
+      <aside class="form-aside">
+        <div class="admin-card">
+          <h3 class="admin-card__title">Estado</h3>
+          <label class="toggle">
+            <input type="checkbox" formControlName="isActive" />
+            Missão ativa
+          </label>
+          <p class="admin-card__hint">Missões inativas ficam ocultas para os usuários e não podem ser concluídas.</p>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Janela temporal</h3>
+          <div class="field">
+            <label for="m-start">Inicia em</label>
+            <input id="m-start" class="input" type="datetime-local" formControlName="startsAt" />
+            <span class="hint">Vazio = sem limite inicial.</span>
+          </div>
+          <div class="field">
+            <label for="m-end">Termina em</label>
+            <input id="m-end" class="input" type="datetime-local" formControlName="endsAt" />
+            <span class="hint">Vazio = sem limite final.</span>
+          </div>
+          @if (form.errors?.['dateRange']) {
+          <p class="field-error">A data inicial precisa ser anterior à final.</p>
+          }
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Recompensa</h3>
+          <div class="row-grid">
+            <div class="field">
+              <label for="m-coin">Moedas</label>
+              <input id="m-coin" class="input" type="number" min="0" formControlName="coinReward" />
+            </div>
+            <div class="field">
+              <label for="m-xp">XP</label>
+              <input id="m-xp" class="input" type="number" min="0" formControlName="xpReward" />
+            </div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" formControlName="isReversible" />
+            Reversível
+          </label>
+          <p class="admin-card__hint">Se ativada, a recompensa é estornada quando o usuário cair abaixo do alvo.</p>
+        </div>
+
+        @if (mission()) {
+        <div class="admin-card">
+          <h3 class="admin-card__title">Pré-visualizar</h3>
+          <p class="admin-card__hint">Avalie o critério para um usuário sem aplicar recompensas.</p>
+          <button type="button" class="btn-ghost" (click)="openPreview()">Testar com userId…</button>
+        </div>
+        }
+      </aside>
+    </div>
+
+    <div class="form-actions-sticky">
+      <a routerLink="/admin/missions" class="btn-ghost">Cancelar</a>
+      <button type="submit" class="btn-primary" [disabled]="submitting() || form.invalid">
+        @if (submitting()) { <span>Salvando…</span> } @else { <span>Salvar missão</span> }
+      </button>
+    </div>
+  </form>
+  }
+</section>

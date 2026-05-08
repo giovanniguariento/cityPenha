@@ -6,37 +6,54 @@
 
 <div class="profile-container" *ngIf="user().avatarUrl && !apiLoading()">
 
-  <header class="header">
-    <div class="top-bar">
-      <button (click)="logout()" class="icon-btn"><i class="fa fa-pencil"></i>SAIR</button>
-      <div class="actions">
-        <button class="icon-btn"><i class="fa fa-share-alt"></i></button>
-        <button class="icon-btn"><i class="fa fa-cog"></i></button>
-      </div>
+  <app-profile-page-header>
+    <a routerLink="/profile/edit" profileHeaderStart class="icon-btn icon-btn--edit" aria-label="Editar perfil">
+      <img src="assets/edit.svg" alt="" width="18" height="18" />
+    </a>
+    <div profileHeaderEnd class="actions">
+      <button type="button" class="icon-btn" aria-label="Compartilhar"><i class="fa fa-share-alt"></i></button>
+      <button type="button" class="icon-btn" aria-label="Configurações"><i class="fa fa-cog"></i></button>
     </div>
 
     <div class="profile-info">
-      <div class="avatar-wrapper">
-        <div class="avatar-border">
-          <img referrerpolicy="no-referrer" [src]="user().avatarUrl" alt="Foto de perfil">
+      <div class="avatar-wrapper" #avatarWrapper>
+        <svg class="progress-ring" viewBox="0 0 160 160" aria-hidden="true">
+          <!--
+            Caminho do squircle começa na borda esquerda da tag "Nível" e segue em
+            sentido horário (canto inf-esquerdo → lateral esquerda → topo → lateral
+            direita → canto inf-direito), terminando na borda direita da tag. O trecho
+            inferior atrás da tag é omitido, então 0% = nada visível e 100% = traço
+            completo de uma borda da tag à outra. Os extremos são recalculados a partir
+            da largura medida da própria tag.
+          -->
+          <path class="progress-track" pathLength="100" [attr.d]="progressPath()" />
+          <path class="progress-bar" pathLength="100" [attr.d]="progressPath()"
+            [attr.stroke-dasharray]="levelProgress() + ' 100'" />
+        </svg>
+
+        <div class="avatar-inner">
+          <img referrerpolicy="no-referrer" [src]="user().avatarUrl" alt="Foto de perfil" />
         </div>
-        <span class="level-badge">Nível {{ user().level }}</span>
+
+        <span class="level-badge" #levelBadge>Nível {{ user().level }}</span>
       </div>
 
       <h1>{{ user().name }}</h1>
-      <p class="role">{{ user().role }}</p>
-      <p class="desc">{{ user().description }}</p>
+      @if (user().about) {
+      <p class="about">{{ user().about }}</p>
+      }
     </div>
 
     <nav class="profile-tabs">
-      <button class="tab active">Geral</button>
-      <a routerLink="/missions" class="tab">Missões</a>
-      <button class="tab">Loja</button>
+      <button type="button" class="tab" [class.active]="activeTab() === 'geral'" (click)="setTab('geral')">Geral</button>
+      <button type="button" class="tab" [class.active]="activeTab() === 'missoes'" (click)="setTab('missoes')">Missões</button>
+      <span class="tab-sep" aria-hidden="true"></span>
+      <button type="button" class="tab" [class.active]="activeTab() === 'loja'" (click)="setTab('loja')">Loja</button>
     </nav>
-  </header>
+  </app-profile-page-header>
 
   <main class="content">
-
+    @if (activeTab() === 'geral') {
     <div class="stats-grid">
       @for (stat of stats; track stat.label) {
       <div class="stat-card">
@@ -59,12 +76,67 @@
       </div>
 
       <div class="medals-container">
-        <div class="hexagon filled"></div>
-        <div class="hexagon empty"></div>
-        <div class="hexagon empty"></div>
-        <div class="hexagon empty"></div>
+        @for (badge of medalSlots(); track badge?.id ?? $index) {
+        <div class="medal-slot" [class.medal-slot--empty]="!badge" [class.medal-slot--locked]="!!badge && !badge.earned"
+          [attr.aria-label]="badge ? badge.title : 'Insígnia bloqueada'" [attr.title]="badge ? badge.title : null">
+          @if (badge) {
+          @if (hasBadgeImage(badge)) {
+          <img class="medal-image" [src]="badge.iconUrl!" [alt]="badge.title" />
+          } @else {
+          <span class="medal-fallback" aria-hidden="true">{{ badgeInitial(badge) }}</span>
+          }
+          } @else {
+          <div class="hexagon empty" aria-hidden="true"></div>
+          }
+        </div>
+        }
       </div>
     </div>
+    }
+
+    @if (activeTab() === 'missoes') {
+    <section class="missions-section">
+      <header class="missions-header">
+        <h2>Missões</h2>
+      </header>
+
+      @if (missions().length === 0) {
+      <p class="missions-empty">Nenhuma missão disponível no momento.</p>
+      } @else {
+      <ul class="mission-progress-list">
+        @for (m of missions(); track m.id) {
+        <li class="mission-progress-card" [class.completed]="m.completed">
+          <p class="mission-progress-title">{{ m.title }}</p>
+          <div class="mission-progress-bar">
+            <div class="mission-progress-fill" [style.width.%]="m.completed ? 100 : progressPercent(m)">
+              @if (!m.completed && m.progress > 0) {
+              <span class="mission-progress-text">{{ m.progress }}/{{ m.target }}</span>
+              }
+            </div>
+            @if (!m.completed && m.progress === 0) {
+            <span class="mission-progress-text mission-progress-text--zero">{{ m.progress }}/{{ m.target }}</span>
+            }
+            @if (m.completed) {
+            <span class="mission-progress-check" aria-label="Concluída">
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                <path d="M11.5 3.5L5.25 9.75L2.5 7" stroke="white" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </span>
+            }
+          </div>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+    }
+
+    @if (activeTab() === 'loja') {
+    <section class="shop-section">
+      <p class="missions-empty">Loja em breve.</p>
+    </section>
+    }
 
   </main>
 

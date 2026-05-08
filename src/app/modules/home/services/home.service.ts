@@ -7,6 +7,7 @@ import {
   BackendUser,
   BlogResponse,
   DiscoveryResponse,
+  FolderPostMutationPayload,
   FolderPostsData,
   FrequencyData,
   MissionApiItem,
@@ -14,6 +15,7 @@ import {
   PostLikePayload,
   ReadPostResult,
   SignupRequest,
+  UpdateMeRequest,
   UserFolder,
   UserMePayload,
 } from '../../../shared/interface/home.interface';
@@ -49,6 +51,11 @@ export class HomeService {
     }
 
     return this.dadosCache$;
+  }
+
+  /** Próximo GET /home fará nova requisição (ex.: após registrar leitura). */
+  invalidateHomeFeedCache(): void {
+    this.dadosCache$ = null;
   }
 
   /**
@@ -132,6 +139,13 @@ export class HomeService {
       .pipe(this.unwrapData<UserMePayload>());
   }
 
+  /** PATCH /user/me — nome, apelido, sobre. */
+  updateMe(body: UpdateMeRequest): Observable<BackendUser> {
+    return this.http
+      .patch<ApiSuccessEnvelope<BackendUser>>(`${environment.apiUrl}/user/me`, body)
+      .pipe(this.unwrapData<BackendUser>());
+  }
+
   /** GET /user/me/frequency */
   getFrequency(): Observable<FrequencyData> {
     return this.http
@@ -172,17 +186,21 @@ export class HomeService {
   }
 
   /** POST /user/me/folders/:folderId/posts/:wordpressPostId */
-  addPostToFolder(folderId: string, wordpressPostId: number): Observable<unknown> {
-    return this.http.post(
-      `${environment.apiUrl}/user/me/folders/${folderId}/posts/${wordpressPostId}`,
-      {}
-    );
+  addPostToFolder(folderId: string, wordpressPostId: number): Observable<FolderPostMutationPayload> {
+    return this.http
+      .post<ApiSuccessEnvelope<FolderPostMutationPayload>>(
+        `${environment.apiUrl}/user/me/folders/${folderId}/posts/${wordpressPostId}`,
+        {}
+      )
+      .pipe(this.unwrapData<FolderPostMutationPayload>());
   }
 
   /** DELETE /user/me/folders/:folderId/posts/:wordpressPostId */
-  removePostFromFolder(folderId: string, wordpressPostId: number): Observable<unknown> {
-    return this.http.delete(
-      `${environment.apiUrl}/user/me/folders/${folderId}/posts/${wordpressPostId}`
-    );
+  removePostFromFolder(folderId: string, wordpressPostId: number): Observable<FolderPostMutationPayload> {
+    return this.http
+      .delete<ApiSuccessEnvelope<FolderPostMutationPayload>>(
+        `${environment.apiUrl}/user/me/folders/${folderId}/posts/${wordpressPostId}`
+      )
+      .pipe(this.unwrapData<FolderPostMutationPayload>());
   }
 }

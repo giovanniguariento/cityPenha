@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { NavComponent } from '../../shared/components/nav/nav.component';
 import { HomeService } from '../home/services/home.service';
 import { MissionApiItem } from '../../shared/interface/home.interface';
+import { MissionFeedbackService } from '../../shared/services/mission-feedback.service';
 
 export interface Mission {
   id: string;
@@ -64,6 +65,7 @@ function apiMissionToMission(item: MissionApiItem): Mission {
 })
 export class MissionsPage implements OnInit {
   private readonly homeService = inject(HomeService);
+  private readonly missionFeedback = inject(MissionFeedbackService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly badgeName = 'Novo explorador';
@@ -79,8 +81,10 @@ export class MissionsPage implements OnInit {
       next: (missions) => {
         this.loading.set(false);
         if (Array.isArray(missions) && missions.length > 0) {
+          this.missionFeedback.seed(missions);
           this.missions.set(missions.map(apiMissionToMission));
         } else {
+          this.missionFeedback.seed(missions);
           this.missions.set([]);
         }
         this.error.set(null);

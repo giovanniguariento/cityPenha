@@ -33,7 +33,7 @@
           <path d="M15.84 6.92V8.92H3.84L9.34 14.42L7.92 15.84L0 7.92L7.92 0L9.34 1.42L3.84 6.92H15.84Z" fill="white" />
         </svg>
       </button>
-      <button type="button" (click)="share()" aria-label="Partilhar">
+      <button type="button" (click)="share()" aria-label="Compartilhar">
         <svg width="16" height="16" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.34C12.11 16.55 12.08 16.77 12.08 17C12.08 18.61 13.39 19.91 15 19.91C16.61 19.91 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2ZM3 11C2.45 11 2 10.55 2 10C2 9.45 2.45 9 3 9C3.55 9 4 9.45 4 10C4 10.55 3.55 11 3 11ZM15 18C14.45 18 14 17.55 14 17C14 16.45 14.45 16 15 16C15.55 16 16 16.45 16 17C16 17.55 15.55 18 15 18Z"
@@ -50,7 +50,8 @@
   </div>
 </div>
 
-<div class="news-page only-video" *ngIf="news() && news()?.onlyVideo" [class.news-page--floating-nav]="floatingNavVisible()">
+<div class="news-page only-video" *ngIf="news() && news()?.onlyVideo"
+  [class.news-page--floating-nav]="floatingNavVisible()">
   <div class="header">
     <button type="button" routerLink="/home">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -75,7 +76,7 @@
           <path d="M15.84 6.92V8.92H3.84L9.34 14.42L7.92 15.84L0 7.92L7.92 0L9.34 1.42L3.84 6.92H15.84Z" fill="white" />
         </svg>
       </button>
-      <button type="button" (click)="share()" aria-label="Partilhar">
+      <button type="button" (click)="share()" aria-label="Compartilhar">
         <svg width="16" height="16" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.34C12.11 16.55 12.08 16.77 12.08 17C12.08 18.61 13.39 19.91 15 19.91C16.61 19.91 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2ZM3 11C2.45 11 2 10.55 2 10C2 9.45 2.45 9 3 9C3.55 9 4 9.45 4 10C4 10.55 3.55 11 3 11ZM15 18C14.45 18 14 17.55 14 17C14 16.45 14.45 16 15 16C15.55 16 16 16.45 16 17C16 17.55 15.55 18 15 18Z"
@@ -155,33 +156,55 @@
 
   <main [outerHTML]="news()?.content" *ngIf="!news()?.onlyVideo"></main>
 
+  <section class="post-feedback-card" [class.post-feedback-card--complete]="readingTime() >= 100"
+    aria-labelledby="post-feedback-heading">
+    <h2 id="post-feedback-heading" class="post-feedback-card__title">Terminou de ler?</h2>
+    <p class="post-feedback-card__description">
+      Se essa notícia te ajudou, deixe um curtir — ajuda a gente a destacar o que importa para a comunidade.
+    </p>
+    <div class="post-feedback-card__actions">
+      <button type="button" class="post-feedback-card__like" [class.post-feedback-card__like--active]="liked()"
+        (click)="onLikeClick()" [disabled]="likePending()" [attr.aria-busy]="likePending()"
+        [attr.aria-pressed]="liked()"
+        [attr.aria-label]="liked() ? 'Remover curtida desta notícia' : 'Curtir esta notícia'">
+        @if (liked()) {
+        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path
+            d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z"
+            fill="currentColor" />
+        </svg>
+        } @else {
+        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path
+            d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z"
+            fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
+        </svg>
+        }
+        <span class="post-feedback-card__like-label">Curtir</span>
+        @if (likesCount() > 0) {
+        <span class="post-feedback-card__likes-count" [attr.aria-label]="likesCount() + ' curtidas'">{{ likesCount()
+          }}</span>
+        }
+      </button>
+      <button type="button" class="post-feedback-card__share" (click)="share()" aria-label="Compartilhar esta notícia">
+        <svg width="16" height="16" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true">
+          <path
+            d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.34C12.11 16.55 12.08 16.77 12.08 17C12.08 18.61 13.39 19.91 15 19.91C16.61 19.91 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2ZM3 11C2.45 11 2 10.55 2 10C2 9.45 2.45 9 3 9C3.55 9 4 9.45 4 10C4 10.55 3.55 11 3 11ZM15 18C14.45 18 14 17.55 14 17C14 16.45 14.45 16 15 16C15.55 16 16 16.45 16 17C16 17.55 15.55 18 15 18Z"
+            fill="currentColor" />
+        </svg>
+        <span>Compartilhar</span>
+      </button>
+    </div>
+    @if (likeFeedbackThankYou()) {
+    <p class="post-feedback-card__thankyou" role="status">Obrigado pelo feedback!</p>
+    }
+  </section>
+
   <div class="container-tag">
     @for (tag of news()?.tags; track tag) {
     <span class="tag">{{tag}}</span>
     }
-  </div>
-
-  <div class="actions actions-after-content">
-    <button type="button" (click)="onLikeClick()" [disabled]="likePending()" [attr.aria-busy]="likePending()">
-      @if(liked()){
-      <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z"
-          fill="#FF1500" />
-      </svg>
-      } @else {
-      <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z"
-          fill="none" stroke="#6B6B6B" stroke-width="1.2" stroke-linejoin="round" />
-      </svg>
-      }
-
-      <span>Curtir</span>
-      @if(likesCount() > 0){
-      <span class="likes-count">{{ likesCount() }}</span>
-      }
-    </button>
   </div>
 </div>
 }
