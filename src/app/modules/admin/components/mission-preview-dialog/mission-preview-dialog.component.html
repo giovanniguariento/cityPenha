@@ -1,0 +1,52 @@
+<h2 mat-dialog-title class="dialog-title">Pré-visualizar missão</h2>
+<mat-dialog-content class="dialog-content">
+  <p class="subtitle">
+    Avalia o critério da missão <strong>"{{ data.missionTitle }}"</strong> para um usuário sem aplicar recompensas.
+  </p>
+
+  <label class="field">
+    <span>UUID do usuário</span>
+    <input class="input-pill" type="text" [ngModel]="userId()" (ngModelChange)="setUserId($event)"
+      placeholder="ex.: 8b76e0a0-…" autocomplete="off" />
+  </label>
+
+  @if (error()) {
+  <p class="dialog-error">{{ error() }}</p>
+  }
+
+  @if (result(); as r) {
+  <div class="preview-result" [class.preview-result--ok]="r.wouldComplete">
+    <div class="preview-result__header">
+      <span class="status-chip" [class.status-chip--ok]="r.wouldComplete">
+        {{ r.wouldComplete ? 'Concluiria' : 'Ainda não' }}
+      </span>
+      <span class="preview-progress">{{ r.progress }} / {{ r.target }}</span>
+    </div>
+    <p class="preview-meta">
+      Métrica primária: <code>{{ r.primaryMetric }}</code> · valor:
+      <strong>{{ r.primaryValue == null ? '—' : r.primaryValue }}</strong>
+    </p>
+
+    @if (observed().length) {
+    <div class="observed">
+      <span class="observed__title">Métricas observadas pelo evaluator</span>
+      <ul class="observed__list">
+        @for (row of observed(); track row.metric) {
+        <li>
+          <code>{{ row.metric }}</code>
+          <strong>{{ row.value }}</strong>
+        </li>
+        }
+      </ul>
+    </div>
+    }
+  </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button type="button" class="btn-ghost" (click)="close()">Fechar</button>
+  <button type="button" class="btn-primary" (click)="run()" [disabled]="loading()">
+    {{ loading() ? 'Calculando…' : 'Executar' }}
+  </button>
+</mat-dialog-actions>

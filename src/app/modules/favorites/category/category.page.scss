@@ -1,0 +1,69 @@
+$bg-color: #ffffff;
+$text-primary: #1a1a1a;
+$gray-medium: #8e8e93;
+$accent-red: #ff3b30;
+
+:host {
+  display: block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: $bg-color;
+  min-height: 100vh;
+}
+
+.container {
+  padding: 20px;
+  padding-bottom: 100px;
+}
+
+.folder-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 24px;
+
+  .back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: $text-primary;
+    text-decoration: none;
+    flex-shrink: 0;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0;
+    line-height: 1.2;
+  }
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.state-msg {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 15px;
+  color: $gray-medium;
+
+  &--error {
+    color: $accent-red;
+  }
+}
+
+.spacer {
+  height: 8px;
+}

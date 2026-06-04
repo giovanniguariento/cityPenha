@@ -1,3 +1,40 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use 'styles/variables' as vars;
+@use 'app/modules/admin/admin-shared';
+@use 'assets/wordpress-blocks';
+@use '@angular/material' as mat;
+
+
+html {
+  @include mat.theme((color: (primary: mat.$rose-palette,
+        tertiary: mat.$red-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+
 /* You can add global styles to this file, and also import other style files */
 html,
 body,
@@ -45,9 +82,9 @@ center,
 dl,
 dt,
 dd,
-ol,
-ul,
-li,
+// ol,
+// ul,
+// li,
 fieldset,
 form,
 label,
@@ -80,11 +117,10 @@ time,
 mark,
 audio,
 video {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    vertical-align: baseline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
 }
 
 /* HTML5 display-role reset for older browsers */
@@ -99,37 +135,140 @@ hgroup,
 menu,
 nav,
 section {
-    display: block;
+  display: block;
 }
 
 body {
-    line-height: 1;
-    font-family: Lato;
+  line-height: 1;
+  font-family: Lato;
 }
 
-ol,
-ul {
-    list-style: none;
-}
+// ol,
+// ul {
+//   padding: 0;
+// }
 
 blockquote,
 q {
-    quotes: none;
+  quotes: none;
 }
 
 blockquote:before,
 blockquote:after,
 q:before,
 q:after {
-    content: '';
-    content: none;
+  content: '';
+  content: none;
 }
 
 table {
-    border-collapse: collapse;
-    border-spacing: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 :root {
   --space-30: 31px;
+  --swiper-pagination-bullet-inactive-color: #{vars.$swiper-inactive};
+  --swiper-pagination-color: #{vars.$swiper-color};
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-from-right {
+  from {
+    transform: translateY(50vh);
+  }
+}
+
+@keyframes slide-to-left {
+  to {
+    transform: translateY(-50vh);
+  }
+}
+
+
+
+button {
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--mat-sys-primary, #c2185b);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+// Customize the entire app. Change :root to your selector if you want to scope the styles.
+:root {
+  @include mat.snack-bar-overrides((container-color: #ffffff,
+      supporting-text-color: #2f2f2f,
+    ));
+}
+
+.app-feedback-snackbar .mat-mdc-snack-bar-label {
+  animation: app-snack-in 0.22s ease-out;
+}
+
+@keyframes app-snack-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-content-enter {
+  transition: opacity 0.2s ease-out;
+}
+
+.admin-mission-preview-dialog .mat-mdc-dialog-surface {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-dialog-dark .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: #1b1f29;
+}
+
+.admin-dialog-dark .mat-mdc-dialog-container :is(input, textarea, select) {
+  color: #f1f5f9;
+  caret-color: #f1f5f9;
+}
+
+.admin-dialog-dark .mat-mdc-dialog-container :is(input, textarea, select)::placeholder {
+  color: #9da9be;
 }

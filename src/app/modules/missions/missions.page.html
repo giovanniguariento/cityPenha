@@ -1,0 +1,88 @@
+<div class="missions-page">
+  <header class="header">
+    <a routerLink="/home" class="back-link" aria-label="Voltar ao início">
+      <span class="back-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.84 6.92V8.92H3.84L9.34 14.42L7.92 15.84L0 7.92L7.92 0L9.34 1.42L3.84 6.92H15.84Z"
+            fill="currentColor" />
+        </svg>
+      </span>
+      <span class="back-label">Início</span>
+    </a>
+  </header>
+
+  <main class="content">
+    <p class="intro">
+      Complete as quatro missões e desbloqueie nossa insígnia de
+      <strong class="badge-name">{{ badgeName }}</strong>
+    </p>
+
+    @if (loading()) {
+    <p class="loading">Carregando missões...</p>
+    } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+    } @else if (missions().length === 0) {
+    <p class="empty-state">Nenhuma missão disponível no momento.</p>
+    } @else {
+    <ul class="mission-list">
+      @for (mission of missions(); track mission.id) {
+      <li>
+        <a [routerLink]="mission.route" class="mission-item" [class.completed]="mission.completed">
+          <span class="mission-icon" [attr.data-icon]="mission.icon">
+            @switch (mission.icon) {
+            @case ('article') {
+            <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M18 2V16H2V2H18ZM18 0H2C0.89 0 0 0.89 0 2V16C0 17.11 0.89 18 2 18H18C19.11 18 20 17.11 20 16V2C20 0.89 19.11 0 18 0ZM16 12H4V14H16V12ZM8 4H4V10H8V4ZM10 6H16V4H10V6ZM16 8H10V10H16V8Z"
+                fill="#626262" />
+            </svg>
+            }
+            @case ('globe') {
+            <img src="assets/lightningBolt.svg" alt="" width="24" height="24" />
+            }
+            @case ('bookmark') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+            }
+            @case ('profile') {
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            }
+            @default {
+            <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M18 2V16H2V2H18ZM18 0H2C0.89 0 0 0.89 0 2V16C0 17.11 0.89 18 2 18H18C19.11 18 20 17.11 20 16V2C20 0.89 19.11 0 18 0ZM16 12H4V14H16V12ZM8 4H4V10H8V4ZM10 6H16V4H10V6ZM16 8H10V10H16V8Z"
+                fill="#626262" />
+            </svg>
+            }
+            }
+          </span>
+          <div class="mission-text">
+            <span class="mission-title">{{ mission.title }}</span>
+            <span class="mission-desc">{{ mission.description }}</span>
+          </div>
+          <span class="mission-arrow" [class.checked]="mission.completed" aria-hidden="true">
+            @if (mission.completed) {
+            <svg width="20" height="20" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.5 3.5L5.25 9.75L2.5 7" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            } @else {
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            }
+          </span>
+        </a>
+      </li>
+      }
+    </ul>
+    }
+  </main>
+
+</div>
+<app-nav></app-nav>

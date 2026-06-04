@@ -1,0 +1,117 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>{{ title() }}</h1>
+      <p>Conquistas permanentes. Use métrica + threshold OU um critério custom.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a routerLink="/admin/badges" class="btn-ghost">← Voltar</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando…</p>
+  } @else if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  } @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-layout">
+      <div class="form-main">
+        <div class="admin-card">
+          <h3 class="admin-card__title">Identificação</h3>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="b-key">Chave (slug)</label>
+              <input id="b-key" class="input" type="text" formControlName="key"
+                placeholder="ex.: mission_master" />
+              @if (form.controls.key.touched && form.controls.key.errors?.['keyFormat']) {
+              <p class="field-error">Use apenas letras minúsculas, números e underscore.</p>
+              }
+              @if (form.controls.key.touched && form.controls.key.errors?.['required']) {
+              <p class="field-error">Chave obrigatória.</p>
+              }
+            </div>
+            <div class="field">
+              <label for="b-title">Título</label>
+              <input id="b-title" class="input" type="text" formControlName="title"
+                placeholder="Mestre das Missões" />
+              @if (form.controls.title.touched && form.controls.title.errors?.['required']) {
+              <p class="field-error">Título obrigatório.</p>
+              }
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="b-desc">Descrição</label>
+            <textarea id="b-desc" class="textarea" formControlName="description" rows="3"
+              placeholder="Quando o usuário conquista esta insígnia?"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="b-icon">URL do ícone</label>
+            <input id="b-icon" class="input" type="url" formControlName="iconUrl" placeholder="https://…" />
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Regra simples (opcional)</h3>
+          <p class="admin-card__hint">Se preenchido, vale <code>metricKey ≥ threshold</code>. Para regras compostas, use
+            o critério custom abaixo.</p>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="b-metric">Métrica</label>
+              <select id="b-metric" class="select" formControlName="metricKey">
+                <option value="">— sem regra simples —</option>
+                @for (m of metrics(); track m.key) {
+                <option [value]="m.key">{{ m.key }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="b-threshold">Threshold</label>
+              <input id="b-threshold" class="input" type="number" formControlName="threshold" />
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Critério customizado (opcional)</h3>
+          <p class="admin-card__hint">Critério tem precedência sobre a regra simples.</p>
+          <app-criteria-editor [metrics]="metrics()" formControlName="criteria"></app-criteria-editor>
+        </div>
+
+        @if (form.errors?.['badgeRule']) {
+        <p class="admin-state admin-state--error">É preciso definir métrica + threshold OU um critério custom.</p>
+        }
+      </div>
+
+      <aside class="form-aside">
+        <div class="admin-card">
+          <h3 class="admin-card__title">Estado</h3>
+          <label class="toggle">
+            <input type="checkbox" formControlName="isActive" />
+            Insígnia ativa
+          </label>
+          <p class="admin-card__hint">Use desativar (em vez de excluir) para preservar histórico de usuários que já
+            conquistaram.</p>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Sobre insígnias</h3>
+          <p class="admin-card__hint">Insígnias são permanentes: uma vez conquistadas, não são revogadas mesmo que a
+            métrica caia abaixo do threshold.</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="form-actions-sticky">
+      <a routerLink="/admin/badges" class="btn-ghost">Cancelar</a>
+      <button type="submit" class="btn-primary" [disabled]="submitting() || form.invalid">
+        @if (submitting()) { <span>Salvando…</span> } @else { <span>Salvar insígnia</span> }
+      </button>
+    </div>
+  </form>
+  }
+</section>

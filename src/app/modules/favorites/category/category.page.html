@@ -1,0 +1,31 @@
+<div class="container">
+
+  <header class="folder-header">
+    <a routerLink="/favorites" class="back" aria-label="Voltar para biblioteca">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </a>
+    <h1>{{ folderTitle() }}</h1>
+  </header>
+
+  @if (loading()) {
+  <p class="state-msg">Carregando artigos...</p>
+  } @else if (error()) {
+  <p class="state-msg state-msg--error">{{ error() }}</p>
+  } @else if (posts().length === 0) {
+  <p class="state-msg">Nenhum artigo nesta pasta.</p>
+  } @else {
+  <div class="posts-list">
+    @for (item of posts(); track trackByPostId($index, item)) {
+    <app-tabs-card [card]="item" [category]="item.categoryName"></app-tabs-card>
+    }
+  </div>
+  }
+
+  <div class="spacer"></div>
+
+</div>
+<app-nav></app-nav>

@@ -1,0 +1,55 @@
+<div class="login-modal-container" role="dialog" aria-modal="true">
+  <h2 mat-dialog-title class="dialog-title">
+    <mat-icon class="title-icon color-primary" aria-label="Ícone de conquistas">emoji_events</mat-icon>
+    Ganhe pontos e descontos
+  </h2>
+
+  <div mat-dialog-content class="dialog-content">
+    <div class="message-wrapper">
+      <ng-container *ngIf="isFrequencyContext; else missionsOrDefault">
+        <p class="main-text">
+          Com uma conta, você pode ganhar <strong>pontos</strong> entrando todo dia no site e lendo uma notícia.
+        </p>
+        <p class="sub-text">
+          Crie uma conta para que seus pontos sejam creditados e possam ser trocados por benefícios e descontos em
+          produtos reais.
+        </p>
+      </ng-container>
+      <ng-template #missionsOrDefault>
+        <ng-container *ngIf="isMissionsGateContext; else defaultBlock">
+          <p class="main-text">
+            Para acessar as <strong>missões</strong> e usar os recursos da sua conta, você precisa estar
+            <strong>logado</strong>.
+          </p>
+          <p class="sub-text">
+            Com login, você pode acumular <strong>pontos</strong> em várias atividades e trocar por benefícios e
+            descontos.
+          </p>
+        </ng-container>
+      </ng-template>
+      <ng-template #defaultBlock>
+        <p class="main-text" *ngIf="actionLabel; else defaultText">
+          Ao <strong>{{actionLabel}}</strong>, você teria ganho <strong>+{{points}} pontos</strong> se estivesse logado.
+        </p>
+        <ng-template #defaultText>
+          <p class="main-text">
+            Ao terminar de ler esta notícia, você teria ganho <strong>+{{points}} pontos</strong> se estivesse logado.
+          </p>
+        </ng-template>
+        <p class="sub-text">
+          Crie uma conta para que seus pontos sejam creditados e possam ser trocados por benefícios e descontos em
+          produtos reais.
+        </p>
+      </ng-template>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button (click)="close()" class="btn-cancel">
+      Agora não
+    </button>
+    <button mat-flat-button color="primary" (click)="login()" class="btn-login">
+      Fazer Login
+    </button>
+  </div>
+</div>

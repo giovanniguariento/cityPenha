@@ -1,0 +1,100 @@
+<div class="criteria-editor" [class.criteria-editor--leaf]="kind === 'leaf'"
+  [class.criteria-editor--all]="kind === 'all'" [class.criteria-editor--any]="kind === 'any'">
+
+  @if (isEmpty()) {
+  <div class="criteria-empty">
+    <p>Sem critério customizado. O backend usa <code>metricKey ≥ target / threshold</code> como fallback.</p>
+    <div class="criteria-empty__actions">
+      <button type="button" class="btn-ghost" (click)="enable('leaf')" [disabled]="readOnly">Adicionar regra</button>
+      <button type="button" class="btn-ghost" (click)="enable('all')" [disabled]="readOnly">Grupo (todas)</button>
+      <button type="button" class="btn-ghost" (click)="enable('any')" [disabled]="readOnly">Grupo (qualquer)</button>
+    </div>
+  </div>
+  } @else {
+  <div class="criteria-header">
+    <div class="criteria-kind-switch" role="radiogroup" aria-label="Tipo do nó">
+      <button type="button" role="radio" [class.active]="kind === 'all'" (click)="changeKind('all')"
+        [disabled]="readOnly">Todas (E)</button>
+      <button type="button" role="radio" [class.active]="kind === 'any'" (click)="changeKind('any')"
+        [disabled]="readOnly">Qualquer (OU)</button>
+      <button type="button" role="radio" [class.active]="kind === 'leaf'" (click)="changeKind('leaf')"
+        [disabled]="readOnly">Regra</button>
+    </div>
+
+    <div class="criteria-header__actions">
+      @if (showRemove) {
+      <button type="button" class="btn-ghost btn-ghost--danger" (click)="requestRemove()" [disabled]="readOnly"
+        aria-label="Remover este nó">Remover</button>
+      }
+      @if (!showRemove) {
+      <button type="button" class="btn-ghost btn-ghost--danger" (click)="clear()" [disabled]="readOnly">Limpar
+        critério</button>
+      }
+    </div>
+  </div>
+
+  @if (kind === 'leaf' && leaf) {
+  <div class="leaf-grid">
+    <label class="field">
+      <span>Métrica</span>
+      <select class="select" [ngModel]="leaf.metric" (ngModelChange)="setMetric($event)" [disabled]="readOnly">
+        <option [ngValue]="''" disabled>Selecione…</option>
+        @for (m of metrics; track m.key) {
+        <option [ngValue]="m.key">{{ m.key }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Operador</span>
+      <select class="select" [ngModel]="leaf.op" (ngModelChange)="setOp($event)" [disabled]="readOnly">
+        @for (op of ops; track op) {
+        <option [ngValue]="op">{{ op }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Valor</span>
+      <input class="input" type="number" [ngModel]="leaf.value" (ngModelChange)="setValue($event)"
+        [disabled]="readOnly" />
+    </label>
+
+    @if (acceptedParams.length) {
+    <div class="leaf-params">
+      <span class="leaf-params__title">Parâmetros</span>
+      <div class="leaf-params__grid">
+        @for (p of acceptedParams; track p) {
+        <label class="field">
+          <span>{{ p }}</span>
+          <input class="input" type="text" [ngModel]="paramValue(p)"
+            (ngModelChange)="setParam(p, $event)" [disabled]="readOnly" [placeholder]="p" />
+        </label>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="group-children">
+    @if (children.length === 0) {
+    <p class="group-empty">Adicione filhos a este grupo.</p>
+    } @else {
+    @for (child of children; track $index) {
+    <div class="group-child">
+      <app-criteria-editor [metrics]="metrics" [showRemove]="true" [readOnly]="readOnly" [value]="child"
+        (valueChange)="updateChild($index, $event)" (removeRequested)="removeChild($index)">
+      </app-criteria-editor>
+    </div>
+    }
+    }
+
+    <div class="group-actions">
+      <button type="button" class="btn-ghost" (click)="addChild('leaf')" [disabled]="readOnly">+ Regra</button>
+      <button type="button" class="btn-ghost" (click)="addChild('all')" [disabled]="readOnly">+ Grupo (E)</button>
+      <button type="button" class="btn-ghost" (click)="addChild('any')" [disabled]="readOnly">+ Grupo (OU)</button>
+    </div>
+  </div>
+  }
+  }
+</div>

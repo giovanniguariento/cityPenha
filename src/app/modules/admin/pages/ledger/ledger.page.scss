@@ -1,0 +1,88 @@
+@use '../../../../../styles/variables' as v;
+
+:host {
+  display: block;
+}
+
+.ledger-search-card {
+  max-width: 720px;
+}
+
+.ledger-search {
+  margin: 0;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+
+  .input {
+    flex: 1;
+  }
+
+  @media (max-width: 540px) {
+    flex-direction: column;
+  }
+}
+
+.filter-tabs {
+  display: inline-flex;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 3px;
+  flex-wrap: wrap;
+
+  button {
+    border: none;
+    background: transparent;
+    color: var(--admin-text-muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    line-height: 1;
+
+    &.active {
+      background: v.$brand-primary;
+      color: #ffffff;
+    }
+  }
+}
+
+.count-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ledger-table {
+  td.when {
+    color: var(--admin-text-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  td.num {
+    font-weight: 800;
+    color: var(--admin-text-muted);
+
+    &.positive {
+      color: var(--admin-success);
+    }
+
+    &.negative {
+      color: var(--admin-danger);
+    }
+  }
+}
+
+.ledger-pagination {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}

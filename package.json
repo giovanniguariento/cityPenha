@@ -3,11 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ng serve --host 0.0.0.0",
+    "build": "ng build --configuration=production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:cityPenha": "node dist/cityPenha/server/server.mjs"
+    "start:ssr": "node dist/citypenha/server/server.mjs",
+    "serve:ssr": "node dist/citypenha/server/server.mjs"
   },
   "prettier": {
     "overrides": [
@@ -21,10 +22,14 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^20.1.2",
+    "@angular/cdk": "^20.2.11",
     "@angular/common": "^20.1.0",
     "@angular/compiler": "^20.1.0",
     "@angular/core": "^20.1.0",
+    "@angular/fire": "^20.0.1",
     "@angular/forms": "^20.1.0",
+    "@angular/material": "^20.2.11",
     "@angular/platform-browser": "^20.1.0",
     "@angular/platform-server": "^20.1.0",
     "@angular/router": "^20.1.0",

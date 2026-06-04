@@ -1,0 +1,66 @@
+<div class="login-container">
+
+  <header class="top-bar">
+    <button type="button" class="btn-skip" [disabled]="submitting()" (click)="onSkip();logout()">Pular</button>
+  </header>
+
+  <main class="content">
+
+    <h1 class="title">
+      Bem-vindo a sua<br>
+      comunidade digital
+    </h1>
+
+    <div class="branding">
+      <div class="logo-icon">
+        <i class="bi bi-c-circle brand-icon" style="font-size: 4rem;"></i>
+      </div>
+      <div class="logo-text">
+        <img src="assets/logo.png" alt="" srcset="">
+      </div>
+    </div>
+
+    <div class="actions">
+
+      <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="onLogin('email')">
+        <img src="assets/email-icon.svg" alt="" srcset="">
+        <span>Continue com o E-mail</span>
+      </button>
+
+      <button type="button" class="btn btn-social" [disabled]="submitting()" [attr.aria-busy]="submitting()"
+        (click)="googleLogin()">
+        @if (submitting()) {
+        <mat-spinner diameter="22" />
+        } @else {
+        <img src="assets/gmail-icon.svg" alt="" srcset="">
+        }
+        <span>{{ submitting() ? 'Entrando…' : 'Continue com Google' }}</span>
+      </button>
+
+      <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('apple')">
+        <img src="assets/email-icon.svg" alt="" srcset="">
+        <span>Continue com a Apple</span>
+      </button>
+
+      <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('facebook')">
+        <img src="assets/facebook-icon.svg" alt="" srcset="">
+        <span>Continue com o Facebook</span>
+      </button>
+
+    </div>
+
+    <div class="signup-link">
+      Não tem conta? <a href="#">cadastre-se</a>
+    </div>
+
+  </main>
+
+  <footer class="legal-text">
+    <p>
+      Nós valorizamos a sua leitura, sua participação e a sua privacidade.
+      Ao se cadastrar você, você concorda com nossos <a href="#">Termos</a>
+      e reconhece que nossa Política de Privacidade se aplica a você.
+    </p>
+  </footer>
+
+</div>

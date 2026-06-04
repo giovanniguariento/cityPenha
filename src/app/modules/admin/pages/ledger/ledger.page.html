@@ -1,0 +1,98 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Reward Ledger</h1>
+      <p>Auditoria imutável das recompensas concedidas e estornadas. Paginação por cursor.</p>
+    </div>
+  </header>
+
+  <div class="admin-card ledger-search-card">
+    <form class="ledger-search" (submit)="$event.preventDefault(); search()">
+      <div class="field">
+        <label for="ledger-uid">UUID do usuário</label>
+        <div class="search-row">
+          <input id="ledger-uid" class="input" type="text" placeholder="ex.: 8b76e0a0-…"
+            [value]="userId()" (input)="setUserId($any($event.target).value)" autocomplete="off" />
+          <button type="submit" class="btn-primary" [disabled]="loading()">
+            @if (loading()) { <span>Buscando…</span> } @else { <span>Buscar</span> }
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  @if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  }
+
+  @if (searchedUserId() && !error()) {
+  <div class="admin-toolbar">
+    <div class="filter-tabs" role="tablist" aria-label="Filtrar por tipo">
+      <button type="button" [class.active]="kindFilter() === 'all'"
+        (click)="setKindFilter('all')">Todos</button>
+      <button type="button" [class.active]="kindFilter() === 'MISSION'"
+        (click)="setKindFilter('MISSION')">Missões</button>
+      <button type="button" [class.active]="kindFilter() === 'BADGE'"
+        (click)="setKindFilter('BADGE')">Insígnias</button>
+      <button type="button" [class.active]="kindFilter() === 'LEVEL_UP'"
+        (click)="setKindFilter('LEVEL_UP')">Levels</button>
+      <button type="button" [class.active]="kindFilter() === 'READ_XP'"
+        (click)="setKindFilter('READ_XP')">Leituras</button>
+    </div>
+    <span class="count-badge">{{ filtered().length }} entradas</span>
+  </div>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando ledger…</p>
+  } @else if (filtered().length === 0) {
+  <p class="admin-empty">Nenhuma entrada para este usuário com o filtro atual.</p>
+  } @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table ledger-table">
+      <thead>
+        <tr>
+          <th>Quando</th>
+          <th>Tipo</th>
+          <th>Origem</th>
+          <th class="num">XP</th>
+          <th class="num">Moedas</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of filtered(); track e.id) {
+        <tr>
+          <td data-label="Quando" class="when">{{ formatDate(e.createdAt) }}</td>
+          <td data-label="Tipo"><strong>{{ sourceLabel(e.source) }}</strong></td>
+          <td data-label="Origem"><code>{{ e.source }}</code></td>
+          <td data-label="XP" class="num" [class.positive]="e.xpDelta > 0" [class.negative]="e.xpDelta < 0">
+            {{ e.xpDelta > 0 ? '+' : '' }}{{ e.xpDelta }}
+          </td>
+          <td data-label="Moedas" class="num" [class.positive]="e.coinsDelta > 0"
+            [class.negative]="e.coinsDelta < 0">
+            {{ e.coinsDelta > 0 ? '+' : '' }}{{ e.coinsDelta }}
+          </td>
+          <td data-label="Estado">
+            <span class="admin-chip" [class.admin-chip--success]="e.reason === 'granted'"
+              [class.admin-chip--danger]="e.reason === 'revoked'">
+              {{ e.reason === 'granted' ? 'CONCEDIDO' : 'ESTORNADO' }}
+            </span>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (nextCursor()) {
+  <div class="ledger-pagination">
+    <button type="button" class="btn-ghost" (click)="loadMore()" [disabled]="loadingMore()">
+      @if (loadingMore()) { <span>Carregando…</span> } @else { <span>Carregar mais</span> }
+    </button>
+  </div>
+  }
+  }
+  } @else {
+  <p class="admin-empty">Informe um UUID para listar o histórico de recompensas.</p>
+  }
+</section>

@@ -1,4 +1,5 @@
-<div class="container">
+<div *ngIf="newsDestaque" class="container" [style.backgroundImage]="`url('${this.newsDestaque.image}')`"
+  [routerLink]="'/news/' + newsDestaque.slug">
   <div class="header">
     <span class="exp">+10 XP</span>
     <div class="options"></div>
@@ -6,14 +7,21 @@
   </div>
 
   <div class="content">
-    <div>
-      <span class="tag">Comportamento</span>
-      <span class="reading-time">20 Min Leitura</span>
+    <div class="details">
+      <img src="assets/play.svg" alt="" srcset="" *ngIf="newsDestaque.onlyVideo">
+      <span class="tag">{{ tagLabel | decodeHtmlEntities }}</span>
+      <span class="reading-time">{{newsDestaque.readingTime}} Min Leitura</span>
+      <span
+        *ngIf="newsDestaque.viewed && newsDestaque.type !== 'anuncio'"
+        class="viewed-hint"
+        role="status"
+        title="Você já leu esta notícia"
+        >Lido</span>
     </div>
-    <h1 class="title">Por que a nossa voz soa tão diferente em gravações?</h1>
+    <h1 class="title">{{ newsDestaque.title | decodeHtmlEntities }}</h1>
     <div class="author">
-      <img src="assets/profile-author.jpg" alt="foto do author">
-      <span class="name">Fabiana Borges</span>
+      <img [src]="newsDestaque.author.avatarUrl" alt=" foto do author">
+      <span class="name">{{newsDestaque.author.name}}</span>
     </div>
   </div>
 

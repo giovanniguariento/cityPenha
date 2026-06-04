@@ -1,0 +1,57 @@
+<article class="card">
+
+  <div class="card-content">
+
+    <div class="card-meta-top">
+      <span class="xp">+10 XP</span>
+      <span class="level">Nivel 1+</span>
+      <span
+        *ngIf="card.viewed && card.type !== 'anuncio'"
+        class="viewed-hint"
+        role="status"
+        title="Você já leu esta notícia"
+        >Lido</span>
+    </div>
+
+    <h2 class="card-title" [routerLink]="'/news/' + card.slug">{{ card.title | decodeHtmlEntities }}</h2>
+
+    <div class="card-author">
+      <div class="author-info">
+        <img class="author-avatar" [src]="card.author.avatarUrl" alt="Avatar de Lorelai Gilmore">
+        <span class="author-name">{{card.author.name}}</span>
+        <span class="author-category">{{category}}</span>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <div class="card-stats">
+        <span class="read-time">{{ card.readingTime }}m leitura</span>
+
+        <span class="views">
+          <img src="assets/view.svg" alt="">
+          <span>180</span>
+        </span>
+
+        <span class="comments">
+          <img src="assets/comment.svg" alt="">
+          <span>180</span>
+        </span>
+      </div>
+
+      <button class="card-menu-button" aria-label="Mais opções">
+
+        <svg width="17" height="4" viewBox="0 0 17 4" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M4.0551 2C4.0551 2.53043 3.84148 3.03914 3.46124 3.41421C3.081 3.78929 2.56529 4 2.02755 4C1.48981 4 0.974094 3.78929 0.593855 3.41421C0.213616 3.03914 -1.12132e-07 2.53043 -8.86269e-08 2C-6.51216e-08 1.46957 0.213616 0.96086 0.593855 0.585787C0.974094 0.210714 1.48981 0 2.02755 0C2.56529 0 3.081 0.210714 3.46124 0.585787C3.84148 0.96086 4.0551 1.46957 4.0551 2ZM10.1377 2C10.1377 2.53043 9.92412 3.03914 9.54389 3.41421C9.16365 3.78929 8.64793 4 8.11019 4C7.57245 4 7.05674 3.78929 6.6765 3.41421C6.29626 3.03914 6.08264 2.53043 6.08264 2C6.08264 1.46957 6.29626 0.96086 6.6765 0.585787C7.05674 0.210714 7.57245 0 8.11019 0C8.64793 0 9.16365 0.210714 9.54389 0.585787C9.92412 0.96086 10.1377 1.46957 10.1377 2ZM14.1928 4C14.7306 4 15.2463 3.78929 15.6265 3.41421C16.0068 3.03914 16.2204 2.53043 16.2204 2C16.2204 1.46957 16.0068 0.96086 15.6265 0.585787C15.2463 0.210714 14.7306 0 14.1928 0C13.6551 0 13.1394 0.210714 12.7591 0.585787C12.3789 0.96086 12.1653 1.46957 12.1653 2C12.1653 2.53043 12.3789 3.03914 12.7591 3.41421C13.1394 3.78929 13.6551 4 14.1928 4Z"
+            fill="#686A6E" />
+        </svg>
+
+      </button>
+    </div>
+
+  </div>
+  <figure class="card-image" [class.only-video]="card.onlyVideo" [routerLink]="'/news/' + card.slug">
+    <img [src]="card.image" alt="">
+  </figure>
+
+</article>

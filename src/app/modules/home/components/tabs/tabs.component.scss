@@ -1,0 +1,24 @@
+@use '@angular/material' as mat;
+
+:host {
+  @include mat.tabs-overrides((container-height: '30px',
+      active-focus-indicator-color: '#FF1500',
+      active-indicator-color: '#FF1500'
+    ));
+
+  ::ng-deep div[role="tab"] {
+    padding: 0;
+  }
+
+  ::ng-deep .mat-mdc-tab-group {
+    height: 300px;
+    margin-top: 26px;
+  }
+
+  ::ng-deep .mat-mdc-tab-body-wrapper,
+  .mat-mdc-tab-body.mat-mdc-tab-body-active,
+  .mat-mdc-tab-body-content {
+    overflow: unset;
+    padding-bottom: 130px;
+  }
+}

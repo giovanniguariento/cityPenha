@@ -1,0 +1,94 @@
+.login-modal-container {
+  padding: 16px;
+  max-width: 480px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  color: #242424;
+  background: #ffffff;
+  border-radius: 6px;
+  /* reduced rounding to match buttons */
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.08);
+
+  .dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.25rem;
+    /* ~20px */
+    font-weight: 700;
+    color: #242424;
+    margin-bottom: 12px;
+  }
+
+  .title-icon {
+    font-size: 28px;
+    height: 28px;
+    width: 28px;
+    color: #FF1A1A;
+  }
+
+  .dialog-content {
+    overflow-y: hidden;
+
+    .message-wrapper {
+      padding: 4px 0 12px 0;
+      text-align: left;
+
+      .main-text {
+        font-size: 1rem;
+        /* 16px */
+        line-height: 1.6;
+        color: #333333;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .sub-text {
+        font-size: 0.9375rem;
+        /* 15px */
+        color: #6b6b6b;
+        margin: 0;
+        font-weight: 400;
+      }
+    }
+  }
+
+  .dialog-actions {
+    padding-top: 16px;
+    margin-bottom: -8px;
+
+    .btn-cancel {
+      background-color: #F3F4F6;
+      /* light neutral gray */
+      color: #111827;
+      /* high-contrast dark text */
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 8px 12px;
+      border: none;
+      min-width: 96px;
+      transition: background-color 0.12s ease;
+
+      &:hover {
+        background-color: #E6E7EA;
+      }
+    }
+
+    .btn-login {
+      border-radius: 6px;
+      font-weight: 700;
+      padding: 8px 16px;
+      letter-spacing: 0.3px;
+      background-color: #FF1A1A;
+      color: #ffffff;
+      box-shadow: none;
+      text-transform: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .btn-login:hover {
+      background-color: #e21313;
+    }
+  }
+}

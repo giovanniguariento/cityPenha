@@ -1,0 +1,115 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Visão geral</h1>
+      <p>Controle a gamificação dinâmica: missões, insígnias, levels e auditoria de recompensas.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="btn-ghost" routerLink="/admin/ledger">Abrir ledger</a>
+      <a class="btn-primary" routerLink="/admin/missions/new">+ Nova missão</a>
+    </div>
+  </header>
+
+  @if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  }
+
+  <div class="stat-grid">
+    <a class="stat-card stat-card--link" routerLink="/admin/missions">
+      <span class="stat-card__label">Missões</span>
+      <span class="stat-card__value">
+        @if (loading()) { — } @else { {{ missionsActive() }} <small>/ {{ missionsTotal() }}</small> }
+      </span>
+      <span class="stat-card__hint">ativas no momento</span>
+    </a>
+
+    <a class="stat-card stat-card--link" routerLink="/admin/badges">
+      <span class="stat-card__label">Insígnias</span>
+      <span class="stat-card__value">
+        @if (loading()) { — } @else { {{ badgesActive() }} <small>/ {{ badgesTotal() }}</small> }
+      </span>
+      <span class="stat-card__hint">ativas no momento</span>
+    </a>
+
+    <a class="stat-card stat-card--link" routerLink="/admin/levels">
+      <span class="stat-card__label">Levels</span>
+      <span class="stat-card__value">
+        @if (loading()) { — } @else { {{ levelsTotal() }} }
+      </span>
+      <span class="stat-card__hint">patamares de progressão</span>
+    </a>
+
+    <div class="stat-card">
+      <span class="stat-card__label">Métricas registradas</span>
+      <span class="stat-card__value">
+        @if (loading()) { — } @else { {{ metricsTotal() }} }
+      </span>
+      <span class="stat-card__hint">disponíveis para missões e insígnias</span>
+    </div>
+  </div>
+
+  <div class="dashboard-split">
+    <section class="admin-card">
+      <h2 class="admin-card__title">Atalhos rápidos</h2>
+      <p class="admin-card__hint">Crie novos itens da gamificação sem sair desta tela.</p>
+      <ul class="quick-list">
+        @for (q of quickActions; track q.link) {
+        <li>
+          <a class="quick-item" [routerLink]="q.link" [attr.data-accent]="q.accent">
+            <span class="quick-item__icon" aria-hidden="true">
+              @switch (q.icon) {
+              @case ('target') {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="5" />
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+              </svg>
+              }
+              @case ('medal') {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="14" r="6" />
+                <path d="M9 9L6 3h12l-3 6" />
+              </svg>
+              }
+              @case ('layers') {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 3 22 8.5 12 14 2 8.5 12 3" />
+                <polyline points="2 13.5 12 19 22 13.5" />
+              </svg>
+              }
+              }
+            </span>
+            <span class="quick-item__body">
+              <strong>{{ q.label }}</strong>
+              <span>{{ q.description }}</span>
+            </span>
+            <span class="quick-item__chevron" aria-hidden="true">→</span>
+          </a>
+        </li>
+        }
+      </ul>
+    </section>
+
+    <section class="admin-card">
+      <h2 class="admin-card__title">Operações</h2>
+      <p class="admin-card__hint">Diagnóstico e auditoria por usuário.</p>
+      <ul class="op-list">
+        <li>
+          <a class="op-item" routerLink="/admin/ledger">
+            <strong>Reward Ledger</strong>
+            <span>Histórico paginado de XP e moedas concedidos ou estornados.</span>
+          </a>
+        </li>
+        <li>
+          <a class="op-item" routerLink="/admin/recompute">
+            <strong>Recompute</strong>
+            <span>Force a engine a reavaliar todas as regras para um usuário específico.</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </div>
+</section>

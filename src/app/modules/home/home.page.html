@@ -1,0 +1,31 @@
+@if (loading()) {
+<app-home-skeleton />
+} @else if (error()) {
+<div class="home-state home-state--error">
+  <p>{{ error() }}</p>
+</div>
+} @else {
+<app-header></app-header>
+<main class="home-main home-main--enter">
+  <app-card-exp></app-card-exp>
+  @if (!hasFeedContent()) {
+  <p class="home-empty">Nenhuma notícia disponível no momento.</p>
+  }
+  <swiper-container
+    class="mySwiper"
+    pagination="true"
+    [attr.loop]="posts().length > 2 ? 'true' : 'false'"
+    speed="320"
+    slides-per-view="1"
+    space-between="8"
+  >
+    @for (post of posts(); track trackByPostId($index, post)) {
+    <swiper-slide>
+      <app-card-noticia [post]="post" [homeCategories]="tabs()"></app-card-noticia>
+    </swiper-slide>
+    }
+  </swiper-container>
+  <app-tabs [tabs]="tabs()"></app-tabs>
+</main>
+}
+<app-nav></app-nav>

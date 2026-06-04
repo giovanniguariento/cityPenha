@@ -1,0 +1,13 @@
+node_modules
+dist
+.angular
+.git
+coverage
+.firebase
+*.log
+npm-debug.log
+yarn-error.log
+.vscode
+.idea
+.DS_Store
+Thumbs.db

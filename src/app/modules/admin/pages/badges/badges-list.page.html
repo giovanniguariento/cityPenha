@@ -1,0 +1,79 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Insígnias</h1>
+      <p>{{ filtered().length }} de {{ badges().length }} insígnia(s) listada(s).</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="btn-primary" routerLink="/admin/badges/new">+ Nova insígnia</a>
+    </div>
+  </header>
+
+  <div class="admin-toolbar">
+    <div class="filter-tabs" role="tablist">
+      <button type="button" [class.active]="statusFilter() === 'all'"
+        (click)="setStatusFilter('all')">Todas</button>
+      <button type="button" [class.active]="statusFilter() === 'active'"
+        (click)="setStatusFilter('active')">Ativas</button>
+      <button type="button" [class.active]="statusFilter() === 'inactive'"
+        (click)="setStatusFilter('inactive')">Inativas</button>
+    </div>
+    <div class="input-search list-search">
+      <input class="input" type="search" placeholder="Buscar por chave, título ou métrica…"
+        [value]="query()" (input)="setQuery($any($event.target).value)" />
+    </div>
+  </div>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando insígnias…</p>
+  } @else if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  } @else if (filtered().length === 0) {
+  <p class="admin-empty">Nenhuma insígnia encontrada.</p>
+  } @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Insígnia</th>
+          <th>Regra</th>
+          <th>Estado</th>
+          <th class="actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of filtered(); track b.id) {
+        <tr>
+          <td data-label="Insígnia">
+            <div class="admin-table__title">
+              <strong>{{ b.title }}</strong>
+              <span><code>{{ b.key }}</code></span>
+            </div>
+          </td>
+          <td data-label="Regra">
+            @if (b.metricKey && b.threshold != null) {
+            <code>{{ b.metricKey }} ≥ {{ b.threshold }}</code>
+            } @else if (b.criteria) {
+            <span class="admin-chip admin-chip--info">CRITÉRIO CUSTOM</span>
+            } @else {
+            <span class="hint">—</span>
+            }
+          </td>
+          <td data-label="Estado">
+            <span class="admin-chip" [class.admin-chip--success]="b.isActive"
+              [class.admin-chip--warn]="!b.isActive">{{ b.isActive ? 'ATIVA' : 'INATIVA' }}</span>
+          </td>
+          <td data-label="Ações" class="actions">
+            <a class="btn-ghost" [routerLink]="['/admin/badges', b.id]">Editar</a>
+            <button class="btn-ghost" type="button" [disabled]="busyId() === b.id"
+              (click)="toggleActive(b)">{{ b.isActive ? 'Desativar' : 'Ativar' }}</button>
+            <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busyId() === b.id"
+              (click)="remove(b)">Excluir</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</section>

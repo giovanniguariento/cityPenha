@@ -1,0 +1,102 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>{{ title() }}</h1>
+      <p>Levels definem patamares de progressão. Recompensas são concedidas uma única vez via <code>LEVEL_UP:N</code>.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a routerLink="/admin/levels" class="btn-ghost">← Voltar</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando…</p>
+  } @else if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  } @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-layout">
+      <div class="form-main">
+        <div class="admin-card">
+          <h3 class="admin-card__title">Identificação</h3>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="l-num">Número do nível</label>
+              <input id="l-num" class="input" type="number" min="1" formControlName="levelNumber" />
+              <span class="hint">Ordem da progressão; precisa ser único.</span>
+            </div>
+            <div class="field">
+              <label for="l-title">Título</label>
+              <input id="l-title" class="input" type="text" formControlName="title"
+                placeholder="Bronze, Prata, Ouro…" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="l-icon">URL do ícone</label>
+            <input id="l-icon" class="input" type="url" formControlName="iconUrl" placeholder="https://…" />
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Requisitos mínimos</h3>
+          <p class="admin-card__hint">O usuário só atinge este nível ao satisfazer <strong>ambos</strong> os requisitos.</p>
+
+          <div class="row-grid">
+            <div class="field">
+              <label for="l-xp">XP mínimo</label>
+              <input id="l-xp" class="input" type="number" min="0" formControlName="minXp" />
+            </div>
+            <div class="field">
+              <label for="l-missions">Missões concluídas mínimas</label>
+              <input id="l-missions" class="input" type="number" min="0" formControlName="minCompletedMissions" />
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Recompensa ao subir</h3>
+          <p class="admin-card__hint">Concedida uma única vez quando o usuário cruza este nível pela primeira vez.</p>
+          <div class="row-grid">
+            <div class="field">
+              <label for="l-coin">Moedas</label>
+              <input id="l-coin" class="input" type="number" min="0" formControlName="rewardCoins" />
+            </div>
+            <div class="field">
+              <label for="l-rxp">XP</label>
+              <input id="l-rxp" class="input" type="number" min="0" formControlName="rewardXp" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="form-aside">
+        <div class="admin-card">
+          <h3 class="admin-card__title">Como funciona</h3>
+          <p class="admin-card__hint">
+            O nível atual é o maior cujo <code>minXp</code> e <code>minCompletedMissions</code> estão satisfeitos.
+            Criar levels intermediários <strong>não retroage</strong> recompensas para usuários que já passaram do
+            número.
+          </p>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card__title">Ledger</h3>
+          <p class="admin-card__hint">
+            Concessões geram entrada <code>LEVEL_UP:N</code> imutável; idempotente, mesmo se o usuário descer de
+            nível.
+          </p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="form-actions-sticky">
+      <a routerLink="/admin/levels" class="btn-ghost">Cancelar</a>
+      <button type="submit" class="btn-primary" [disabled]="submitting() || form.invalid">
+        @if (submitting()) { <span>Salvando…</span> } @else { <span>Salvar level</span> }
+      </button>
+    </div>
+  </form>
+  }
+</section>

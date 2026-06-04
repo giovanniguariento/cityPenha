@@ -1,0 +1,52 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Levels</h1>
+      <p>{{ levels().length }} level(s) configurado(s). O nível atual do usuário é o maior cujo XP <em>e</em> contagem de missões mínimas estão satisfeitos.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="btn-primary" routerLink="/admin/levels/new">+ Novo level</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando levels…</p>
+  } @else if (error()) {
+  <p class="admin-state admin-state--error">{{ error() }}</p>
+  } @else if (levels().length === 0) {
+  <p class="admin-empty">Nenhum level configurado. Crie o primeiro para começar a progressão.</p>
+  } @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Título</th>
+          <th class="num">XP mínimo</th>
+          <th class="num">Missões mínimas</th>
+          <th class="num">Recompensa</th>
+          <th class="actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of levels(); track l.levelNumber) {
+        <tr>
+          <td data-label="#" class="num"><strong>{{ l.levelNumber }}</strong></td>
+          <td data-label="Título">{{ l.title || '—' }}</td>
+          <td data-label="XP mínimo" class="num">{{ l.minXp }}</td>
+          <td data-label="Missões mínimas" class="num">{{ l.minCompletedMissions }}</td>
+          <td data-label="Recompensa" class="num">+{{ l.rewardXp || 0 }} XP · +{{ l.rewardCoins || 0 }} 🪙</td>
+          <td data-label="Ações" class="actions">
+            @if (l.id) {
+            <a class="btn-ghost" [routerLink]="['/admin/levels', l.id]">Editar</a>
+            <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busyId() === l.id"
+              (click)="remove(l)">Excluir</button>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</section>

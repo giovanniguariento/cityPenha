@@ -1,0 +1,66 @@
+@if (loading()) {
+<p class="edit-profile-state" aria-busy="true">A carregar…</p>
+} @else if (error()) {
+<div class="edit-profile-state-wrap">
+  <p class="edit-profile-state edit-profile-state--error">{{ error() }}</p>
+  <button type="button" class="btn-text-back" (click)="goBack()">Voltar</button>
+</div>
+} @else {
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="edit-profile" novalidate>
+  <app-profile-page-header>
+    <button type="button" profileHeaderStart class="back-btn" (click)="goBack()" aria-label="Voltar ao perfil">
+      <img src="assets/back.svg" alt="" width="24" height="24" />
+    </button>
+
+    <div class="avatar-block">
+      <div class="avatar-shell">
+        <div class="avatar-inner">
+          @if (avatarUrl()) {
+          <img [src]="avatarUrl()!" referrerpolicy="no-referrer" alt="Foto de perfil" />
+          } @else {
+          <div class="avatar-placeholder" aria-hidden="true"></div>
+          }
+        </div>
+        <button type="button" class="edit-photo-btn" disabled aria-disabled="true" tabindex="-1">
+          <i class="fa fa-pencil" aria-hidden="true"></i>
+          <span>Editar</span>
+        </button>
+      </div>
+    </div>
+  </app-profile-page-header>
+
+  <main class="edit-body">
+    <label class="field">
+      <span class="visually-hidden">Nome</span>
+      <input class="input-pill" type="text" formControlName="name" autocomplete="name" maxlength="120"
+        placeholder="Informe seu nome" />
+    </label>
+
+    <label class="field">
+      <span class="visually-hidden">Apelido</span>
+      <input class="input-pill" type="text" formControlName="nickname" autocomplete="nickname" maxlength="40"
+        placeholder="Defina um apelido" />
+    </label>
+    @if (form.controls.nickname.touched && form.controls.nickname.errors?.['nicknameMin']) {
+    <p class="field-error">O apelido deve ter entre 2 e 40 caracteres.</p>
+    }
+
+    <label class="field">
+      <span class="visually-hidden">Sobre si</span>
+      <textarea class="textarea-field" formControlName="about" rows="6" maxlength="2000"
+        placeholder="Conte um pouco sobre você"></textarea>
+    </label>
+
+    <button type="submit" class="btn-save"
+      [disabled]="form.invalid || submitting() || !hasChanges() || loading()">
+      @if (submitting()) {
+      <span>A guardar…</span>
+      } @else {
+      <span>Salvar</span>
+      }
+    </button>
+  </main>
+</form>
+}
+
+<app-nav></app-nav>

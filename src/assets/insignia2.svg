@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 55" width="50" height="55" role="img" aria-label="Badge for multiple missions completed">
+  <defs>
+    <linearGradient id="ins2-gold-outer" x1="25" y1="0" x2="25" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFEFB0"/>
+      <stop offset="0.45" stop-color="#F4B837"/>
+      <stop offset="1" stop-color="#A66B0A"/>
+    </linearGradient>
+    <linearGradient id="ins2-red-inner" x1="25" y1="4" x2="25" y2="51" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF3A1A"/>
+      <stop offset="1" stop-color="#BE0D00"/>
+    </linearGradient>
+    <linearGradient id="ins2-star-gold" x1="25" y1="15" x2="25" y2="33" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF2B2"/>
+      <stop offset="1" stop-color="#E6A318"/>
+    </linearGradient>
+    <radialGradient id="ins2-shine" cx="17" cy="14" r="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <path d="M25 0 L50 13.75 L50 41.25 L25 55 L0 41.25 L0 13.75 Z"
+        fill="url(#ins2-gold-outer)"/>
+
+  <path d="M25 3.75 L46.75 16 L46.75 39 L25 51.25 L3.25 39 L3.25 16 Z"
+        fill="url(#ins2-red-inner)"/>
+
+  <path d="M25 6.25 L44.5 17.25 L44.5 37.75 L25 48.75 L5.5 37.75 L5.5 17.25 Z"
+        fill="none" stroke="#FFD36A" stroke-width="0.6" stroke-opacity="0.75"/>
+
+  <path d="M25 15 L27.25 21.91 L34.51 21.91 L28.63 26.18 L30.88 33.09 L25 28.82 L19.12 33.09 L21.37 26.18 L15.49 21.91 L22.75 21.91 Z"
+        fill="url(#ins2-star-gold)"
+        stroke="#B4750B" stroke-width="0.55" stroke-linejoin="round"/>
+
+  <g fill="#FFD36A" stroke="#B4750B" stroke-width="0.3">
+    <circle cx="19" cy="41" r="1.55"/>
+    <circle cx="25" cy="41" r="1.55"/>
+    <circle cx="31" cy="41" r="1.55"/>
+  </g>
+
+  <path d="M25 0 L50 13.75 L50 41.25 L25 55 L0 41.25 L0 13.75 Z"
+        fill="url(#ins2-shine)" pointer-events="none"/>
+</svg>

@@ -1,0 +1,37 @@
+// Centralized design tokens (SCSS variables + CSS custom properties)
+// Use semantic names. Update here to affect the whole app.
+// SCSS variables (compile-time)
+$brand-primary: #ff1500;
+$brand-accent: #ff3b30;
+$brand-foreground: #ffffff;
+$bg-surface: #fcfcfc;
+$text-primary: #262626;
+$text-secondary: #6b6b6b;
+$text-muted: #828282;
+$muted-weak: #d9d9d9;
+$overlay-20: rgba(0, 0, 0, 0.2);
+$shadow-strong: rgba(0, 0, 0, 0.4);
+$swiper-inactive: #D9D9D980;
+$swiper-color: #DD1907;
+
+// Expose as CSS variables for runtime theming
+:root {
+  --brand-primary: #{$brand-primary};
+  --brand-accent: #{$brand-accent};
+  --brand-foreground: #{$brand-foreground};
+  --bg-surface: #{$bg-surface};
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --text-muted: #{$text-muted};
+  --muted-weak: #{$muted-weak};
+  --overlay-20: #{$overlay-20};
+  --swiper-inactive: #{$swiper-inactive};
+  --swiper-color: #{$swiper-color};
+}
+
+// Useful mixins
+@mixin center-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

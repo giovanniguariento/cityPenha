@@ -1,0 +1,13 @@
+@if (!acceptedParams.length) {
+<p class="metric-params-empty">Esta métrica não recebe parâmetros.</p>
+} @else {
+<div class="metric-params-grid">
+  @for (p of acceptedParams; track p) {
+  <label class="field">
+    <span>{{ p }}</span>
+    <input class="input" [type]="isNumeric(p) ? 'number' : 'text'" [ngModel]="paramValue(p)"
+      (ngModelChange)="setParam(p, $event)" [disabled]="disabled()" [placeholder]="p" />
+  </label>
+  }
+</div>
+}
