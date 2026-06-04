@@ -27,6 +27,7 @@
   --admin-brand-soft: rgba(255, 21, 0, 0.1);
   --admin-hover: #f3f4f6;
   --admin-hover-brand: rgba(255, 21, 0, 0.08);
+  background: var(--admin-bg);
 }
 
 .admin-layout.admin-theme-dark {
@@ -59,7 +60,8 @@
 // ── Shared admin page primitives (desktop-first) ───────────────────────────
 // Layout em containers largos, tabelas verdadeiras, formulários em 2 colunas.
 // Mobile herda fallback automático em queries < 720px.
-
+// Escopo: o resto do app usa nomes genéricos (.btn-primary, .input, .field) — não poluir login/perfil.
+.admin-layout {
 .admin-page {
   display: flex;
   flex-direction: column;
@@ -713,4 +715,5 @@
     font-size: 0.78rem;
     color: var(--admin-text-soft);
   }
+}
 }

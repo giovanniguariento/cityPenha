@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnInit, OnDestroy, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, inject, Input, OnDestroy, PLATFORM_ID, signal } from '@angular/core';
 import { PostDetail } from '../../../../shared/interface/home.interface';
 
 @Component({
@@ -9,7 +9,9 @@ import { PostDetail } from '../../../../shared/interface/home.interface';
   styleUrl: './content.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContentComponent implements OnInit, OnDestroy {
+export class ContentComponent implements OnDestroy {
+  private readonly platformId = inject(PLATFORM_ID);
+
   @Input({ required: true }) news!: PostDetail;
 
   following = signal<boolean>(false);
@@ -17,24 +19,30 @@ export class ContentComponent implements OnInit, OnDestroy {
   readingTime = signal<number>(0);
   private scrollHandler?: () => void;
 
-  ngOnInit(): void {
-    this.scrollHandler = () => {
-      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  constructor() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-      let scrolled = (winScroll / height) * 100;
-      if (height - winScroll <= 60) {
-        scrolled = 100;
-      }
+    afterNextRender(() => {
+      this.scrollHandler = () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
-      this.readingTime.set(Math.min(100, Math.max(0, scrolled)));
-    };
+        let scrolled = (winScroll / height) * 100;
+        if (height - winScroll <= 60) {
+          scrolled = 100;
+        }
 
-    window.addEventListener('scroll', this.scrollHandler, { passive: true });
+        this.readingTime.set(Math.min(100, Math.max(0, scrolled)));
+      };
+
+      window.addEventListener('scroll', this.scrollHandler, { passive: true });
+    });
   }
 
   ngOnDestroy(): void {
-    if (this.scrollHandler) {
+    if (this.scrollHandler && isPlatformBrowser(this.platformId)) {
       window.removeEventListener('scroll', this.scrollHandler);
     }
   }
@@ -44,7 +52,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   async share(): Promise<void> {
-    if (!navigator.share) {
+    if (!isPlatformBrowser(this.platformId) || !navigator.share) {
       return;
     }
 

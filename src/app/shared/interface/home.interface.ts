@@ -70,24 +70,27 @@ export interface PostLikePayload {
   completedMissionsCount?: number;
 }
 
-/** Primeira leitura — POST /user/read/:postId (unwrap `data`). */
-export interface ReadPostFirstResponse {
-  already?: false;
+/** Recompensa aplicada num endpoint de write (FRONTEND_GAMIFICATION.md §5). */
+export interface Reward {
+  source: string;
+  reason: 'granted' | 'revoked';
+  coinsDelta: number;
+  xpDelta: number;
+}
+
+/** POST /user/read/:postId — unwrap `data` (idempotente). */
+export interface ReadPostResult {
+  /** Backend: leitura já registrada, sem novo XP. */
+  alreadyRead?: boolean;
+  /** Legado; preferir `alreadyRead`. */
+  already?: boolean;
   user?: BackendUser;
   completedMissionsCount?: number;
   daysWithReads?: string[];
   missions?: MissionApiItem[];
   level?: UserLevel | null;
+  rewards?: Reward[];
 }
-
-/** Leitura já registrada. */
-export interface ReadPostAlreadyResponse {
-  already: true;
-  daysWithReads?: string[];
-  missions?: MissionApiItem[];
-}
-
-export type ReadPostResult = ReadPostFirstResponse | ReadPostAlreadyResponse;
 
 // Define a estrutura da categoria, que contém uma lista de posts
 export interface Category {

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, inject, PLATFORM_ID, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HomeService } from '../home/services/home.service';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -7,6 +7,7 @@ import { EMPTY, switchMap, take, takeUntil, tap } from 'rxjs';
 import { PostDetail } from '../../shared/interface/home.interface';
 import { Destroyable } from '../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
+import { readRewardPoints, shouldShowReadReward } from '../../shared/utils/read-reward';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -50,7 +51,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
     ]),
   ],
 })
-export class NewsPageComponent extends Destroyable implements OnInit {
+export class NewsPageComponent extends Destroyable {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly homeService = inject(HomeService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
@@ -90,6 +92,24 @@ export class NewsPageComponent extends Destroyable implements OnInit {
 
   constructor() {
     super();
+
+    if (isPlatformBrowser(this.platformId)) {
+      afterNextRender(() => {
+        this.scrollHandler = () => {
+          if (this.scrollRafId) {
+            return;
+          }
+          this.scrollRafId = requestAnimationFrame(() => {
+            this.scrollRafId = 0;
+            this.updateReadingProgress();
+          });
+        };
+
+        window.addEventListener('scroll', this.scrollHandler, { passive: true });
+        this.updateReadingProgress();
+      });
+    }
+
     this.activatedRoute.params
       .pipe(
         tap(() => {
@@ -119,7 +139,9 @@ export class NewsPageComponent extends Destroyable implements OnInit {
           this.likePending.set(false);
           this.savePending.set(false);
           this.firstRenderAt = Date.now();
-          setTimeout(() => this.updateReadingProgress(), 0);
+          if (isPlatformBrowser(this.platformId)) {
+            setTimeout(() => this.updateReadingProgress(), 0);
+          }
         },
         error: (err: unknown) => {
           this.loadingPost.set(false);
@@ -128,34 +150,18 @@ export class NewsPageComponent extends Destroyable implements OnInit {
       });
   }
 
-  ngOnInit(): void {
-    this.scrollHandler = () => {
-      if (this.scrollRafId) {
-        return;
-      }
-      this.scrollRafId = requestAnimationFrame(() => {
-        this.scrollRafId = 0;
-        this.updateReadingProgress();
-      });
-    };
-
-    window.addEventListener('scroll', this.scrollHandler, { passive: true });
-
-    // Calculate initial progress immediately (in case the page is already scrolled or content fits viewport)
-    this.updateReadingProgress();
-  }
-
   override ngOnDestroy(): void {
-    if (this.scrollRafId) {
-      cancelAnimationFrame(this.scrollRafId);
-      this.scrollRafId = 0;
+    if (isPlatformBrowser(this.platformId)) {
+      if (this.scrollRafId) {
+        cancelAnimationFrame(this.scrollRafId);
+        this.scrollRafId = 0;
+      }
+      if (this.scrollHandler) {
+        window.removeEventListener('scroll', this.scrollHandler);
+      }
     }
     this.clearLikeThankYouTimer();
-    // call base teardown for destroy$
     super.ngOnDestroy();
-    if (this.scrollHandler) {
-      window.removeEventListener('scroll', this.scrollHandler);
-    }
   }
 
   private clearLikeThankYouTimer(): void {
@@ -167,6 +173,9 @@ export class NewsPageComponent extends Destroyable implements OnInit {
 
   /** Shows “Obrigado pelo feedback!” for a few seconds after a successful like gesture. */
   private scheduleLikeThankYou(durationMs = 4000): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.clearLikeThankYouTimer();
     this.likeFeedbackThankYou.set(true);
     this.likeThankYouClearTimer = window.setTimeout(() => {
@@ -180,6 +189,9 @@ export class NewsPageComponent extends Destroyable implements OnInit {
    * Called on scroll and after content is rendered to ensure an accurate initial value.
    */
   private updateReadingProgress(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const winScroll = (window.pageYOffset ?? document.documentElement.scrollTop ?? document.body.scrollTop ?? 0) as number;
     const doc = document.documentElement;
     const height = doc.scrollHeight - doc.clientHeight;
@@ -219,7 +231,7 @@ export class NewsPageComponent extends Destroyable implements OnInit {
   }
 
   async share(): Promise<void> {
-    if (!navigator.share) {
+    if (!isPlatformBrowser(this.platformId) || !navigator.share) {
       return;
     }
 
@@ -274,27 +286,28 @@ export class NewsPageComponent extends Destroyable implements OnInit {
 
           this.homeService.invalidateHomeFeedCache();
 
-          if (res && 'already' in res && res.already) {
-            return;
-          }
+          this.news.update((n) =>
+            n && n.id === post.id ? { ...n, viewed: true } : n
+          );
 
           const hadNewMission = this.missionFeedback.handleMissionsUpdate(res.missions);
 
-          // Toast de leitura: só se não celebrámos já uma missão nesta mesma resposta.
-          if (hadNewMission) {
+          // Toast de leitura: só se houve XP novo e não celebrámos missão nesta resposta.
+          if (hadNewMission || !shouldShowReadReward(res, post.id, post.viewed)) {
             return;
           }
 
+          const points = readRewardPoints(res, post.id);
           try {
             this.snackBar.openFromComponent(ReadRewardToastComponent, {
-              data: { points: 10 },
+              data: { points },
               duration: 4000,
               horizontalPosition: 'right',
               verticalPosition: 'bottom',
               panelClass: ['read-reward-snackbar']
             });
           } catch {
-            this.snackBar.open('Você recebeu 10 pontos! 🎉', 'Fechar', { duration: 4000, panelClass: ['read-reward-snackbar'], verticalPosition: 'bottom' });
+            this.snackBar.open(`Você recebeu ${points} pontos! 🎉`, 'Fechar', { duration: 4000, panelClass: ['read-reward-snackbar'], verticalPosition: 'bottom' });
           }
         },
         error: (err: unknown) => {

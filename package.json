@@ -7,7 +7,8 @@
     "build": "ng build --configuration=production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:cityPenha": "node dist/cityPenha/server/server.mjs"
+    "start:ssr": "node dist/citypenha/server/server.mjs",
+    "serve:ssr": "node dist/citypenha/server/server.mjs"
   },
   "prettier": {
     "overrides": [
