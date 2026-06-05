@@ -21,15 +21,17 @@ FROM node:22-alpine
 WORKDIR /app
 
 ENV PORT=4000
+ENV NODE_OPTIONS=--max-old-space-size=256
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/package*.json ./
+COPY healthcheck.mjs ./
 
 RUN npm ci --legacy-peer-deps --omit=dev
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/home').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+  CMD ["node", "healthcheck.mjs"]
 
 CMD ["node", "dist/citypenha/server/server.mjs"]

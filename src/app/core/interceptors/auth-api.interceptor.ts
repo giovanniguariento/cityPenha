@@ -1,5 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { Auth } from '@angular/fire/auth';
 import { from, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -14,6 +15,10 @@ import { environment } from '../../../environments/environment';
 export const authApiInterceptor: HttpInterceptorFn = (req, next) => {
   const apiUrl = environment.apiUrl;
   if (!req.url.startsWith(apiUrl)) {
+    return next(req);
+  }
+
+  if (isPlatformServer(inject(PLATFORM_ID))) {
     return next(req);
   }
 

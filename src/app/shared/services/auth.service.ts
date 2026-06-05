@@ -1,6 +1,7 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { Auth, GoogleAuthProvider, signInWithPopup, signOut, user, User, UserCredential } from '@angular/fire/auth';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class AuthService {
   readonly user$: Observable<User | null>;
 
   constructor() {
-    this.user$ = user(this.auth);
+    this.user$ = isPlatformServer(inject(PLATFORM_ID)) ? of(null) : user(this.auth);
   }
 
   async loginWithGoogle(): Promise<UserCredential> {
