@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { plainTextFromHtml } from '../utils/decode-html-entities';
 
 const SITE_NAME = 'CityPenha';
 const BASE_URL = 'https://citypenha.com.br';
@@ -38,7 +39,7 @@ export class SeoService {
    * Uses updateTag (not addTag) so SPA navigation between articles stays clean.
    */
   setArticle(config: ArticleSeoConfig): void {
-    const description = this.truncate(config.description);
+    const description = this.truncate(plainTextFromHtml(config.description));
     const image = this.toAbsoluteUrl(config.image);
 
     this.titleService.setTitle(`${config.title} | ${SITE_NAME}`);
@@ -97,7 +98,7 @@ export class SeoService {
    * Resets article-specific OG/Twitter tags and removes JSON-LD.
    */
   setPage(config: PageSeoConfig): void {
-    const description = this.truncate(config.description);
+    const description = this.truncate(plainTextFromHtml(config.description));
     const image = config.image ? this.toAbsoluteUrl(config.image) : DEFAULT_IMAGE;
     const url = config.url ?? BASE_URL;
     const type = config.type ?? 'website';

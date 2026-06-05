@@ -1,3 +1,17 @@
+/** Removes HTML tags and collapses whitespace. Safe for SSR (no DOM). */
+export function stripHtml(text: string): string {
+  if (!text) return '';
+  return text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Plain text for meta tags, OG descriptions, and share snippets.
+ * Strips HTML tags then decodes entities (e.g. WordPress `resume`).
+ */
+export function plainTextFromHtml(html: string): string {
+  return decodeHtmlEntities(stripHtml(html));
+}
+
 /**
  * Decodes common HTML entities in plain text (e.g. from WordPress/API).
  * Safe for SSR (no DOM). Does not interpret HTML tags — only entities.

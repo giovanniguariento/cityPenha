@@ -19,6 +19,7 @@ import { NewsSkeletonComponent } from '../../shared/components/news-skeleton/new
 import { Auth } from '@angular/fire/auth';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { SeoService } from '../../shared/services/seo.service';
+import { plainTextFromHtml } from '../../shared/utils/decode-html-entities';
 
 @Component({
   selector: 'app-news-page',
@@ -249,7 +250,7 @@ export class NewsPageComponent extends Destroyable {
     const url = window.location.href;
     const shareData: ShareData = {
       title: post?.title ?? 'CityPenha',
-      text: post?.resume ?? 'Confira essa notícia no CityPenha',
+      text: post?.resume ? plainTextFromHtml(post.resume) : 'Confira essa notícia no CityPenha',
       url,
     };
 
