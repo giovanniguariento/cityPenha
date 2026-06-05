@@ -66,6 +66,9 @@ function mapFolderPostItem(item: FolderPostItem): Post {
   const categoryName =
     item.categories.length > 0 ? item.categories[0].name : 'Geral';
 
+  const categorySlug =
+    typeof p['categorySlug'] === 'string' ? p['categorySlug'] : categoryName.toLowerCase().replace(/\s+/g, '-');
+
   return {
     slug,
     id,
@@ -79,6 +82,7 @@ function mapFolderPostItem(item: FolderPostItem): Post {
     image,
     categories: cats,
     categoryName,
+    categorySlug,
     onlyVideo: typeof p['onlyVideo'] === 'boolean' ? p['onlyVideo'] : false,
   };
 }

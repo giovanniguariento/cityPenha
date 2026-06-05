@@ -1,5 +1,5 @@
 <div *ngIf="newsDestaque" class="container" [style.backgroundImage]="`url('${this.newsDestaque.image}')`"
-  [routerLink]="'/news/' + newsDestaque.slug">
+  [routerLink]="['/noticias', newsDestaque.categorySlug, newsDestaque.slug]">
   <div class="header">
     <span class="exp">+10 XP</span>
     <div class="options"></div>

@@ -5,6 +5,7 @@ import { NavComponent } from '../../shared/components/nav/nav.component';
 import { HomeService } from '../home/services/home.service';
 import { MissionApiItem } from '../../shared/interface/home.interface';
 import { MissionFeedbackService } from '../../shared/services/mission-feedback.service';
+import { SeoService } from '../../shared/services/seo.service';
 
 export interface Mission {
   id: string;
@@ -67,6 +68,7 @@ export class MissionsPage implements OnInit {
   private readonly homeService = inject(HomeService);
   private readonly missionFeedback = inject(MissionFeedbackService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seoService = inject(SeoService);
 
   readonly badgeName = 'Novo explorador';
   readonly missions = signal<Mission[]>([]);
@@ -74,6 +76,13 @@ export class MissionsPage implements OnInit {
   readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.seoService.setPage({
+      title: 'Missões',
+      description: 'Complete missões, ganhe XP e suba de nível lendo notícias no CityPenha.',
+      url: 'https://citypenha.com.br/missions',
+      type: 'website',
+    });
+
     this.homeService
       .getMissions()
       .pipe(takeUntilDestroyed(this.destroyRef))

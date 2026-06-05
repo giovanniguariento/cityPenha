@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from './auth.service';
 import { HomeService } from '../../modules/home/services/home.service';
@@ -18,7 +19,7 @@ const RECENT_COMPLETION_MS = 120_000;
   providedIn: 'root',
 })
 export class MissionFeedbackService {
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly snackBar = inject(MatSnackBar, { optional: true });
 
   private readonly snapshot = new Map<string, { completed: boolean }>();
 
@@ -26,6 +27,10 @@ export class MissionFeedbackService {
   private toastChainRunning = false;
 
   constructor() {
+    if (isPlatformServer(inject(PLATFORM_ID))) {
+      return;
+    }
+
     const auth = inject(AuthService);
     const home = inject(HomeService);
     auth.user$
@@ -128,7 +133,7 @@ export class MissionFeedbackService {
   }
 
   private runToastChain(): void {
-    if (this.toastChainRunning || this.toastQueue.length === 0) {
+    if (!this.snackBar || this.toastChainRunning || this.toastQueue.length === 0) {
       return;
     }
     this.toastChainRunning = true;
@@ -138,7 +143,7 @@ export class MissionFeedbackService {
         this.toastChainRunning = false;
         return;
       }
-      const ref = this.snackBar.openFromComponent(MissionCompletedToastComponent, {
+      const ref = this.snackBar!.openFromComponent(MissionCompletedToastComponent, {
         data,
         duration: 5200,
         horizontalPosition: 'right',

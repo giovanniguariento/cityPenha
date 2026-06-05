@@ -10,6 +10,7 @@ import { HomeService } from './services/home.service';
 import { Category, Post } from '../../shared/interface/home.interface';
 import { takeUntil } from 'rxjs';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,7 @@ import { apiErrorMessage } from '../../shared/utils/api-error-message';
 })
 export class HomePage extends Destroyable {
   private readonly homeService = inject(HomeService);
+  private readonly seoService = inject(SeoService);
 
   tabs = signal<Category[]>([]);
   posts = signal<Post[]>([]);
@@ -30,6 +32,12 @@ export class HomePage extends Destroyable {
 
   constructor() {
     super();
+    this.seoService.setPage({
+      title: 'CityPenha — Portal de Notícias',
+      description: 'As últimas notícias de Penha e região. Fique por dentro de tudo que acontece na sua cidade.',
+      url: 'https://citypenha.com.br/home',
+      type: 'website',
+    });
     this.homeData$
       .pipe(takeUntil(this.destroy$))
       .subscribe({

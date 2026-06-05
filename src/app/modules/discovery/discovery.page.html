@@ -65,7 +65,7 @@
       <ul class="discovery__article-list">
         @for (post of trendingTopics(); track trackByPostId($index, post); let idx = $index) {
         <li class="discovery__article">
-          <a class="discovery__article-link" [routerLink]="['/news', post.slug]">
+          <a class="discovery__article-link" [routerLink]="['/noticias', post.categorySlug, post.slug]">
             <span class="discovery__article-index" aria-hidden="true">{{ indexLabel(idx) }}</span>
             <div class="discovery__article-body">
               <p class="discovery__article-title">{{ post.title | decodeHtmlEntities }}</p>

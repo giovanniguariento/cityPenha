@@ -11,6 +11,7 @@ import {
 import { Destroyable } from '../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { DecodeHtmlEntitiesPipe } from '../../shared/pipes/decode-html-entities.pipe';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-discovery',
@@ -21,6 +22,7 @@ import { DecodeHtmlEntitiesPipe } from '../../shared/pipes/decode-html-entities.
 })
 export class DiscoveryPage extends Destroyable {
   private readonly homeService = inject(HomeService);
+  private readonly seoService = inject(SeoService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -31,6 +33,12 @@ export class DiscoveryPage extends Destroyable {
 
   constructor() {
     super();
+    this.seoService.setPage({
+      title: 'Descobrir',
+      description: 'Explore tópicos em alta, notícias do mundo e autores populares no CityPenha.',
+      url: 'https://citypenha.com.br/discovery',
+      type: 'website',
+    });
     this.load();
   }
 

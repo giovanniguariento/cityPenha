@@ -13,7 +13,7 @@
         >Lido</span>
     </div>
 
-    <h2 class="card-title" [routerLink]="'/news/' + card.slug">{{ card.title | decodeHtmlEntities }}</h2>
+    <h2 class="card-title" [routerLink]="['/noticias', card.categorySlug, card.slug]">{{ card.title | decodeHtmlEntities }}</h2>
 
     <div class="card-author">
       <div class="author-info">
@@ -50,7 +50,7 @@
     </div>
 
   </div>
-  <figure class="card-image" [class.only-video]="card.onlyVideo" [routerLink]="'/news/' + card.slug">
+  <figure class="card-image" [class.only-video]="card.onlyVideo" [routerLink]="['/noticias', card.categorySlug, card.slug]">
     <img [src]="card.image" alt="">
   </figure>
 

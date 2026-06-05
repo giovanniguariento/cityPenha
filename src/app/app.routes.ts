@@ -10,7 +10,7 @@ export const routes: Routes = [
     path: 'discovery/topics',
     loadComponent: () => import('./modules/discovery/topics/topics.page').then(m => m.DiscoveryTopicsPage),
   },
-  { path: 'news/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
+  { path: 'noticias/:categorySlug/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
   { path: 'login', loadComponent: () => import('./modules/login/login.page').then(m => m.LoginPage) },
   {
     path: 'favorites',

@@ -9,6 +9,8 @@ import { HomeService } from '../home/services/home.service';
 import { LoginRequiredDialogComponent } from '../../shared/components/login-required-dialog/login-required-dialog.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { take } from 'rxjs';
+import { SeoService } from '../../shared/services/seo.service';
+import { FeedbackService } from '../../shared/services/feedback.service';
 
 const WEEKDAY_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -68,6 +70,8 @@ export class FrequenciaPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly authService = inject(AuthService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly seoService = inject(SeoService);
+  private readonly feedback = inject(FeedbackService);
 
   readonly weekDayLetters = WEEKDAY_LETTERS;
   readonly weekDayLabels = WEEKDAY_LABELS;
@@ -163,6 +167,13 @@ export class FrequenciaPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.seoService.setPage({
+      title: 'Frequência de Leitura',
+      description: 'Acompanhe sua sequência de leitura diária e construa o hábito de se informar com o CityPenha.',
+      url: 'https://citypenha.com.br/frequencia',
+      type: 'website',
+    });
+
     // Não usar auth.currentUser aqui: no carregamento direto da rota o Firebase ainda pode
     // não ter restaurado a sessão. user$ emite após o estado inicial estar definido.
     this.authService.user$
@@ -307,17 +318,43 @@ export class FrequenciaPage implements OnInit {
     this.calendarDays.set(days);
   }
 
-  share(): void {
+  async share(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
-    if (navigator.share) {
-      navigator.share({
-        title: 'Frequência - CityPenha',
-        text: `Estou com ${this.streakDays()} dias seguidos! O conhecimento cresce com a frequência.`,
-        url: window.location.href,
-      }).catch(() => { });
+    const url = window.location.href;
+    const shareData: ShareData = {
+      title: 'Frequência - CityPenha',
+      text: `Estou com ${this.streakDays()} dias seguidos! O conhecimento cresce com a frequência.`,
+      url,
+    };
+
+    if (navigator.share && (navigator.canShare == null || navigator.canShare(shareData))) {
+      try {
+        await navigator.share(shareData);
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          await this.fallbackCopyToClipboard(url);
+        }
+      }
+    } else {
+      await this.fallbackCopyToClipboard(url);
+    }
+  }
+
+  private async fallbackCopyToClipboard(url: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(url);
+      this.feedback.showSuccess('Link copiado!', 2500);
+    } catch {
+      const el = document.createElement('input');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.feedback.showSuccess('Link copiado!', 2500);
     }
   }
 }

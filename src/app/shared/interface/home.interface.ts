@@ -32,6 +32,8 @@ export interface Post {
   image: string;
   categories: number[]; // Array de IDs das categorias
   categoryName: string;
+  /** URL-safe slug da categoria principal (ex: "seguranca"). Usado na rota /noticias/:categorySlug/:slug. */
+  categorySlug: string;
   /**
    * GET /post/:slug com Bearer opcional: estado de curtida e contagem.
    */

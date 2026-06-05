@@ -18,6 +18,7 @@ import { DecodeHtmlEntitiesPipe } from '../../shared/pipes/decode-html-entities.
 import { NewsSkeletonComponent } from '../../shared/components/news-skeleton/news-skeleton.component';
 import { Auth } from '@angular/fire/auth';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-news-page',
@@ -56,6 +57,7 @@ export class NewsPageComponent extends Destroyable {
   private readonly homeService = inject(HomeService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly seoService = inject(SeoService);
   /** Coalesces scroll events to at most one DOM update per animation frame. */
   private scrollRafId = 0;
   private scrollHandler?: () => void;
@@ -85,30 +87,28 @@ export class NewsPageComponent extends Destroyable {
   readonly loadError = signal<string | null>(null);
   /** Compact back/share bar when the hero header is off-screen. */
   readonly floatingNavVisible = signal(false);
-  /** Brief “thank you” line after the user likes (auto-dismiss). */
+  /** Brief "thank you" line after the user likes (auto-dismiss). */
   readonly likeFeedbackThankYou = signal(false);
   /** Browser `setTimeout` id (number); avoids Node `Timeout` vs DOM mismatch in typings. */
-  private likeThankYouClearTimer: number | null = null;
+  private likeThankYouClearTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     super();
 
-    if (isPlatformBrowser(this.platformId)) {
-      afterNextRender(() => {
-        this.scrollHandler = () => {
-          if (this.scrollRafId) {
-            return;
-          }
-          this.scrollRafId = requestAnimationFrame(() => {
-            this.scrollRafId = 0;
-            this.updateReadingProgress();
-          });
-        };
+    afterNextRender(() => {
+      this.scrollHandler = () => {
+        if (this.scrollRafId) {
+          return;
+        }
+        this.scrollRafId = requestAnimationFrame(() => {
+          this.scrollRafId = 0;
+          this.updateReadingProgress();
+        });
+      };
 
-        window.addEventListener('scroll', this.scrollHandler, { passive: true });
-        this.updateReadingProgress();
-      });
-    }
+      window.addEventListener('scroll', this.scrollHandler, { passive: true });
+      this.updateReadingProgress();
+    });
 
     this.activatedRoute.params
       .pipe(
@@ -139,6 +139,18 @@ export class NewsPageComponent extends Destroyable {
           this.likePending.set(false);
           this.savePending.set(false);
           this.firstRenderAt = Date.now();
+
+          // SEO: set article meta tags, OG, Twitter Card, canonical, JSON-LD
+          this.seoService.setArticle({
+            title: post.title,
+            description: post.resume ?? post.title,
+            image: post.image,
+            url: `https://citypenha.com.br/noticias/${post.categorySlug}/${post.slug}`,
+            publishedAt: post.date,
+            authorName: post.author?.name,
+            category: post.categoryName,
+          });
+
           if (isPlatformBrowser(this.platformId)) {
             setTimeout(() => this.updateReadingProgress(), 0);
           }
@@ -161,6 +173,7 @@ export class NewsPageComponent extends Destroyable {
       }
     }
     this.clearLikeThankYouTimer();
+    this.seoService.resetToDefault();
     super.ngOnDestroy();
   }
 
@@ -171,14 +184,11 @@ export class NewsPageComponent extends Destroyable {
     }
   }
 
-  /** Shows “Obrigado pelo feedback!” for a few seconds after a successful like gesture. */
+  /** Shows "Obrigado pelo feedback!" for a few seconds after a successful like gesture. */
   private scheduleLikeThankYou(durationMs = 4000): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
     this.clearLikeThankYouTimer();
     this.likeFeedbackThankYou.set(true);
-    this.likeThankYouClearTimer = window.setTimeout(() => {
+    this.likeThankYouClearTimer = setTimeout(() => {
       this.likeFeedbackThankYou.set(false);
       this.likeThankYouClearTimer = null;
     }, durationMs);
@@ -231,22 +241,44 @@ export class NewsPageComponent extends Destroyable {
   }
 
   async share(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId) || !navigator.share) {
+    if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
-    try {
-      const shareData = {
-        title: 'Acesse o CityPenha',
-        text: 'Veja agora essa noticia',
-        url: window.location.href,
-      };
-      await navigator.share(shareData);
-    } catch (error) {
-      // User cancelled or error occurred - silently fail
-      if (error instanceof Error && error.name !== 'AbortError') {
-        // Could log to error service in production
+    const post = this.news();
+    const url = window.location.href;
+    const shareData: ShareData = {
+      title: post?.title ?? 'CityPenha',
+      text: post?.resume ?? 'Confira essa notícia no CityPenha',
+      url,
+    };
+
+    if (navigator.share && (navigator.canShare == null || navigator.canShare(shareData))) {
+      try {
+        await navigator.share(shareData);
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          await this.fallbackCopyToClipboard(url);
+        }
       }
+    } else {
+      await this.fallbackCopyToClipboard(url);
+    }
+  }
+
+  private async fallbackCopyToClipboard(url: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(url);
+      this.snackBar.open('Link copiado!', '', { duration: 2500, verticalPosition: 'bottom' });
+    } catch {
+      // Last resort for HTTP contexts or older browsers
+      const el = document.createElement('input');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.snackBar.open('Link copiado!', '', { duration: 2500, verticalPosition: 'bottom' });
     }
   }
 
@@ -528,9 +560,6 @@ export class NewsPageComponent extends Destroyable {
   }
 
   onMoreClick() {
-    const post = this.news();
-    // Always open the "more" menu for both logged and anonymous users.
-    // We intentionally do NOT show the login-required dialog here.
     this.openMoreMenu();
   }
 

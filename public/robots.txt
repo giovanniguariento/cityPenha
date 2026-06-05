@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin
+Disallow: /profile
+Disallow: /favorites
+Allow: /
+
+Sitemap: https://citypenha.com.br/sitemap.xml
