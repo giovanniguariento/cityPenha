@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { catchError, map, Observable, OperatorFunction, shareReplay, throwError } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -29,6 +30,7 @@ const SIGNUP_PLACEHOLDER_PHOTO =
 })
 export class HomeService {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
   private dadosCache$: Observable<BlogResponse> | null = null;
   private readonly postCache = new Map<string, Observable<PostDetail>>();
 
@@ -36,7 +38,18 @@ export class HomeService {
     return map((r) => r.data);
   }
 
+  /** SSR reuses one ApplicationRef; avoid retaining feed/post streams in root singleton. */
+  private isServer(): boolean {
+    return isPlatformServer(this.platformId);
+  }
+
   getResourcesHome(): Observable<BlogResponse> {
+    if (this.isServer()) {
+      return this.http
+        .get<ApiSuccessEnvelope<BlogResponse>>(`${environment.apiUrl}/home`)
+        .pipe(this.unwrapData<BlogResponse>());
+    }
+
     if (!this.dadosCache$) {
       this.dadosCache$ = this.http
         .get<ApiSuccessEnvelope<BlogResponse>>(`${environment.apiUrl}/home`)
@@ -76,6 +89,12 @@ export class HomeService {
    * GET /post/:slug — estado do usuário via Bearer (optionalAuth).
    */
   getPost(slug: string): Observable<PostDetail> {
+    if (this.isServer()) {
+      return this.http
+        .get<ApiSuccessEnvelope<PostDetail>>(`${environment.apiUrl}/post/${encodeURIComponent(slug)}`)
+        .pipe(this.unwrapData<PostDetail>());
+    }
+
     if (!this.postCache.has(slug)) {
       const post$ = this.http
         .get<ApiSuccessEnvelope<PostDetail>>(`${environment.apiUrl}/post/${encodeURIComponent(slug)}`)

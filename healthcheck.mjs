@@ -1,9 +1,9 @@
 /**
- * Verifica se o servidor SSR está de pé: rota /home, HTML Angular renderizado.
+ * Verifica se o processo HTTP do frontend está de pé (sem disparar SSR).
  */
 const port = Number(process.env['PORT'] || 4000);
-const url = `http://127.0.0.1:${port}/home`;
-const timeoutMs = 8000;
+const url = `http://127.0.0.1:${port}/health`;
+const timeoutMs = 5000;
 
 const controller = new AbortController();
 const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -16,20 +16,8 @@ try {
     process.exit(1);
   }
 
-  const contentType = response.headers.get('content-type') ?? '';
-  if (!contentType.includes('text/html')) {
-    process.exit(1);
-  }
-
-  const html = await response.text();
-  const hasAppShell = html.includes('<app-root');
-  const hasHomeRender =
-    html.includes('app-home') ||
-    html.includes('app-home-skeleton') ||
-    html.includes('home-state') ||
-    html.includes('app-nav');
-
-  process.exit(hasAppShell && hasHomeRender ? 0 : 1);
+  const body = (await response.text()).trim();
+  process.exit(body === 'ok' ? 0 : 1);
 } catch {
   clearTimeout(timer);
   process.exit(1);

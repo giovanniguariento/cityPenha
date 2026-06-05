@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { StoreData } from './shared/store/store';
 import { MissionFeedbackService } from './shared/services/mission-feedback.service';
@@ -13,7 +14,9 @@ import { MissionFeedbackService } from './shared/services/mission-feedback.servi
 })
 export class App implements OnInit {
   constructor(private store: StoreData) {
-    inject(MissionFeedbackService);
+    if (!isPlatformServer(inject(PLATFORM_ID))) {
+      inject(MissionFeedbackService);
+    }
   }
 
   ngOnInit(): void {

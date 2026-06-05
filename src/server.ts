@@ -24,6 +24,11 @@ const angularApp = new AngularNodeAppEngine();
  * ```
  */
 
+/** Liveness probe without Angular SSR (healthcheck must not render /home). */
+app.get('/health', (_req, res) => {
+  res.status(200).type('text/plain').send('ok');
+});
+
 /**
  * Serve static files from /browser
  */
