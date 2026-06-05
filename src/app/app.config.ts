@@ -16,6 +16,7 @@ import { registerLocaleData } from '@angular/common';
 import { routes } from './app.routes';
 import { IdlePreloadStrategy } from './core/routing/idle-preload.strategy';
 import { sharedAppConfig } from './app.config.shared';
+import { StoreData } from './shared/store/store';
 
 registerLocaleData(localePt);
 
@@ -37,6 +38,7 @@ const firebaseConfig = {
 
 const browserAppConfig: ApplicationConfig = {
   providers: [
+    StoreData,
     provideAnimations(),
     importProvidersFrom(MatSnackBarModule),
     provideBrowserGlobalErrorListeners(),

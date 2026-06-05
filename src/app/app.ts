@@ -13,13 +13,15 @@ import { MissionFeedbackService } from './shared/services/mission-feedback.servi
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App implements OnInit {
-  constructor(private store: StoreData) {
+  private readonly store = inject(StoreData, { optional: true });
+
+  constructor() {
     if (!isPlatformServer(inject(PLATFORM_ID))) {
       inject(MissionFeedbackService);
     }
   }
 
   ngOnInit(): void {
-    this.store.set('data', { name: 'City Penha', description: 'A beautiful city in Brazil' });
+    this.store?.set('data', { name: 'City Penha', description: 'A beautiful city in Brazil' });
   }
 }

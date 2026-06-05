@@ -40,16 +40,35 @@ app.use(
   }),
 );
 
+const SSR_TIMEOUT_MS = 10_000;
+
 /**
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
+  let settled = false;
+
+  const timer = setTimeout(() => {
+    if (!settled) {
+      settled = true;
+      next(new Error(`SSR timeout for ${req.url}`));
+    }
+  }, SSR_TIMEOUT_MS);
+
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
-    .catch(next);
+    .then((response) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      return response ? writeResponseToNodeResponse(response, res) : next();
+    })
+    .catch((err) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      next(err);
+    });
 });
 
 /**

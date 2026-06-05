@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -66,6 +67,7 @@ export class FrequenciaPage implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
   private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly weekDayLetters = WEEKDAY_LETTERS;
   readonly weekDayLabels = WEEKDAY_LABELS;
@@ -306,6 +308,10 @@ export class FrequenciaPage implements OnInit {
   }
 
   share(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     if (navigator.share) {
       navigator.share({
         title: 'Frequência - CityPenha',
