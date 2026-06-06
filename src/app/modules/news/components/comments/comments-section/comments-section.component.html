@@ -1,0 +1,67 @@
+<section #commentsSectionRoot class="comments-section">
+  <div class="comments-section__header">
+    <h3 class="comments-section__title">Comentários</h3>
+  </div>
+
+  @if (loading() && comments().length === 0) {
+    @for (sk of [1, 2, 3]; track sk) {
+      <div class="comment-skeleton">
+        <div class="comment-skeleton__avatar"></div>
+        <div class="comment-skeleton__lines">
+          <div class="comment-skeleton__line comment-skeleton__line--name"></div>
+          <div class="comment-skeleton__line"></div>
+          <div class="comment-skeleton__line comment-skeleton__line--short"></div>
+        </div>
+      </div>
+    }
+  }
+
+  @if (loadError()) {
+    <p class="comments-section__error">{{ loadError() }}</p>
+  }
+
+  @if (!loading() && !loadError() && comments().length === 0) {
+    <p class="comments-section__empty">Seja o primeiro a comentar!</p>
+  }
+
+  @for (comment of comments(); track comment.id) {
+    <app-comment-item
+      [comment]="comment"
+      [currentUserId]="isAuthenticated() ? currentUserId : null"
+      [lastDeletedCommentId]="lastDeletedCommentId()"
+      (likeToggled)="onLikeComment($event)"
+      (replyRequested)="onReplyRequested($event)"
+      (deleteRequested)="onDeleteRequested($event)"
+      (authRequired)="openLoginDialog()"
+    />
+  }
+
+  @if (nextCursor() && !loading()) {
+    <button type="button" class="comments-section__load-more" (click)="loadMore()">
+      Ver mais comentários
+    </button>
+  }
+
+  @if (loading() && comments().length > 0) {
+    <div class="comments-section__loading-more">
+      <span class="comments-section__spinner"></span>
+    </div>
+  }
+
+  <div
+    class="comments-section__composer"
+    [class.comments-section__composer--fixed]="composerFixedActive()"
+    [class.comments-section__composer--leaving]="composerLeaving()"
+    [class.comments-section__composer--docking-in]="composerDockingIn()"
+    (animationend)="onComposerAnimationEnd($event)"
+  >
+    <app-comment-input
+      [replyingTo]="replyingTo()"
+      [submitting]="submitting()"
+      [disabled]="!isAuthenticated()"
+      (submitted)="onSubmit($event)"
+      (replyDismissed)="replyingTo.set(null)"
+      (fieldClicked)="onInputClick()"
+    />
+  </div>
+</section>

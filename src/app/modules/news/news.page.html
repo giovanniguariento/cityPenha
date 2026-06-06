@@ -156,6 +156,12 @@
 
   <main [outerHTML]="news()?.content" *ngIf="!news()?.onlyVideo"></main>
 
+  <div class="container-tag">
+    @for (tag of news()?.tags; track tag) {
+    <span class="tag">{{tag}}</span>
+    }
+  </div>
+
   <section class="post-feedback-card" [class.post-feedback-card--complete]="readingTime() >= 100"
     aria-labelledby="post-feedback-heading">
     <h2 id="post-feedback-heading" class="post-feedback-card__title">Terminou de ler?</h2>
@@ -200,11 +206,13 @@
     <p class="post-feedback-card__thankyou" role="status">Obrigado pelo feedback!</p>
     }
   </section>
-
-  <div class="container-tag">
-    @for (tag of news()?.tags; track tag) {
-    <span class="tag">{{tag}}</span>
-    }
-  </div>
 </div>
+
+@if (news()) {
+  <app-comments-section
+    [wordpressPostId]="news()!.id"
+    [currentUserId]="currentUserId()"
+    [pastArticleStart]="articleContentStarted()"
+  />
+}
 }

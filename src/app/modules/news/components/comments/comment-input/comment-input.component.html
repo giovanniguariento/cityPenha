@@ -1,0 +1,48 @@
+<div class="comment-input">
+  @if (replyingTo) {
+    <div class="comment-input__reply-context">
+      Respondendo a <strong>{{ replyingTo.author.name }}</strong>
+      <button type="button" class="comment-input__reply-dismiss" (click)="replyDismissed.emit()" aria-label="Cancelar resposta">×</button>
+    </div>
+  }
+
+  <div
+    class="comment-input__row"
+    [class.comment-input__row--locked]="disabled"
+    [class.comment-input__row--multiline]="isMultiline()"
+  >
+    <textarea
+      #field
+      class="comment-input__field"
+      placeholder="Escrever um comentário"
+      rows="1"
+      [readonly]="disabled"
+      [disabled]="submitting"
+      [value]="inputValue()"
+      (input)="onInput($event)"
+      (click)="onFieldClick()"
+      (focus)="onFieldFocus($event)"
+      maxlength="2000"
+      aria-label="Campo de comentário"
+    ></textarea>
+    <div class="comment-input__actions">
+      <span class="comment-input__xp-pill">+1 XP</span>
+      <button
+        type="button"
+        class="comment-input__send"
+        [class.comment-input__send--inactive]="!disabled && !inputValue().trim()"
+        [disabled]="submitting"
+        (click)="onSendClick()"
+        aria-label="Enviar comentário"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff" aria-hidden="true">
+          <path d="M2 21L23 12 2 3v7l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  @if (nearLimit) {
+    <span class="comment-input__char-count">{{ charCount }}/2000</span>
+  }
+</div>

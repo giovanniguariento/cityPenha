@@ -1,0 +1,103 @@
+<div class="comment-item" [class.comment-item--reply]="isReply">
+  <div class="comment-item__avatar-wrap">
+    @if (comment.author.avatarUrl) {
+      <img class="comment-item__avatar" [src]="comment.author.avatarUrl" [alt]="comment.author.name" />
+    } @else {
+      <div class="comment-item__avatar comment-item__avatar--initials" [style.background-color]="avatarBgColor">
+        {{ avatarInitials }}
+      </div>
+    }
+  </div>
+
+  <div class="comment-item__body">
+    <div class="comment-item__header">
+      <div class="comment-item__meta">
+        <span class="comment-item__author">{{ comment.author.name }}</span>
+        <span class="comment-item__time">{{ comment.createdAtRelative }}</span>
+      </div>
+      @if (comment.isOwn) {
+        <button type="button" class="comment-item__more" (click)="onDelete()" aria-label="Excluir comentário">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="5" cy="12" r="1.5" fill="#6B6B6B"/>
+            <circle cx="12" cy="12" r="1.5" fill="#6B6B6B"/>
+            <circle cx="19" cy="12" r="1.5" fill="#6B6B6B"/>
+          </svg>
+        </button>
+      }
+    </div>
+
+    <p class="comment-item__content">{{ comment.content }}</p>
+
+    <div class="comment-item__actions">
+      <button
+        type="button"
+        class="comment-item__like"
+        [class.comment-item__like--active]="liked()"
+        [disabled]="likePending()"
+        (click)="onLike()"
+        aria-label="Curtir comentário"
+      >
+        @if (liked()) {
+          <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z" fill="currentColor"/>
+          </svg>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+        }
+        <span>{{ likeCount() }}</span>
+      </button>
+
+      @if (!isReply) {
+        <button type="button" class="comment-item__reply-btn" (click)="replyRequested.emit(comment)">
+          Responder
+        </button>
+      }
+    </div>
+
+    @if (!isReply && (comment.replyCount ?? 0) > 0) {
+      <button type="button" class="comment-item__expand-replies" (click)="toggleReplies()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+          [class.comment-item__expand-icon--open]="expanded()">
+          <path d="M2 4L6 8L10 4" stroke="#ff1500" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {{ comment.replyCount }} {{ (comment.replyCount ?? 0) === 1 ? 'Resposta' : 'Respostas' }}
+      </button>
+
+      @if (expanded()) {
+        <div class="comment-item__replies">
+          @if (loadingReplies() && replies().length === 0) {
+            @for (sk of [1, 2]; track sk) {
+              <div class="comment-skeleton comment-skeleton--small">
+                <div class="comment-skeleton__avatar"></div>
+                <div class="comment-skeleton__lines">
+                  <div class="comment-skeleton__line comment-skeleton__line--name"></div>
+                  <div class="comment-skeleton__line"></div>
+                </div>
+              </div>
+            }
+          }
+
+          @for (reply of replies(); track reply.id) {
+            <app-comment-item
+              [comment]="reply"
+              [isReply]="true"
+              [currentUserId]="currentUserId"
+              [lastDeletedCommentId]="lastDeletedCommentId"
+              (likeToggled)="likeToggled.emit($event)"
+              (deleteRequested)="deleteRequested.emit($event)"
+              (authRequired)="authRequired.emit()"
+            />
+          }
+
+          @if (repliesNextCursor()) {
+            <button type="button" class="comment-item__load-more-replies" (click)="loadMoreReplies()">
+              Ver mais respostas
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

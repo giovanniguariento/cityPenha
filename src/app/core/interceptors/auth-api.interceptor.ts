@@ -9,8 +9,12 @@ import { environment } from '../../../environments/environment';
  * Anexa `Authorization: Bearer <Firebase ID token>` às requisições à API do app.
  * Sem usuário Firebase, a requisição segue sem header (rotas optionalAuth).
  *
- * Aguarda `authStateReady()` para não enviar sem token no primeiro paint: a sessão
- * persistida só hidrata em `currentUser` depois que o Firebase termina de restaurar.
+ * Verifica `currentUser` de forma síncrona primeiro. Se null, encaminha imediatamente
+ * para não bloquear o HTTP Transfer Cache durante a hidratação SSR: aguardar
+ * `authStateReady()` tornaria toda requisição assíncrona, causando um flash de skeleton
+ * mesmo com os dados já disponíveis no cache.
+ * Rotas protegidas não são afetadas pois o auth guard garante que o componente só
+ * carrega após o Firebase resolver o estado de autenticação.
  */
 export const authApiInterceptor: HttpInterceptorFn = (req, next) => {
   const apiUrl = environment.apiUrl;
@@ -23,22 +27,20 @@ export const authApiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const auth = inject(Auth);
-  return from(auth.authStateReady()).pipe(
-    switchMap(() => {
-      const user = auth.currentUser;
-      if (!user) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    return next(req);
+  }
+
+  return from(user.getIdToken()).pipe(
+    switchMap((token) => {
+      if (!token) {
         return next(req);
       }
-      return from(user.getIdToken()).pipe(
-        switchMap((token) => {
-          if (!token) {
-            return next(req);
-          }
-          return next(
-            req.clone({
-              setHeaders: { Authorization: `Bearer ${token}` },
-            })
-          );
+      return next(
+        req.clone({
+          setHeaders: { Authorization: `Bearer ${token}` },
         })
       );
     })

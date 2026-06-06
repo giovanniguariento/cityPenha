@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HomeService } from '../home/services/home.service';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -20,6 +20,8 @@ import { Auth } from '@angular/fire/auth';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { SeoService } from '../../shared/services/seo.service';
 import { plainTextFromHtml } from '../../shared/utils/decode-html-entities';
+import { UserStateService } from '../../core/state/user-state.service';
+import { CommentsSectionComponent } from './components/comments/comments-section/comments-section.component';
 
 @Component({
   selector: 'app-news-page',
@@ -31,6 +33,7 @@ import { plainTextFromHtml } from '../../shared/utils/decode-html-entities';
     ReadRewardToastComponent,
     DecodeHtmlEntitiesPipe,
     NewsSkeletonComponent,
+    CommentsSectionComponent,
   ],
   templateUrl: './news.page.html',
   styleUrl: './news.page.scss',
@@ -59,6 +62,9 @@ export class NewsPageComponent extends Destroyable {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly seoService = inject(SeoService);
+  private readonly userState = inject(UserStateService);
+
+  readonly currentUserId = computed(() => this.userState.getUserIdFromStorage());
   /** Coalesces scroll events to at most one DOM update per animation frame. */
   private scrollRafId = 0;
   private scrollHandler?: () => void;
@@ -88,6 +94,8 @@ export class NewsPageComponent extends Destroyable {
   readonly loadError = signal<string | null>(null);
   /** Compact back/share bar when the hero header is off-screen. */
   readonly floatingNavVisible = signal(false);
+  /** True once the reader has scrolled past the hero into article content. */
+  readonly articleContentStarted = signal(false);
   /** Brief "thank you" line after the user likes (auto-dismiss). */
   readonly likeFeedbackThankYou = signal(false);
   /** Browser `setTimeout` id (number); avoids Node `Timeout` vs DOM mismatch in typings. */
@@ -118,6 +126,7 @@ export class NewsPageComponent extends Destroyable {
           this.loadError.set(null);
           this.news.set(null);
           this.floatingNavVisible.set(false);
+          this.articleContentStarted.set(false);
           this.clearLikeThankYouTimer();
           this.likeFeedbackThankYou.set(false);
         }),
@@ -225,6 +234,7 @@ export class NewsPageComponent extends Destroyable {
       ? 100
       : Math.max(120, Math.round(window.innerHeight * 0.47));
     this.floatingNavVisible.set(Boolean(post) && winScroll >= scrollThreshold);
+    this.articleContentStarted.set(Boolean(post) && winScroll >= scrollThreshold);
 
     if (this.readingTime() >= 100) {
       if (post && !this.readAttemptedForPost.has(post.id)) {

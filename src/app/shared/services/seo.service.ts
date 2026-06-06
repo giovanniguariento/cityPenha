@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { environment } from '../../../environments/environment';
 import { plainTextFromHtml } from '../utils/decode-html-entities';
 
 const SITE_NAME = 'CityPenha';
@@ -8,6 +9,13 @@ const BASE_URL = 'https://citypenha.com.br';
 const DEFAULT_DESCRIPTION = 'As últimas notícias de Penha e região.';
 const DEFAULT_IMAGE = `${BASE_URL}/assets/og-default.jpg`;
 const JSON_LD_ID = 'structured-data';
+const OG_IMAGE_WIDTH = '1200';
+const OG_IMAGE_HEIGHT = '630';
+const OG_IMAGE_TYPE = 'image/jpeg';
+/** WordPress `large` size — keeps OG images under WhatsApp's ~600 KB limit. */
+const WP_OG_SIZE_SUFFIX = '-1024x576';
+const WP_UPLOADS_PATH = '/wp-content/uploads/';
+const WP_SIZE_SUFFIX_PATTERN = /-(\d+)x(\d+)(\.(jpe?g|png|webp|gif))$/i;
 
 export interface ArticleSeoConfig {
   title: string;
@@ -40,7 +48,7 @@ export class SeoService {
    */
   setArticle(config: ArticleSeoConfig): void {
     const description = this.truncate(plainTextFromHtml(config.description));
-    const image = this.toAbsoluteUrl(config.image);
+    const image = this.buildOgImageUrl(config);
 
     this.titleService.setTitle(`${config.title} | ${SITE_NAME}`);
     this.meta.updateTag({ name: 'description', content: description });
@@ -52,6 +60,7 @@ export class SeoService {
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:url', content: config.url });
     this.meta.updateTag({ property: 'og:image', content: image });
+    this.setOgImageMeta(image);
     this.meta.updateTag({ property: 'og:locale', content: 'pt_BR' });
 
     if (config.publishedAt) {
@@ -99,7 +108,7 @@ export class SeoService {
    */
   setPage(config: PageSeoConfig): void {
     const description = this.truncate(plainTextFromHtml(config.description));
-    const image = config.image ? this.toAbsoluteUrl(config.image) : DEFAULT_IMAGE;
+    const image = config.image ? this.toOgImageUrl(config.image) : DEFAULT_IMAGE;
     const url = config.url ?? BASE_URL;
     const type = config.type ?? 'website';
 
@@ -112,6 +121,7 @@ export class SeoService {
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:url', content: url });
     this.meta.updateTag({ property: 'og:image', content: image });
+    this.setOgImageMeta(image);
     this.meta.updateTag({ property: 'og:locale', content: 'pt_BR' });
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
@@ -153,6 +163,7 @@ export class SeoService {
     this.meta.updateTag({ property: 'og:description', content: DEFAULT_DESCRIPTION });
     this.meta.updateTag({ property: 'og:url', content: BASE_URL });
     this.meta.updateTag({ property: 'og:image', content: DEFAULT_IMAGE });
+    this.setOgImageMeta(DEFAULT_IMAGE);
     this.meta.updateTag({ property: 'og:locale', content: 'pt_BR' });
     this.meta.removeTag('name="twitter:card"');
     this.meta.removeTag('name="twitter:title"');
@@ -177,6 +188,56 @@ export class SeoService {
     if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength - 3) + '...';
+  }
+
+  private buildOgImageUrl(config: ArticleSeoConfig): string {
+    const apiBase = environment.apiUrl.replace(/\/$/, '');
+    const params = new URLSearchParams({
+      title: config.title,
+      description: plainTextFromHtml(config.description).slice(0, 160),
+      date: config.publishedAt ?? '',
+      imageUrl: this.toOgImageUrl(config.image),
+    });
+    return `${apiBase}/og-image?${params.toString()}`;
+  }
+
+  private setOgImageMeta(imageUrl: string): void {
+    this.meta.updateTag({ property: 'og:image:width', content: OG_IMAGE_WIDTH });
+    this.meta.updateTag({ property: 'og:image:height', content: OG_IMAGE_HEIGHT });
+    this.meta.updateTag({ property: 'og:image:type', content: this.inferImageMimeType(imageUrl) });
+  }
+
+  private inferImageMimeType(url: string): string {
+    const normalized = url.split('?')[0].toLowerCase();
+    if (normalized.endsWith('.png')) return 'image/png';
+    if (normalized.endsWith('.webp')) return 'image/webp';
+    if (normalized.endsWith('.gif')) return 'image/gif';
+    return OG_IMAGE_TYPE;
+  }
+
+  /**
+   * Resolves an OG image URL optimized for WhatsApp (< 600 KB).
+   * WordPress uploads are rewritten to the `large` variant (~1024 px wide).
+   */
+  private toOgImageUrl(rawUrl: string): string {
+    const absolute = this.toAbsoluteUrl(rawUrl);
+    if (!absolute.includes(WP_UPLOADS_PATH)) return absolute;
+
+    const [path, query = ''] = absolute.split('?');
+    const sized = this.toWordPressLargeImagePath(path);
+    return query ? `${sized}?${query}` : sized;
+  }
+
+  private toWordPressLargeImagePath(path: string): string {
+    const match = path.match(WP_SIZE_SUFFIX_PATTERN);
+    if (!match) {
+      return path.replace(/\.(jpe?g|png|webp|gif)$/i, `${WP_OG_SIZE_SUFFIX}.$1`);
+    }
+
+    const width = Number(match[1]);
+    if (width <= 1200) return path;
+
+    return path.replace(WP_SIZE_SUFFIX_PATTERN, `${WP_OG_SIZE_SUFFIX}${match[3]}`);
   }
 
   private toAbsoluteUrl(url: string): string {

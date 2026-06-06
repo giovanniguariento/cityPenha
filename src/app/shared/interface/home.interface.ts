@@ -295,6 +295,49 @@ export interface DiscoveryResponse {
   popularAuthors: DiscoveryPopularAuthor[];
 }
 
+/** Autor de um comentário (nickname tem prioridade sobre name). */
+export interface CommentAuthor {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+/** Item de comentário retornado pela API. */
+export interface CommentView {
+  id: string;
+  content: string;
+  author: CommentAuthor;
+  createdAt: string;
+  createdAtRelative: string;
+  likeCount: number;
+  replyCount?: number;
+  liked?: boolean;
+  isOwn?: boolean;
+}
+
+/** Envelope de listagem de comentários (data + meta). */
+export interface CommentsListPayload {
+  data: CommentView[];
+  meta: { nextCursor: string | null };
+}
+
+/** Resposta de POST /post/:id/comments (após unwrap de `data`). */
+export interface CreateCommentPayload {
+  comment: CommentView;
+  missions?: MissionApiItem[];
+  badges?: unknown[];
+  level?: unknown | null;
+  user?: { id: string; xp: number; coins: number };
+  completedMissionsCount?: number;
+  rewards?: Reward[];
+}
+
+/** Resposta de POST /comment/:id/like (após unwrap de `data`). */
+export interface CommentLikePayload {
+  liked: boolean;
+  likeCount: number;
+}
+
 /** Mission item returned by GET /mission */
 export interface MissionApiItem {
   id: string;
