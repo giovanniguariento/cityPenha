@@ -230,9 +230,7 @@ export class SeoService {
 
   private toWordPressLargeImagePath(path: string): string {
     const match = path.match(WP_SIZE_SUFFIX_PATTERN);
-    if (!match) {
-      return path.replace(/\.(jpe?g|png|webp|gif)$/i, `${WP_OG_SIZE_SUFFIX}.$1`);
-    }
+    if (!match) return path;
 
     const width = Number(match[1]);
     if (width <= 1200) return path;
