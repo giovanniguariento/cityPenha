@@ -87,21 +87,21 @@ export class MissionsPage implements OnInit {
       .getMissions()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-      next: (missions) => {
-        this.loading.set(false);
-        if (Array.isArray(missions) && missions.length > 0) {
-          this.missionFeedback.seed(missions);
-          this.missions.set(missions.map(apiMissionToMission));
-        } else {
-          this.missionFeedback.seed(missions);
-          this.missions.set([]);
-        }
-        this.error.set(null);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.error.set('Não foi possível carregar as missões.');
-      },
-    });
+        next: (missions) => {
+          this.loading.set(false);
+          if (Array.isArray(missions) && missions.length > 0) {
+            this.missionFeedback.seed(missions);
+            this.missions.set(missions.map(apiMissionToMission));
+          } else {
+            this.missionFeedback.seed(missions);
+            this.missions.set([]);
+          }
+          this.error.set(null);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.error.set('Não foi possível carregar as missões.');
+        },
+      });
   }
 }

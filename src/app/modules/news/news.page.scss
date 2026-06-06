@@ -72,11 +72,41 @@
 
 .only-video {
   height: auto;
-  position: unset;
+  position: relative;
+  justify-content: flex-start;
+  box-shadow: none;
+
+  .header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+  }
+
+  ::ng-deep .wp-block-video {
+    margin-top: -86px;
+    width: 100%;
+
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      background: #000;
+    }
+  }
 }
 
 ::ng-deep .wp-block-embed {
   margin-top: -86px;
+}
+
+::ng-deep .content .wp-block-video video {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .header,

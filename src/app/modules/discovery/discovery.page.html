@@ -109,8 +109,8 @@
         @for (author of popularAuthors(); track trackByAuthorId($index, author)) {
         <div class="discovery__author-card">
           @if (author.avatarUrl) {
-          <img class="discovery__author-avatar discovery__author-avatar--img" [src]="author.avatarUrl" alt=""
-            width="72" height="72" loading="lazy" decoding="async" />
+          <img class="discovery__author-avatar discovery__author-avatar--img" [src]="author.avatarUrl" alt="" width="72"
+            height="72" loading="lazy" decoding="async" />
           } @else {
           <span class="discovery__author-avatar" aria-hidden="true"></span>
           }

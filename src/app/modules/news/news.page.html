@@ -164,10 +164,17 @@
 
   <section class="post-feedback-card" [class.post-feedback-card--complete]="readingTime() >= 100"
     aria-labelledby="post-feedback-heading">
+    @if (news()?.onlyVideo) {
+    <h2 id="post-feedback-heading" class="post-feedback-card__title">Terminou de assistir?</h2>
+    <p class="post-feedback-card__description">
+      Se esse vídeo te ajudou, deixe um curtir — ajuda a gente a destacar o que importa para a comunidade.
+    </p>
+    } @else {
     <h2 id="post-feedback-heading" class="post-feedback-card__title">Terminou de ler?</h2>
     <p class="post-feedback-card__description">
       Se essa notícia te ajudou, deixe um curtir — ajuda a gente a destacar o que importa para a comunidade.
     </p>
+    }
     <div class="post-feedback-card__actions">
       <button type="button" class="post-feedback-card__like" [class.post-feedback-card__like--active]="liked()"
         (click)="onLikeClick()" [disabled]="likePending()" [attr.aria-busy]="likePending()"
@@ -209,10 +216,7 @@
 </div>
 
 @if (news()) {
-  <app-comments-section
-    [wordpressPostId]="news()!.id"
-    [currentUserId]="currentUserId()"
-    [pastArticleStart]="articleContentStarted()"
-  />
+<app-comments-section [wordpressPostId]="news()!.id" [currentUserId]="currentUserId()"
+  [pastArticleStart]="articleContentStarted()" />
 }
 }
