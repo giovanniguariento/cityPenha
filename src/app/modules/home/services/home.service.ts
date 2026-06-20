@@ -4,7 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import {
   ApiSuccessEnvelope,
-  BackendUser,
+  PublicUser,
   BlogResponse,
   DiscoveryResponse,
   FolderPostMutationPayload,
@@ -14,6 +14,7 @@ import {
   PostDetail,
   PostLikePayload,
   ReadPostResult,
+  RecordAnonymousViewResponse,
   SignupRequest,
   UpdateMeRequest,
   UserFolder,
@@ -96,18 +97,21 @@ export class HomeService {
     this.postCache.delete(slug);
   }
 
-  signup(firebaseUser: UserCredential): Observable<BackendUser> {
+  signup(
+    firebaseUser: UserCredential,
+    options?: { name?: string }
+  ): Observable<PublicUser> {
     const u = firebaseUser.user;
     const signupData: SignupRequest = {
       email: u.email ?? '',
       firebaseUid: u.uid,
-      name: u.displayName?.trim() || 'Usuário',
+      name: options?.name?.trim() || u.displayName?.trim() || 'Usuário',
       photoUrl: (u.photoURL && u.photoURL.trim()) || SIGNUP_PLACEHOLDER_PHOTO,
     };
 
     return this.http
-      .post<ApiSuccessEnvelope<BackendUser>>(`${environment.apiUrl}/user/signup`, signupData)
-      .pipe(this.unwrapData<BackendUser>());
+      .post<ApiSuccessEnvelope<PublicUser>>(`${environment.apiUrl}/user/signup`, signupData)
+      .pipe(this.unwrapData<PublicUser>());
   }
 
   /**
@@ -118,6 +122,18 @@ export class HomeService {
     return this.http
       .post<ApiSuccessEnvelope<ReadPostResult>>(`${environment.apiUrl}/user/read/${postId}`, body)
       .pipe(this.unwrapData<ReadPostResult>());
+  }
+
+  /**
+   * POST /post/:wordpressPostId/view — view anônima; omitir Bearer.
+   */
+  markAnonymousView(postId: number, visitorId: string): Observable<RecordAnonymousViewResponse> {
+    return this.http
+      .post<ApiSuccessEnvelope<RecordAnonymousViewResponse>>(
+        `${environment.apiUrl}/post/${postId}/view`,
+        { visitorId }
+      )
+      .pipe(this.unwrapData<RecordAnonymousViewResponse>());
   }
 
   /**
@@ -140,10 +156,10 @@ export class HomeService {
   }
 
   /** PATCH /user/me — nome, apelido, sobre. */
-  updateMe(body: UpdateMeRequest): Observable<BackendUser> {
+  updateMe(body: UpdateMeRequest): Observable<PublicUser> {
     return this.http
-      .patch<ApiSuccessEnvelope<BackendUser>>(`${environment.apiUrl}/user/me`, body)
-      .pipe(this.unwrapData<BackendUser>());
+      .patch<ApiSuccessEnvelope<PublicUser>>(`${environment.apiUrl}/user/me`, body)
+      .pipe(this.unwrapData<PublicUser>());
   }
 
   /** GET /user/me/frequency */

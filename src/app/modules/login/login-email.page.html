@@ -1,0 +1,131 @@
+<div class="login-email-container">
+  <header class="top-bar">
+    <button type="button" class="back-btn" (click)="goBack()" aria-label="Voltar">
+      <img src="assets/back-dark.svg" alt="" width="24" height="24" />
+    </button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-shell" novalidate>
+    <main class="content">
+      <div class="form-wrapper">
+        <h1 class="title">
+          Bem-vindo<br />
+          de volta 👋
+        </h1>
+
+        <label class="field">
+          <span class="visually-hidden">E-mail</span>
+          <span class="input-shell">
+            <img class="input-icon" src="assets/email-icon-muted.svg" alt="" aria-hidden="true" />
+            <input
+              class="input-field"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              placeholder="E-mail"
+            />
+          </span>
+        </label>
+        @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+        <p class="field-error">Informe seu e-mail.</p>
+        } @else if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+        <p class="field-error">E-mail inválido.</p>
+        }
+
+        <label class="field">
+          <span class="visually-hidden">Senha</span>
+          <span class="input-shell input-shell--password">
+            <img class="input-icon" src="assets/lock-icon.svg" alt="" aria-hidden="true" />
+            <input
+              class="input-field"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Senha"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+            >
+              <img
+                [src]="showPassword() ? 'assets/eye-off-icon.svg' : 'assets/eye-icon.svg'"
+                alt=""
+                aria-hidden="true"
+              />
+            </button>
+          </span>
+        </label>
+        @if (form.controls.password.touched && form.controls.password.errors?.['required']) {
+        <p class="field-error">Informe sua senha.</p>
+        } @else if (form.controls.password.touched && form.controls.password.errors?.['minlength']) {
+        <p class="field-error">A senha deve ter pelo menos 6 caracteres.</p>
+        }
+
+        <a
+          class="forgot-link"
+          routerLink="/login/forgot-password"
+          [state]="{ email: form.controls.email.value }"
+        >
+          Esqueceu a senha?
+        </a>
+      </div>
+    </main>
+
+    <footer class="form-footer">
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="submitting()"
+        [attr.aria-busy]="submitting()"
+      >
+        @if (submitting()) {
+        <mat-spinner diameter="22" />
+        <span>Entrando…</span>
+        } @else {
+        <span>Entrar</span>
+        }
+      </button>
+
+      <p class="social-divider">Ou entre com</p>
+
+      <div class="social-row">
+        <button
+          type="button"
+          class="btn-social"
+          [disabled]="submitting()"
+          [attr.aria-busy]="submitting()"
+          (click)="googleLogin()"
+        >
+          @if (submitting()) {
+          <mat-spinner diameter="18" />
+          } @else {
+          <img src="assets/gmail-icon.svg" alt="" aria-hidden="true" />
+          }
+          <span>Google</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-social"
+          [disabled]="submitting()"
+          (click)="onSocialLogin('apple')"
+        >
+          <img src="assets/email-icon.svg" alt="" aria-hidden="true" />
+          <span>Apple ID</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-social"
+          [disabled]="submitting()"
+          (click)="onSocialLogin('facebook')"
+        >
+          <img src="assets/facebook-icon.svg" alt="" aria-hidden="true" />
+          <span>Facebook</span>
+        </button>
+      </div>
+    </footer>
+  </form>
+</div>

@@ -1,6 +1,18 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
-import { Auth, GoogleAuthProvider, signInWithPopup, signOut, user, User, UserCredential } from '@angular/fire/auth';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile,
+  user,
+  User,
+  UserCredential,
+} from '@angular/fire/auth';
 import { Observable, of } from 'rxjs';
 
 @Injectable({
@@ -26,6 +38,28 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async loginWithEmail(email: string, password: string): Promise<UserCredential> {
+    return signInWithEmailAndPassword(this.auth, email.trim(), password);
+  }
+
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    await firebaseSendPasswordResetEmail(this.auth, email.trim());
+  }
+
+  async signUpWithEmail(
+    email: string,
+    password: string,
+    displayName: string
+  ): Promise<UserCredential> {
+    const credential = await createUserWithEmailAndPassword(
+      this.auth,
+      email.trim(),
+      password
+    );
+    await updateProfile(credential.user, { displayName: displayName.trim() });
+    return credential;
   }
 
   async logout(): Promise<void> {

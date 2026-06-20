@@ -22,7 +22,7 @@ import { catchError, distinctUntilChanged, of, switchMap, takeUntil, tap } from 
 import {
   User,
   UserStat,
-  BackendUser,
+  PublicUser,
   UserMePayload,
   MissionApiItem,
   BadgeApiItem,
@@ -191,7 +191,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
     }
   }
 
-  private buildStats(u: BackendUser, completedMissionsCount: number): UserStat[] {
+  private buildStats(u: PublicUser, completedMissionsCount: number): UserStat[] {
     const missionsLabel = completedMissionsCount === 1 ? 'Missão' : 'Missões';
 
     return [

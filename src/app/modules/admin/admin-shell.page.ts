@@ -33,6 +33,12 @@ export class AdminShellPage {
     { label: 'Levels', path: 'levels', icon: 'layers', description: 'CRUD de levels' },
     { label: 'Ledger', path: 'ledger', icon: 'list', description: 'Auditoria de recompensas' },
     { label: 'Recompute', path: 'recompute', icon: 'refresh', description: 'Reavaliar usuário' },
+    {
+      label: 'Acesso WordPress',
+      path: 'wordpress-access',
+      icon: 'wordpress',
+      description: 'Credenciais WP dos usuários',
+    },
   ];
 
   readonly sidebarOpen = signal(false);

@@ -58,6 +58,10 @@ $breakpoint: 960px;
   --admin-brand-border: rgba(255, 21, 0, 0.55);
   --admin-brand-hover: rgba(255, 21, 0, 0.15);
   --admin-topbar-bg: rgba(27, 31, 41, 0.92);
+
+  .admin-brand__logo {
+    background: white;
+  }
 }
 
 // ── Sidebar ─────────────────────────────────────────────────────────────────
@@ -79,46 +83,29 @@ $breakpoint: 960px;
 
 .admin-brand {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   padding: 0 6px 18px;
   margin-bottom: 4px;
   border-bottom: 1px solid var(--admin-border-subtle);
   text-decoration: none;
   color: inherit;
 
-  &__mark {
-    width: 38px;
-    height: 38px;
+  &__logo {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    object-fit: contain;
+    padding: 10px;
     border-radius: 10px;
-    background: linear-gradient(135deg, v.$brand-primary, var(--admin-brand-accent));
-    color: #fff;
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.04em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
   }
 
-  &__text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.15;
-
-    strong {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--admin-text);
-    }
-
-    span {
-      font-size: 0.72rem;
-      color: var(--admin-text-soft);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
+  &__subtitle {
+    font-size: 0.72rem;
+    color: var(--admin-text-soft);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 }
 

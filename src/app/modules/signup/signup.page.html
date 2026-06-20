@@ -1,0 +1,108 @@
+<div class="signup-container">
+  <header class="top-bar">
+    <button type="button" class="back-btn" (click)="goBack()" aria-label="Voltar">
+      <img src="assets/back-dark.svg" alt="" width="24" height="24" />
+    </button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="signup-shell" novalidate>
+    <main class="content">
+      <div class="form-wrapper">
+        <h1 class="title">Cadastre-se</h1>
+
+        <label class="field">
+          <span class="visually-hidden">Nome</span>
+          <span class="input-shell">
+            <img class="input-icon" src="assets/person-icon.svg" alt="" aria-hidden="true" />
+            <input
+              class="input-field"
+              type="text"
+              formControlName="name"
+              autocomplete="name"
+              maxlength="120"
+              placeholder="Nome"
+            />
+          </span>
+        </label>
+        @if (form.controls.name.touched && form.controls.name.errors?.['required']) {
+        <p class="field-error">Informe seu nome.</p>
+        } @else if (form.controls.name.touched && form.controls.name.errors?.['minlength']) {
+        <p class="field-error">O nome deve ter pelo menos 2 caracteres.</p>
+        }
+
+        <label class="field">
+          <span class="visually-hidden">E-mail</span>
+          <span class="input-shell">
+            <img class="input-icon" src="assets/email-icon-muted.svg" alt="" aria-hidden="true" />
+            <input
+              class="input-field"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              placeholder="E-mail"
+            />
+          </span>
+        </label>
+        @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+        <p class="field-error">Informe seu e-mail.</p>
+        } @else if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+        <p class="field-error">E-mail inválido.</p>
+        }
+
+        <label class="field">
+          <span class="visually-hidden">Senha</span>
+          <span class="input-shell input-shell--password">
+            <img class="input-icon" src="assets/lock-icon.svg" alt="" aria-hidden="true" />
+            <input
+              class="input-field"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              placeholder="Senha"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+            >
+              <img
+                [src]="showPassword() ? 'assets/eye-off-icon.svg' : 'assets/eye-icon.svg'"
+                alt=""
+                aria-hidden="true"
+              />
+            </button>
+          </span>
+        </label>
+        @if (form.controls.password.touched && form.controls.password.errors?.['required']) {
+        <p class="field-error">Informe sua senha.</p>
+        } @else if (form.controls.password.touched && form.controls.password.errors?.['minlength']) {
+        <p class="field-error">A senha deve ter pelo menos 6 caracteres.</p>
+        }
+
+        <label class="terms">
+          <input type="checkbox" formControlName="acceptTerms" class="terms-checkbox" />
+          <span class="terms-text">
+            Eu aceito os <a href="#">Termos</a> e <a href="#">Política de Privacidade</a>.
+          </span>
+        </label>
+      </div>
+    </main>
+
+    <footer class="form-footer">
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="submitting()"
+        [attr.aria-busy]="submitting()"
+      >
+        @if (submitting()) {
+        <mat-spinner diameter="22" />
+        <span>Criando conta…</span>
+        } @else {
+        <span>Criar conta</span>
+        }
+      </button>
+    </footer>
+  </form>
+</div>

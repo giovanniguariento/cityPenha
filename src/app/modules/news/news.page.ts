@@ -20,6 +20,7 @@ import { Auth } from '@angular/fire/auth';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { SeoService } from '../../shared/services/seo.service';
 import { plainTextFromHtml } from '../../shared/utils/decode-html-entities';
+import { getOrCreateVisitorId } from '../../shared/utils/visitor-id';
 import { UserStateService } from '../../core/state/user-state.service';
 import { CommentsSectionComponent } from './components/comments/comments-section/comments-section.component';
 
@@ -79,6 +80,7 @@ export class NewsPageComponent extends Destroyable {
   bookmarked = signal<boolean>(false);
   liked = signal<boolean>(false);
   likesCount = signal<number>(0);
+  viewsCount = signal<number>(0);
   readingTime = signal<number>(0);
   // no local modal flag — use Material dialog
   private readonly dialog = inject(MatDialog);
@@ -129,6 +131,7 @@ export class NewsPageComponent extends Destroyable {
           this.articleContentStarted.set(false);
           this.clearLikeThankYouTimer();
           this.likeFeedbackThankYou.set(false);
+          this.viewsCount.set(0);
         }),
         switchMap((params) => this.homeService.getPost(params['slug'])),
         takeUntil(this.destroy$)
@@ -145,6 +148,7 @@ export class NewsPageComponent extends Destroyable {
           this.loadError.set(null);
           this.news.set(sanitizedPost);
           this.applyLikeStateFromGetPost(sanitizedPost);
+          this.applyViewsCountFromGetPost(sanitizedPost);
           this.applyBookmarkStateFromGetPost(sanitizedPost);
           this.likePending.set(false);
           this.savePending.set(false);
@@ -313,7 +317,7 @@ export class NewsPageComponent extends Destroyable {
     // show a lightweight modal explaining the points reward.
     const firebaseUser = this.auth.currentUser;
     if (!firebaseUser) {
-      this.maybeShowEarnPointsModal(post);
+      this.recordAnonymousView(post);
       return;
     }
 
@@ -323,19 +327,22 @@ export class NewsPageComponent extends Destroyable {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
-          // Mark locally so we don't re-send for this post.
           this.readSentForPost.add(post.id);
           this.readPendingForPost.delete(post.id);
 
           this.homeService.invalidateHomeFeedCache();
 
           this.news.update((n) =>
-            n && n.id === post.id ? { ...n, viewed: true } : n
+            n && n.id === post.id
+              ? { ...n, viewed: true, viewsCount: res.viewsCount ?? n.viewsCount }
+              : n
           );
+          if (typeof res.viewsCount === 'number') {
+            this.applyViewsCount(res.viewsCount);
+          }
 
           const hadNewMission = this.missionFeedback.handleMissionsUpdate(res.missions);
 
-          // Toast de leitura: só se houve XP novo e não celebrámos missão nesta resposta.
           if (hadNewMission || !shouldShowReadReward(res, post.id, post.viewed)) {
             return;
           }
@@ -358,6 +365,59 @@ export class NewsPageComponent extends Destroyable {
           this.feedback.showError(apiErrorMessage(err, 'Não foi possível registrar a leitura.'));
         }
       });
+  }
+
+  private recordAnonymousView(post: PostDetail): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const visitorId = getOrCreateVisitorId();
+    if (!visitorId) {
+      return;
+    }
+
+    this.readPendingForPost.add(post.id);
+    this.homeService
+      .markAnonymousView(post.id, visitorId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.readSentForPost.add(post.id);
+          this.readPendingForPost.delete(post.id);
+          this.applyViewsCount(res.viewsCount);
+          this.homeService.invalidateHomeFeedCache();
+          this.maybeShowEarnPointsModal(post);
+        },
+        error: (err: unknown) => {
+          this.readPendingForPost.delete(post.id);
+          this.handleAnonymousViewError(err);
+          this.maybeShowEarnPointsModal(post);
+        }
+      });
+  }
+
+  /** Erros de view anônima não devem quebrar a UX (§8). */
+  private handleAnonymousViewError(err: unknown): void {
+    if (err && typeof err === 'object' && 'status' in err) {
+      const status = (err as { status: number }).status;
+      if (status === 404 || status === 429 || status === 400) {
+        return;
+      }
+    }
+  }
+
+  private applyViewsCount(count: number): void {
+    const post = this.news();
+    this.viewsCount.set(count);
+    if (post) {
+      this.news.update((n) => (n && n.id === post.id ? { ...n, viewsCount: count } : n));
+    }
+  }
+
+  private applyViewsCountFromGetPost(post: PostDetail): void {
+    const count = typeof post.viewsCount === 'number' ? post.viewsCount : 0;
+    this.viewsCount.set(count);
   }
 
   private maybeShowEarnPointsModal(post: PostDetail) {

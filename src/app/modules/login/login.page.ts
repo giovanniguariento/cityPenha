@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../shared/services/auth.service';
 import { HomeService } from '../home/services/home.service';
-import { BackendUser } from '../../shared/interface/home.interface';
+import { PublicUser } from '../../shared/interface/home.interface';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { first } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { first } from 'rxjs/operators';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatProgressSpinnerModule, RouterLink],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -29,8 +29,10 @@ export class LoginPage {
     this.router.navigate(['/home']);
   }
 
-  onLogin(_provider: string): void {
-    // Placeholder for future provider implementations
+  onLogin(provider: string): void {
+    if (provider === 'email') {
+      void this.router.navigate(['/login/email']);
+    }
   }
 
   async googleLogin(): Promise<void> {
@@ -44,7 +46,7 @@ export class LoginPage {
         .signup(authentication)
         .pipe(first())
         .subscribe({
-          next: (res: BackendUser) => {
+          next: (res: PublicUser) => {
             this.submitting.set(false);
             if (res?.id) {
               try {

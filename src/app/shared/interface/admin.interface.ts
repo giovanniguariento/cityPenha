@@ -123,6 +123,32 @@ export interface LedgerListQuery {
   cursor?: string | null;
 }
 
+/** GET /admin/users/wordpress-access — credenciais WP por usuário (somente admin). */
+export type WordpressCredentialsStatus = 'ready' | 'missing';
+
+export interface AdminWordpressAccessItem {
+  userId: string;
+  email: string;
+  name: string;
+  createdAt: string;
+  wordpressId: number | null;
+  wordpressUsername: string | null;
+  wordpressPassword: string | null;
+  wordpressLoginUrl: string;
+  credentialsStatus: WordpressCredentialsStatus;
+}
+
+export interface WordpressAccessListResponse {
+  data: AdminWordpressAccessItem[];
+  meta: { nextCursor: string | null; count: number };
+}
+
+export interface WordpressAccessListQuery {
+  limit?: number;
+  cursor?: string | null;
+  q?: string;
+}
+
 /** Resposta de POST /admin/missions/:id/preview. */
 export interface PreviewResponse {
   missionId: string;

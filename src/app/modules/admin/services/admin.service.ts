@@ -18,6 +18,9 @@ import {
   LedgerListResponse,
   MetricInfo,
   PreviewResponse,
+  AdminWordpressAccessItem,
+  WordpressAccessListQuery,
+  WordpressAccessListResponse,
 } from '../../../shared/interface/admin.interface';
 
 /** Centraliza todas as chamadas ao prefixo `/admin/*`. Bearer é injetado pelo `authApiInterceptor`. */
@@ -184,6 +187,36 @@ export class AdminService {
     return this.http
       .post<ApiSuccessEnvelope<UserMePayload>>(`${this.base}/recompute/${userId}`, {})
       .pipe(this.unwrap<UserMePayload>());
+  }
+
+  // ── WordPress access ─────────────────────────────────────────────────────────
+
+  /** GET /admin/users/wordpress-access — lista paginada por cursor. */
+  listWordpressAccess(query: WordpressAccessListQuery = {}): Observable<WordpressAccessListResponse> {
+    let params = new HttpParams();
+    if (query.limit != null) params = params.set('limit', String(query.limit));
+    if (query.cursor) params = params.set('cursor', query.cursor);
+    if (query.q?.trim()) params = params.set('q', query.q.trim());
+    return this.http.get<WordpressAccessListResponse>(`${this.base}/users/wordpress-access`, { params });
+  }
+
+  /** GET /admin/users/:userId/wordpress-access — detalhe de um usuário. */
+  getWordpressAccess(userId: string): Observable<AdminWordpressAccessItem> {
+    return this.http
+      .get<ApiSuccessEnvelope<AdminWordpressAccessItem>>(
+        `${this.base}/users/${userId}/wordpress-access`
+      )
+      .pipe(this.unwrap<AdminWordpressAccessItem>());
+  }
+
+  /** POST /admin/users/:userId/wordpress-access/provision — gera credenciais legadas. */
+  provisionWordpressAccess(userId: string): Observable<AdminWordpressAccessItem> {
+    return this.http
+      .post<ApiSuccessEnvelope<AdminWordpressAccessItem>>(
+        `${this.base}/users/${userId}/wordpress-access/provision`,
+        {}
+      )
+      .pipe(this.unwrap<AdminWordpressAccessItem>());
   }
 }
 

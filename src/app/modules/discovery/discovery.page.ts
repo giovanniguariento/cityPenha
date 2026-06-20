@@ -74,7 +74,11 @@ export class DiscoveryPage extends Destroyable {
 
   articleMeta(post: Post): string {
     const reading = `${post.readingTime} Min Leitura`;
-    const parts = [reading, post.categoryName, post.publishedAtRelative?.trim()].filter(
+    const views =
+      typeof post.viewsCount === 'number' && post.viewsCount > 0
+        ? `${post.viewsCount} visualizações`
+        : null;
+    const parts = [reading, views, post.categoryName, post.publishedAtRelative?.trim()].filter(
       (p): p is string => Boolean(p)
     );
     return parts.join(' • ');

@@ -41,6 +41,10 @@ export interface Post {
   likesCount?: number;
   onlyVideo?: boolean;
   viewed?: boolean;
+  /** Total de views (leituras logadas + anônimas). */
+  viewsCount?: number;
+  /** Total de comentários + respostas (feed/home). */
+  commentsCount?: number;
   /** Texto relativo de publicação (ex.: GET /discovery — FeedItem). */
   publishedAtRelative?: string;
 }
@@ -68,7 +72,7 @@ export interface PostLikePayload {
   likesCount: number;
   missions?: MissionApiItem[];
   level?: UserLevel | null;
-  user?: BackendUser;
+  user?: PublicUser;
   completedMissionsCount?: number;
 }
 
@@ -86,12 +90,22 @@ export interface ReadPostResult {
   alreadyRead?: boolean;
   /** Legado; preferir `alreadyRead`. */
   already?: boolean;
-  user?: BackendUser;
+  viewed?: true;
+  wordpressPostId?: number;
+  viewsCount?: number;
+  user?: PublicUser;
   completedMissionsCount?: number;
   daysWithReads?: string[];
   missions?: MissionApiItem[];
   level?: UserLevel | null;
   rewards?: Reward[];
+}
+
+/** POST /post/:id/view — view anônima (sem Bearer). */
+export interface RecordAnonymousViewResponse {
+  wordpressPostId: number;
+  viewsCount: number;
+  alreadyViewed: boolean;
 }
 
 // Define a estrutura da categoria, que contém uma lista de posts
@@ -147,7 +161,7 @@ export interface FolderPostMutationPayload {
   wordpressPostId: number;
   missions?: MissionApiItem[];
   level?: UserLevel | null;
-  user?: BackendUser;
+  user?: PublicUser;
   completedMissionsCount?: number;
 }
 
@@ -175,8 +189,8 @@ export interface SignupRequest {
   photoUrl: string;
 }
 
-// Backend user representation
-export interface BackendUser {
+/** Usuário retornado pelas APIs públicas /user/* (sem campos WordPress). */
+export interface PublicUser {
   id: string;
   email: string;
   name: string;
@@ -184,7 +198,6 @@ export interface BackendUser {
   nickname?: string | null;
   about?: string | null;
   firebaseUid?: string | null;
-  wordpressId?: number | null;
   xp?: number | null;
   coins?: number | null;
   createdAt?: string | null;
@@ -252,7 +265,7 @@ export interface BadgeApiItem {
 
 /** Conteúdo de `data` em GET /user/me (após unwrap). */
 export interface UserMePayload {
-  user: BackendUser;
+  user: PublicUser;
   completedMissionsCount: number;
   daysWithReads: string[];
   missions: MissionApiItem[];

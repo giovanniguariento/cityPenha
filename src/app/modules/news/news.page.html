@@ -100,6 +100,9 @@
   <div class="info">
     <div class="details">
       <span>{{news()?.readingTime}} Min Leitura</span>
+      @if (viewsCount() > 0) {
+      <span>{{ viewsCount() }} visualizações</span>
+      }
       <span>{{news()?.date | date:"dd 'de' MMMM, yyyy"}}</span>
       <span>{{news()?.categoryName}}</span>
     </div>

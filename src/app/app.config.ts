@@ -27,13 +27,13 @@ const scrollConfig: InMemoryScrollingOptions = {
 const inMemoryScrollingFeature = withInMemoryScrolling(scrollConfig);
 
 const firebaseConfig = {
-  projectId: 'citypenha',
-  appId: '1:771190117440:web:df15e21d9dd4914bf2fba5',
-  storageBucket: 'citypenha.firebasestorage.app',
-  apiKey: 'AIzaSyD0LfWjCrt5v1dDGGQMS8Qpe8tcUQPfMTs',
-  authDomain: 'citypenha.firebaseapp.com',
-  messagingSenderId: '771190117440',
-  projectNumber: '771190117440',
+  apiKey: 'AIzaSyBpptYiBk1xbODoBNcz2gwYEdWaswuU08k',
+  authDomain: 'citypenha-app.firebaseapp.com',
+  projectId: 'citypenha-app',
+  storageBucket: 'citypenha-app.firebasestorage.app',
+  messagingSenderId: '232056034622',
+  appId: '1:232056034622:web:13c55e536f3624fff3086f',
+  measurementId: 'G-P559NKCL9L',
 };
 
 const browserAppConfig: ApplicationConfig = {

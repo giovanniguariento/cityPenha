@@ -19,6 +19,7 @@ import { Auth } from '@angular/fire/auth';
 import { takeUntil } from 'rxjs';
 import { CommentView } from '../../../../../shared/interface/home.interface';
 import { CommentService } from '../../../services/comment.service';
+import { HomeService } from '../../../../home/services/home.service';
 import { FeedbackService } from '../../../../../shared/services/feedback.service';
 import { MissionFeedbackService } from '../../../../../shared/services/mission-feedback.service';
 import { AuthService } from '../../../../../shared/services/auth.service';
@@ -51,6 +52,7 @@ export class CommentsSectionComponent extends Destroyable implements OnInit {
 
   private readonly platformId = inject(PLATFORM_ID);
   private readonly commentService = inject(CommentService);
+  private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
   private readonly missionFeedback = inject(MissionFeedbackService);
   private readonly snackBar = inject(MatSnackBar);
@@ -240,6 +242,8 @@ export class CommentsSectionComponent extends Destroyable implements OnInit {
           }
 
           this.replyingTo.set(null);
+
+          this.homeService.invalidateHomeFeedCache();
 
           if (res.missions) {
             this.missionFeedback.handleMissionsUpdate(res.missions);

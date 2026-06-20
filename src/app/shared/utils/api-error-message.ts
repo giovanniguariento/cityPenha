@@ -11,6 +11,18 @@ function isApiErrorBody(v: unknown): v is ApiErrorBody {
   return isRecord(v) && typeof v['message'] === 'string';
 }
 
+/** 401 com token Firebase rejeitado pelo backend — sessão local deve ser encerrada. */
+export function isInvalidOrExpiredTokenError(err: unknown): boolean {
+  if (!(err instanceof HttpErrorResponse) || err.status !== 401) {
+    return false;
+  }
+  const body = err.error;
+  if (!isRecord(body)) {
+    return false;
+  }
+  return body['error'] === 'UNAUTHORIZED' && body['message'] === 'Invalid or expired token';
+}
+
 /**
  * Extrai mensagem amigável de erro HTTP para exibir ao utilizador (pt-BR).
  */

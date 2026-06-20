@@ -1,0 +1,156 @@
+<section class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <h1>Acesso WordPress</h1>
+      <p>Credenciais de login no WordPress para usuários cadastrados no app.</p>
+    </div>
+  </header>
+
+  <div class="admin-toolbar">
+    <div class="input-search list-search">
+      <input class="input" type="search" placeholder="Buscar por email, nome ou usuário WP…"
+        [value]="searchInput()" (input)="setQuery($any($event.target).value)" autocomplete="off" />
+    </div>
+  </div>
+
+  @if (loading()) {
+  <p class="admin-state" aria-busy="true">Carregando credenciais…</p>
+  } @else if (error()) {
+  <div class="admin-state admin-state--error">
+    <p>{{ error() }}</p>
+    <button type="button" class="btn-ghost" (click)="retry()">Tentar novamente</button>
+  </div>
+  } @else if (items().length === 0) {
+  <p class="admin-empty">Nenhum usuário encontrado.</p>
+  } @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table wp-table">
+      <thead>
+        <tr>
+          <th>Usuário</th>
+          <th>Cadastro</th>
+          <th>ID WP</th>
+          <th>Login WP</th>
+          <th>Senha</th>
+          <th>Status</th>
+          <th class="actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.userId) {
+        <tr>
+          <td data-label="Usuário">
+            <div class="admin-table__title">
+              <strong>{{ item.name }}</strong>
+              <span class="hint">{{ item.email }}</span>
+            </div>
+          </td>
+          <td data-label="Cadastro" class="when">{{ formatDate(item.createdAt) }}</td>
+          <td data-label="ID WP">
+            @if (item.wordpressId != null) {
+            <code>{{ item.wordpressId }}</code>
+            } @else {
+            <span class="hint">—</span>
+            }
+          </td>
+          <td data-label="Login WP">
+            @if (item.wordpressUsername) {
+            <div class="wp-credential-cell">
+              <code class="mono">{{ item.wordpressUsername }}</code>
+              @if (item.credentialsStatus === 'ready') {
+              <button type="button" class="wp-icon-btn" title="Copiar login" aria-label="Copiar login"
+                (click)="copyText(item.wordpressUsername)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+              }
+            </div>
+            } @else {
+            <span class="hint">—</span>
+            }
+          </td>
+          <td data-label="Senha">
+            @if (item.wordpressPassword) {
+            <div class="wp-credential-cell">
+              <code class="mono">{{ displayPassword(item) }}</code>
+              <button type="button" class="wp-icon-btn" [attr.aria-label]="isPasswordRevealed(item.userId) ? 'Ocultar senha' : 'Revelar senha'"
+                [title]="isPasswordRevealed(item.userId) ? 'Ocultar senha' : 'Revelar senha'"
+                (click)="togglePasswordReveal(item.userId)">
+                <img [src]="isPasswordRevealed(item.userId) ? 'assets/eye-off-icon.svg' : 'assets/eye-icon.svg'"
+                  alt="" width="14" height="14" />
+              </button>
+              @if (item.credentialsStatus === 'ready') {
+              <button type="button" class="wp-icon-btn" title="Copiar senha" aria-label="Copiar senha"
+                (click)="copyText(item.wordpressPassword)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+              }
+            </div>
+            } @else {
+            <span class="hint">—</span>
+            }
+          </td>
+          <td data-label="Status">
+            <span class="admin-chip" [class.admin-chip--success]="item.wordpressId != null && item.credentialsStatus === 'ready'"
+              [class.admin-chip--warn]="item.wordpressId != null && item.credentialsStatus === 'missing'"
+              [class.admin-chip--info]="item.wordpressId == null">{{ statusLabel(item) }}</span>
+          </td>
+          <td data-label="Ações" class="actions">
+            @if (item.credentialsStatus === 'ready') {
+            <div class="wp-actions" role="group" aria-label="Ações de credenciais">
+              @if (item.wordpressLoginUrl) {
+              <button type="button" class="wp-icon-btn" title="Abrir login WordPress" aria-label="Abrir login WordPress"
+                (click)="openLoginUrl(item.wordpressLoginUrl)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </button>
+              }
+              <button type="button" class="wp-icon-btn" title="Copiar URL, login e senha" aria-label="Copiar tudo"
+                (click)="copyAll(item)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="8" y="8" width="12" height="12" rx="2" />
+                  <path d="M4 16V6a2 2 0 0 1 2-2h10" />
+                </svg>
+              </button>
+            </div>
+            } @else if (canProvision(item)) {
+            <button type="button" class="btn-primary btn-compact"
+              [disabled]="provisioningUserId() === item.userId"
+              (click)="provision(item)">
+              @if (provisioningUserId() === item.userId) {
+              <span>Provisionando…</span>
+              } @else {
+              <span>Provisionar</span>
+              }
+            </button>
+            } @else if (item.wordpressId == null) {
+            <span class="hint wp-no-link" title="Usuário sem vínculo WordPress">Sem vínculo WP</span>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (nextCursor()) {
+  <div class="wp-pagination">
+    <button type="button" class="btn-ghost" (click)="loadMore()" [disabled]="loadingMore()">
+      @if (loadingMore()) { <span>Carregando…</span> } @else { <span>Carregar mais</span> }
+    </button>
+  </div>
+  }
+  }
+</section>

@@ -66,6 +66,13 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/recompute/recompute.page').then((m) => m.AdminRecomputePage),
       },
+      {
+        path: 'wordpress-access',
+        loadComponent: () =>
+          import('./pages/wordpress-access/wordpress-access.page').then(
+            (m) => m.AdminWordpressAccessPage
+          ),
+      },
     ],
   },
 ];
