@@ -8,6 +8,7 @@ import { PublicUser } from '../../shared/interface/home.interface';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { first } from 'rxjs/operators';
+import { APP_ASSETS } from '../../shared/constants/app-assets';
 
 @Component({
   selector: 'app-login-page',
@@ -24,6 +25,7 @@ export class LoginPage {
   private readonly feedback = inject(FeedbackService);
 
   readonly submitting = signal(false);
+  readonly logoUrl = APP_ASSETS.logo;
 
   onSkip(): void {
     this.router.navigate(['/home']);

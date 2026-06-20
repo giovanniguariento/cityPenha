@@ -48,6 +48,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             API_URL=${{ vars.API_URL }}
+            ASSET_VERSION=${{ github.sha }}
             NODE_OPTIONS=--max-old-space-size=2048
           cache-from: type=gha
           cache-to: type=gha,mode=max

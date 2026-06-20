@@ -13,7 +13,7 @@
 
     <div class="branding">
       <div class="logo-text">
-        <img src="assets/logo.png" alt="City Penha Digital">
+        <img [src]="logoUrl" alt="City Penha Digital">
       </div>
     </div>
 
@@ -35,7 +35,7 @@
       </button>
 
       <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('apple')">
-        <img src="assets/email-icon.svg" alt="" srcset="">
+        <img src="assets/apple-icon.svg" alt="" srcset="">
         <span>Continue com a Apple</span>
       </button>
 

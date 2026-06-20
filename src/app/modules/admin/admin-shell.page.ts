@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter, map, startWith } from 'rxjs/operators';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserStateService } from '../../core/state/user-state.service';
+import { APP_ASSETS } from '../../shared/constants/app-assets';
 
 interface AdminNavItem {
   label: string;
@@ -41,6 +42,7 @@ export class AdminShellPage {
     },
   ];
 
+  readonly logoUrl = APP_ASSETS.logo;
   readonly sidebarOpen = signal(false);
   readonly isDarkMode = signal(this.loadDarkModePreference());
 

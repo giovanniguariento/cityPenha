@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { LoginRequiredDialogComponent } from '../login-required-dialog/login-required-dialog.component';
 import { Auth } from '@angular/fire/auth';
+import { APP_ASSETS } from '../../constants/app-assets';
 
 @Component({
   selector: 'app-header',
@@ -16,6 +17,8 @@ export class HeaderComponent {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly auth = inject(Auth);
+
+  readonly logoUrl = APP_ASSETS.logo;
 
   onFrequenciaClick(): void {
     const firebaseUser = this.auth.currentUser;

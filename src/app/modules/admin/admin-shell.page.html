@@ -1,7 +1,7 @@
 <div class="admin-layout" [class.admin-layout--menu-open]="sidebarOpen()" [class.admin-theme-dark]="isDarkMode()">
   <aside class="admin-sidebar" aria-label="Navegação administrativa">
     <a routerLink="/admin/dashboard" class="admin-brand" (click)="closeSidebar()">
-      <img src="assets/logo.png" alt="City Penha Digital" class="admin-brand__logo">
+      <img [src]="logoUrl" alt="City Penha Digital" class="admin-brand__logo">
       <span class="admin-brand__subtitle">Painel admin</span>
     </a>
 

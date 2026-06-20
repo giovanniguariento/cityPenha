@@ -63,14 +63,29 @@ app.get('/sitemap.xml', async (_req, res) => {
   res.type('application/xml').send(xml);
 });
 
+/** Hashed Angular bundles (main-XXXX.js) can be cached long-term; plain assets must revalidate. */
+function isImmutableBundle(filePath: string): boolean {
+  const fileName = filePath.split(/[/\\]/).pop() ?? '';
+  return /\.[0-9a-f]{8,}\.(?:js|css|mjs)$/i.test(fileName);
+}
+
 /**
  * Serve static files from /browser
  */
 app.use(
   express.static(browserDistFolder, {
-    maxAge: '1y',
     index: false,
     redirect: false,
+    etag: true,
+    lastModified: true,
+    setHeaders(res, filePath) {
+      if (isImmutableBundle(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return;
+      }
+
+      res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+    },
   }),
 );
 
