@@ -12,11 +12,14 @@
     </a>
     <div profileHeaderEnd class="actions">
       <button type="button" class="icon-btn" aria-label="Compartilhar"><i class="fa fa-share-alt"></i></button>
+      <button type="button" class="icon-btn" aria-label="Como funciona o CityPenha" (click)="replayTour()">
+        <i class="fa fa-question-circle"></i>
+      </button>
       <button type="button" class="icon-btn" aria-label="Configurações"><i class="fa fa-cog"></i></button>
     </div>
 
     <div class="profile-info">
-      <div class="avatar-wrapper" #avatarWrapper>
+      <div class="avatar-wrapper" #avatarWrapper data-tour="profile-level">
         <svg class="progress-ring" viewBox="0 0 160 160" aria-hidden="true">
           <!--
             Caminho do squircle começa na borda esquerda da tag "Nível" e segue em

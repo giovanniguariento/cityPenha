@@ -23,9 +23,13 @@ import { NavComponent } from '../../../shared/components/nav/nav.component';
 import { ProfilePageHeaderComponent } from '../../../shared/components/profile-page-header/profile-page-header.component';
 import { UpdateMeRequest } from '../../../shared/interface/home.interface';
 import { FeedbackService } from '../../../shared/services/feedback.service';
+import { AuthService } from '../../../shared/services/auth.service';
 import { apiErrorMessage } from '../../../shared/utils/api-error-message';
 import { UserStateService } from '../../../core/state/user-state.service';
 import { HomeService } from '../../home/services/home.service';
+
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const AVATAR_ACCEPT = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 function nicknameOptionalMinLength(control: AbstractControl): ValidationErrors | null {
   const v = (control.value ?? '').toString().trim();
@@ -53,16 +57,20 @@ export class EditProfilePage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
+  private readonly authService = inject(AuthService);
   private readonly userState = inject(UserStateService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
+  readonly avatarUploading = signal(false);
   readonly error = signal<string | null>(null);
   readonly avatarUrl = signal<string | null>(null);
 
   private initialName = '';
   private initialNickname = '';
   private initialAbout = '';
+  private persistedAvatarUrl: string | null = null;
+  private previewObjectUrl: string | null = null;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -72,6 +80,7 @@ export class EditProfilePage implements OnInit {
 
   constructor() {
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.cdr.markForCheck());
+    this.destroyRef.onDestroy(() => this.revokePreviewObjectUrl());
   }
 
   ngOnInit(): void {
@@ -83,7 +92,9 @@ export class EditProfilePage implements OnInit {
       .subscribe({
         next: ({ me, fb }) => {
           const u = me.user;
-          this.avatarUrl.set((u.photoUrl && u.photoUrl.trim()) || fb?.photoURL || null);
+          const url = (u.photoUrl && u.photoUrl.trim()) || fb?.photoURL || null;
+          this.persistedAvatarUrl = url;
+          this.avatarUrl.set(url);
           this.initialName = u.name ?? '';
           this.initialNickname = (u.nickname ?? '').toString();
           this.initialAbout = (u.about ?? '').toString();
@@ -110,6 +121,73 @@ export class EditProfilePage implements OnInit {
 
   goBack(): void {
     void this.router.navigate(['/profile']);
+  }
+
+  onEditPhotoClick(fileInput: HTMLInputElement): void {
+    if (this.avatarUploading() || this.loading()) {
+      return;
+    }
+    fileInput.click();
+  }
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    if (!AVATAR_ACCEPT.includes(file.type as (typeof AVATAR_ACCEPT)[number])) {
+      this.feedback.showError('Use JPEG, PNG ou WebP.');
+      return;
+    }
+    if (file.size > AVATAR_MAX_BYTES) {
+      this.feedback.showError('A imagem deve ter no máximo 2 MB.');
+      return;
+    }
+
+    const previousUrl = this.persistedAvatarUrl;
+    this.revokePreviewObjectUrl();
+    this.previewObjectUrl = URL.createObjectURL(file);
+    this.avatarUrl.set(this.previewObjectUrl);
+
+    this.avatarUploading.set(true);
+    this.cdr.markForCheck();
+
+    this.homeService
+      .uploadAvatar(file)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          const newUrl = (user.photoUrl && user.photoUrl.trim()) || null;
+          this.revokePreviewObjectUrl();
+          this.persistedAvatarUrl = newUrl;
+          this.avatarUrl.set(newUrl);
+          this.avatarUploading.set(false);
+          if (newUrl) {
+            void this.authService.updatePhotoUrl(newUrl).catch(() => {
+              // Nav sync is best-effort; backend photo is already saved.
+            });
+          }
+          this.feedback.showSuccess('Foto atualizada');
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.revokePreviewObjectUrl();
+          this.avatarUrl.set(previousUrl);
+          this.avatarUploading.set(false);
+          this.feedback.showError(apiErrorMessage(err, 'Não foi possível atualizar a foto.'));
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  private revokePreviewObjectUrl(): void {
+    if (this.previewObjectUrl) {
+      URL.revokeObjectURL(this.previewObjectUrl);
+      this.previewObjectUrl = null;
+    }
   }
 
   hasChanges(): boolean {

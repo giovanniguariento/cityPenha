@@ -24,7 +24,7 @@
     } @else if (missions().length === 0) {
     <p class="empty-state">Nenhuma missão disponível no momento.</p>
     } @else {
-    <ul class="mission-list">
+    <ul class="mission-list" data-tour="missions-list">
       @for (mission of missions(); track mission.id) {
       <li>
         <a [routerLink]="mission.route" class="mission-item" [class.completed]="mission.completed">

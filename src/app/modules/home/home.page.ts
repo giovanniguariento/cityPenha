@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Destroyable } from '../../shared/utils/destroyable';
 import { NavComponent } from '../../shared/components/nav/nav.component'
 import { HeaderComponent } from '../../shared/components/header/header.component'
@@ -11,6 +12,7 @@ import { Category, Post } from '../../shared/interface/home.interface';
 import { takeUntil } from 'rxjs';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { SeoService } from '../../shared/services/seo.service';
+import { OnboardingService } from '../../shared/services/onboarding.service';
 
 @Component({
   selector: 'app-home',
@@ -23,6 +25,8 @@ import { SeoService } from '../../shared/services/seo.service';
 export class HomePage extends Destroyable {
   private readonly homeService = inject(HomeService);
   private readonly seoService = inject(SeoService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly onboarding = inject(OnboardingService);
 
   tabs = signal<Category[]>([]);
   posts = signal<Post[]>([]);
@@ -46,6 +50,7 @@ export class HomePage extends Destroyable {
           this.posts.set(response.carousel);
           this.loading.set(false);
           this.error.set(null);
+          this.maybeStartOnboarding();
         },
         error: (err: unknown) => {
           this.loading.set(false);
@@ -67,5 +72,25 @@ export class HomePage extends Destroyable {
 
   trackByTabId(_index: number, tab: Category): number {
     return tab.id;
+  }
+
+  /** Dispara o onboarding na primeira visita, já com o feed carregado no DOM. */
+  private maybeStartOnboarding(): void {
+    if (!isPlatformBrowser(this.platformId) || this.onboarding.hasCompleted()) {
+      return;
+    }
+    const firstPost = this.firstArticleContext();
+    // setTimeout(0) garante que os alvos [data-tour] já renderizaram.
+    setTimeout(() => this.onboarding.start({ firstPost }), 0);
+  }
+
+  /** Primeiro post do feed com slug e categoria, usado no passo do artigo. */
+  private firstArticleContext(): { slug: string; categorySlug: string } | undefined {
+    const candidates: Post[] = [
+      ...this.posts(),
+      ...this.tabs().flatMap((t) => t.posts ?? []),
+    ];
+    const post = candidates.find((p) => p?.slug && p?.categorySlug);
+    return post ? { slug: post.slug, categorySlug: post.categorySlug } : undefined;
   }
 }

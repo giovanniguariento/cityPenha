@@ -94,7 +94,7 @@
 </div>
 
 <div class="content content--enter" *ngIf="news()">
-  <span class="tag-xp">+10 XP</span>
+  <span class="tag-xp" data-tour="article-content">+10 XP</span>
   <h1 class="title">{{ news()?.title | decodeHtmlEntities }}</h1>
   <div class="description" [innerHTML]="news()?.resume"></div>
   <div class="info">

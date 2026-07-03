@@ -23,6 +23,27 @@ describe('HomeService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('uploadAvatar posts FormData file to /user/me/avatar', () => {
+    const file = new File(['x'], 'avatar.png', { type: 'image/png' });
+
+    service.uploadAvatar(file).subscribe((res) => {
+      expect(res.photoUrl).toBe('https://cdn.example/avatar.png');
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/user/me/avatar`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeInstanceOf(FormData);
+    expect((req.request.body as FormData).get('file')).toBe(file);
+    req.flush({
+      data: {
+        id: 'u1',
+        email: 'a@b.com',
+        name: 'User',
+        photoUrl: 'https://cdn.example/avatar.png',
+      },
+    });
+  });
+
   it('markAnonymousView posts visitorId to /post/:id/view', () => {
     const postId = 42;
     const visitorId = '550e8400-e29b-41d4-a716-446655440000';

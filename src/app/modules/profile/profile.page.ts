@@ -30,6 +30,7 @@ import {
 import { HomeService } from '../home/services/home.service';
 import { MissionFeedbackService } from '../../shared/services/mission-feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
+import { OnboardingService } from '../../shared/services/onboarding.service';
 
 type ProfileTab = 'geral' | 'missoes' | 'loja';
 
@@ -46,6 +47,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
   private readonly userState = inject(UserStateService);
   private readonly homeService = inject(HomeService);
   private readonly missionFeedback = inject(MissionFeedbackService);
+  private readonly onboarding = inject(OnboardingService);
   private readonly cdr = inject(ChangeDetectorRef);
   private static readonly XP_ICON = 'assets/xp-icon.svg';
   private static readonly MISSION_ICON = 'assets/mission-icon.svg';
@@ -284,6 +286,11 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
   }
 
   // teardown handled by Destroyable
+
+  /** Reabre o tour de onboarding a partir do perfil ("Como funciona"). */
+  replayTour(): void {
+    this.onboarding.start();
+  }
 
   logout(): void {
     this.authService.logout();

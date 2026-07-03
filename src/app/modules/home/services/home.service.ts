@@ -162,6 +162,15 @@ export class HomeService {
       .pipe(this.unwrapData<PublicUser>());
   }
 
+  /** POST /user/me/avatar — multipart, campo `file` (JPEG/PNG/WebP, máx. 2 MB). */
+  uploadAvatar(file: File): Observable<PublicUser> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http
+      .post<ApiSuccessEnvelope<PublicUser>>(`${environment.apiUrl}/user/me/avatar`, form)
+      .pipe(this.unwrapData<PublicUser>());
+  }
+
   /** GET /user/me/frequency */
   getFrequency(): Observable<FrequencyData> {
     return this.http

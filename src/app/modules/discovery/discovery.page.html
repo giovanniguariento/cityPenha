@@ -70,12 +70,10 @@
             <div class="discovery__article-body">
               <p class="discovery__article-title">{{ post.title | decodeHtmlEntities }}</p>
               <div class="discovery__article-author-row">
-                @if (post.author.avatarUrl) {
-                <img class="discovery__article-avatar discovery__article-avatar--img" [src]="post.author.avatarUrl"
-                  alt="" width="16" height="16" loading="lazy" decoding="async" />
-                } @else {
-                <span class="discovery__article-avatar" aria-hidden="true"></span>
-                }
+                <img class="discovery__article-avatar discovery__article-avatar--img"
+                  [src]="authorAvatarUrl(post.author.avatarUrl)" (error)="onAuthorAvatarError($event)"
+                  referrerpolicy="no-referrer" [alt]="post.author.name" width="16" height="16" loading="lazy"
+                  decoding="async" />
                 <span class="discovery__article-author">{{ post.author.name }}</span>
               </div>
               <p class="discovery__article-meta">{{ articleMeta(post) }}</p>
@@ -108,12 +106,10 @@
       <div class="discovery__authors-scroll">
         @for (author of popularAuthors(); track trackByAuthorId($index, author)) {
         <div class="discovery__author-card">
-          @if (author.avatarUrl) {
-          <img class="discovery__author-avatar discovery__author-avatar--img" [src]="author.avatarUrl" alt="" width="72"
-            height="72" loading="lazy" decoding="async" />
-          } @else {
-          <span class="discovery__author-avatar" aria-hidden="true"></span>
-          }
+          <img class="discovery__author-avatar discovery__author-avatar--img"
+            [src]="authorAvatarUrl(author.avatarUrl)" (error)="onAuthorAvatarError($event)"
+            referrerpolicy="no-referrer" [alt]="author.name" width="72" height="72" loading="lazy"
+            decoding="async" />
           <p class="discovery__author-name">{{ author.name }}</p>
           <p class="discovery__author-likes">{{ author.totalLikes }} curtidas</p>
         </div>

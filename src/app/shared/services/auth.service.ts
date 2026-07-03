@@ -62,6 +62,14 @@ export class AuthService {
     return credential;
   }
 
+  async updatePhotoUrl(photoURL: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) {
+      throw new Error('Not authenticated');
+    }
+    await updateProfile(user, { photoURL });
+  }
+
   async logout(): Promise<void> {
     try {
       localStorage.removeItem('userId');

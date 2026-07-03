@@ -13,6 +13,9 @@ import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { DecodeHtmlEntitiesPipe } from '../../shared/pipes/decode-html-entities.pipe';
 import { SeoService } from '../../shared/services/seo.service';
 
+const DEFAULT_AUTHOR_AVATAR =
+  'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=200';
+
 @Component({
   selector: 'app-discovery',
   imports: [NavComponent, RouterLink, DecodeHtmlEntitiesPipe],
@@ -90,5 +93,17 @@ export class DiscoveryPage extends Destroyable {
 
   trackByAuthorId(_index: number, author: DiscoveryPopularAuthor): number {
     return author.wordpressUserId;
+  }
+
+  authorAvatarUrl(url: string | null | undefined): string {
+    const trimmed = url?.trim();
+    return trimmed || DEFAULT_AUTHOR_AVATAR;
+  }
+
+  onAuthorAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img.src !== DEFAULT_AUTHOR_AVATAR) {
+      img.src = DEFAULT_AUTHOR_AVATAR;
+    }
   }
 }
