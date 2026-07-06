@@ -1,29 +1,41 @@
-<div
-  class="container"
-  data-tour="card-exp"
-  role="link"
-  tabindex="0"
-  aria-label="Ver missões e começar"
-  (click)="onMissionsActivate()"
-  (keydown.enter)="onMissionsActivate()"
-  (keydown.space)="onMissionsActivate($event)">
-  <div class="left">
-    <h1>Bem-vindo a sua comunidade CityPenha!</h1>
-    <p>Explore quatro maneiras pelas quais você pode subir de nível.</p>
-    <div class="exp-container">
-      <span>Começar</span>
-      <div class="exp">
-        50XP
+<div class="card-exp-frame" data-tour="card-exp">
+  <swiper-container class="card-exp-swiper" pagination="true" slides-per-view="1" loop="true" autoplay="true"
+    autoplay-delay="4000" autoplay-disable-on-interaction="false">
+    <swiper-slide>
+      <div class="slide-content" role="link" tabindex="0" aria-label="Ver missões e começar"
+        (click)="onMissionsActivate()" (keydown.enter)="onMissionsActivate()"
+        (keydown.space)="onMissionsActivate($event)">
+        <div class="left">
+          <div class="slide-copy">
+            <h1>Bem-vindo a sua comunidade CityPenha!</h1>
+            <p>Explore quatro maneiras pelas quais você pode subir de nível.</p>
+          </div>
+          <div class="exp-container">
+            <span>Começar</span>
+          </div>
+        </div>
+        <div class="right">
+          <img src="assets/progress-exp.png" alt="">
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="right">
-    <img src="assets/progress-exp.png" alt="">
-    <div>
-      <span class="selected">1</span>
-      <span>2</span>
-      <span>3</span>
-      <span>4</span>
-    </div>
-  </div>
+    </swiper-slide>
+    <swiper-slide>
+      <div class="slide-content" role="link" tabindex="0" aria-label="Rever o tour de onboarding"
+        (click)="onReplayOnboarding()" (keydown.enter)="onReplayOnboarding()"
+        (keydown.space)="onReplayOnboarding($event)">
+        <div class="left">
+          <div class="slide-copy">
+            <h1>Reveja o tour</h1>
+            <p>Toque para ver novamente como funciona o CityPenha.</p>
+          </div>
+          <div class="exp-container">
+            <span>Rever</span>
+          </div>
+        </div>
+        <div class="right">
+          <img src="assets/progress-exp.png" alt="">
+        </div>
+      </div>
+    </swiper-slide>
+  </swiper-container>
 </div>

@@ -29,7 +29,7 @@ const HOME_STEPS: OnboardingStep[] = [
     element: '[data-tour="card-exp"]',
     title: 'Aqui você não só lê, você ganha',
     description:
-      'O CityPenha é a sua comunidade local. Toque em "Começar" para ver suas missões e subir de nível participando.',
+      'Este banner alterna sozinho entre dois slides. Quando aparecer o botão Começar, toque nele para ver suas missões e subir de nível. Quando aparecer Rever o tour, toque para rever este guia quando quiser.',
     side: 'bottom',
     align: 'center',
   },
