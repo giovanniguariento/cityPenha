@@ -12,12 +12,51 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-const API_URL = process.env['API_URL'] ?? 'https://api.citypenha.com.br';
-const SITE_URL = 'https://citypenha.com.br';
+function resolveSiteUrl(): string {
+  const fromEnv = process.env['SITE_URL']?.trim() || process.env['PUBLIC_URL']?.trim();
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, '');
+  }
+  const domain = process.env['PUBLIC_DOMAIN']?.trim();
+  if (domain) {
+    const host = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    return `https://${host}`;
+  }
+  return 'https://citypenhadigital.com.br';
+}
+
+const API_URL = (process.env['API_URL'] ?? 'https://citypenhadigital.com.br/api').replace(/\/$/, '');
+const SITE_URL = resolveSiteUrl();
 
 /** Liveness probe without Angular SSR (healthcheck must not render /home). */
 app.get('/health', (_req, res) => {
   res.status(200).type('text/plain').send('ok');
+});
+
+/** Canonicalize root to /home (avoids duplicate indexing of / vs /home). */
+app.get('/', (_req, res) => {
+  res.redirect(301, '/home');
+});
+
+/** Dynamic robots.txt so Sitemap URL always matches SITE_URL. */
+app.get('/robots.txt', (_req, res) => {
+  res
+    .type('text/plain')
+    .send(
+      [
+        'User-agent: *',
+        'Disallow: /admin',
+        'Disallow: /profile',
+        'Disallow: /favorites',
+        'Disallow: /login',
+        'Disallow: /signup',
+        'Disallow: /discovery/search',
+        'Allow: /',
+        '',
+        `Sitemap: ${SITE_URL}/sitemap.xml`,
+        '',
+      ].join('\n')
+    );
 });
 
 /** 301 redirect: preserve SEO equity for any previously indexed /news/:slug URLs. */
@@ -25,25 +64,43 @@ app.get('/news/:slug', (req, res) => {
   res.redirect(301, `/noticias/geral/${req.params['slug']}`);
 });
 
-/** Dynamic XML sitemap — fetches article slugs from the API. */
+interface SitemapUrl {
+  loc: string;
+  changefreq: string;
+  priority: string;
+  lastmod?: string;
+}
+
+/** Dynamic XML sitemap — fetches all published articles from the API. */
 app.get('/sitemap.xml', async (_req, res) => {
-  const staticUrls = [
-    { loc: `${SITE_URL}/home`, changefreq: 'daily', priority: '1.0' },
-    { loc: `${SITE_URL}/discovery`, changefreq: 'daily', priority: '0.8' },
-    { loc: `${SITE_URL}/missions`, changefreq: 'weekly', priority: '0.5' },
+  const today = new Date().toISOString().slice(0, 10);
+  const staticUrls: SitemapUrl[] = [
+    { loc: `${SITE_URL}/home`, changefreq: 'daily', priority: '1.0', lastmod: today },
+    { loc: `${SITE_URL}/discovery`, changefreq: 'daily', priority: '0.8', lastmod: today },
+    { loc: `${SITE_URL}/discovery/topics`, changefreq: 'weekly', priority: '0.6', lastmod: today },
+    { loc: `${SITE_URL}/missions`, changefreq: 'weekly', priority: '0.5', lastmod: today },
+    { loc: `${SITE_URL}/frequencia`, changefreq: 'weekly', priority: '0.4', lastmod: today },
+    { loc: `${SITE_URL}/politica-de-privacidade`, changefreq: 'yearly', priority: '0.3' },
+    { loc: `${SITE_URL}/termos-de-uso`, changefreq: 'yearly', priority: '0.3' },
+    { loc: `${SITE_URL}/sobre-nos`, changefreq: 'yearly', priority: '0.3' },
   ];
 
-  let articleUrls: { loc: string; changefreq: string; priority: string }[] = [];
+  let articleUrls: SitemapUrl[] = [];
 
   try {
-    const response = await fetch(`${API_URL}/home`, { signal: AbortSignal.timeout(4000) });
+    const response = await fetch(`${API_URL}/sitemap/posts`, {
+      signal: AbortSignal.timeout(8000),
+    });
     if (response.ok) {
-      const body = await response.json() as { data?: { carousel?: { slug: string; categorySlug: string }[] } };
-      const posts = body?.data?.carousel ?? [];
+      const body = (await response.json()) as {
+        data?: { posts?: { slug: string; categorySlug: string; lastmod: string }[] };
+      };
+      const posts = body?.data?.posts ?? [];
       articleUrls = posts.map((p) => ({
-        loc: `${SITE_URL}/noticias/${p.categorySlug}/${p.slug}`,
+        loc: `${SITE_URL}/noticias/${p.categorySlug || 'geral'}/${p.slug}`,
         changefreq: 'weekly',
         priority: '0.9',
+        lastmod: p.lastmod || undefined,
       }));
     }
   } catch {
@@ -52,10 +109,10 @@ app.get('/sitemap.xml', async (_req, res) => {
 
   const allUrls = [...staticUrls, ...articleUrls];
   const urlEntries = allUrls
-    .map(
-      (u) =>
-        `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`
-    )
+    .map((u) => {
+      const lastmod = u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : '';
+      return `  <url>\n    <loc>${u.loc}</loc>${lastmod}\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`;
+    })
     .join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>`;

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { takeUntil } from 'rxjs';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
+import { LegalFooterComponent } from '../../../shared/components/legal-footer/legal-footer.component';
 import { HomeService } from '../../home/services/home.service';
 import { DiscoveryTopic } from '../../../shared/interface/home.interface';
 import { Destroyable } from '../../../shared/utils/destroyable';
@@ -11,7 +12,7 @@ const PLACEHOLDER_IMAGES = ['assets/topicos.jpg', 'assets/escolha-editores.jpg',
 
 @Component({
   selector: 'app-discovery-topics',
-  imports: [NavComponent, RouterLink],
+  imports: [NavComponent, LegalFooterComponent, RouterLink],
   templateUrl: './topics.page.html',
   styleUrl: './topics.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

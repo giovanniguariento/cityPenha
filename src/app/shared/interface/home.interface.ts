@@ -47,6 +47,8 @@ export interface Post {
   commentsCount?: number;
   /** Texto relativo de publicação (ex.: GET /discovery — FeedItem). */
   publishedAtRelative?: string;
+  /** Pastas do usuário que contêm o post (logado; home/feed e detalhe). */
+  savedFolderIds?: string[];
 }
 
 // Interface raiz que representa o conteúdo de `data` em GET /home
@@ -62,8 +64,6 @@ export interface PostDetail extends Post {
   resume?: string;
   date?: string;
   onlyVideo?: boolean;
-  /** Pastas do usuário que contêm o post (logado cadastrado). */
-  savedFolderIds?: string[];
 }
 
 /** Payload útil de POST /post/:wordpressPostId/like (após unwrap de `data`). */
@@ -306,6 +306,13 @@ export interface DiscoveryResponse {
   worldNews: Post[];
   trendingTopics: Post[];
   popularAuthors: DiscoveryPopularAuthor[];
+}
+
+/** Conteúdo de `data` em GET /discovery/search. */
+export interface DiscoverySearchResponse {
+  posts: Post[];
+  topics: DiscoveryTopic[];
+  authors: DiscoveryPopularAuthor[];
 }
 
 /** Autor de um comentário (nickname tem prioridade sobre name). */

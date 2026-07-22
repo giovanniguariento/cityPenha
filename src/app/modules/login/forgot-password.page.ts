@@ -5,11 +5,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../shared/services/auth.service';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { firebaseAuthErrorMessage } from '../../shared/utils/firebase-auth-error-message';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
+import { SeoService } from '../../shared/services/seo.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-forgot-password-page',
   standalone: true,
-  imports: [ReactiveFormsModule, MatProgressSpinnerModule],
+  imports: [ReactiveFormsModule, MatProgressSpinnerModule, LegalFooterComponent],
   templateUrl: './forgot-password.page.html',
   styleUrl: './forgot-password.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,6 +22,7 @@ export class ForgotPasswordPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly feedback = inject(FeedbackService);
+  private readonly seo = inject(SeoService);
 
   readonly submitting = signal(false);
 
@@ -27,6 +31,11 @@ export class ForgotPasswordPage {
   });
 
   constructor() {
+    this.seo.setNoIndexPage({
+      title: 'Recuperar senha',
+      description: 'Recupere o acesso à sua conta CityPenha.',
+      url: `${SITE_URL}/login/forgot-password`,
+    });
     const email = this.router.getCurrentNavigation()?.extras?.state?.['email'];
     if (typeof email === 'string' && email.trim()) {
       this.form.patchValue({ email: email.trim() });

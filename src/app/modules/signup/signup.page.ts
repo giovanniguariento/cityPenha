@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { first } from 'rxjs/operators';
 import { AuthService } from '../../shared/services/auth.service';
@@ -9,11 +9,14 @@ import { PublicUser } from '../../shared/interface/home.interface';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { firebaseAuthErrorMessage } from '../../shared/utils/firebase-auth-error-message';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
+import { SeoService } from '../../shared/services/seo.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-signup-page',
   standalone: true,
-  imports: [ReactiveFormsModule, MatProgressSpinnerModule],
+  imports: [ReactiveFormsModule, MatProgressSpinnerModule, RouterLink, LegalFooterComponent],
   templateUrl: './signup.page.html',
   styleUrl: './signup.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +27,7 @@ export class SignupPage {
   private readonly authService = inject(AuthService);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
+  private readonly seo = inject(SeoService);
 
   readonly submitting = signal(false);
   readonly showPassword = signal(false);
@@ -35,6 +39,13 @@ export class SignupPage {
     acceptTerms: [false, Validators.requiredTrue],
   });
 
+  constructor() {
+    this.seo.setNoIndexPage({
+      title: 'Criar conta',
+      description: 'Crie sua conta no CityPenha.',
+      url: `${SITE_URL}/signup`,
+    });
+  }
   goBack(): void {
     void this.router.navigate(['/login']);
   }

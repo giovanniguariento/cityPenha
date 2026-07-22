@@ -1,0 +1,119 @@
+<div class="dsearch">
+  <header class="dsearch__top">
+    <div class="dsearch__header">
+      <a routerLink="/discovery" class="dsearch__back" aria-label="Voltar para descoberta">
+        <svg class="dsearch__back-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <h1 class="dsearch__title">Busca</h1>
+    </div>
+
+    <div class="dsearch__search" role="search">
+      <img class="dsearch__search-icon" src="assets/search.svg" alt="" width="20" height="20" />
+      <input
+        type="search"
+        class="dsearch__search-input"
+        placeholder="Pesquisar"
+        autocomplete="off"
+        aria-label="Pesquisar"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+      />
+    </div>
+  </header>
+
+  <main class="dsearch__main">
+    @if (queryTooShort()) {
+    <p class="dsearch__hint">Digite pelo menos 2 caracteres para pesquisar.</p>
+    } @else if (error()) {
+    <div class="dsearch__alert" role="alert">
+      <p class="dsearch__alert-text">{{ error() }}</p>
+      <button type="button" class="dsearch__alert-retry" (click)="retry()">Tentar novamente</button>
+    </div>
+    } @else if (loading()) {
+    <div class="dsearch__skeleton" aria-busy="true" aria-label="A carregar resultados">
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+      <div class="dsearch__skeleton-row">
+        <div class="dsearch__skeleton-line dsearch__skeleton-line--title dsearch__skeleton--pulse"></div>
+        <div class="dsearch__skeleton-line dsearch__skeleton-line--meta dsearch__skeleton--pulse"></div>
+      </div>
+      }
+    </div>
+    } @else if (!hasAny()) {
+    <p class="dsearch__empty">Nenhum resultado encontrado.</p>
+    } @else {
+    @if (results().posts.length) {
+    <section class="dsearch__section" aria-labelledby="dsearch-posts-heading">
+      <h2 id="dsearch-posts-heading" class="dsearch__section-title">Notícias</h2>
+      <ul class="dsearch__list">
+        @for (post of results().posts; track trackByPostId($index, post)) {
+        <li>
+          <a class="dsearch__row dsearch__row--post" [routerLink]="['/noticias', post.categorySlug, post.slug]">
+            @if (post.image) {
+            <img
+              class="dsearch__thumb"
+              [src]="post.image"
+              alt=""
+              width="56"
+              height="56"
+              loading="lazy"
+              decoding="async"
+            />
+            }
+            <div class="dsearch__row-body">
+              <p class="dsearch__row-title">{{ post.title | decodeHtmlEntities }}</p>
+              <p class="dsearch__row-meta">{{ articleMeta(post) }}</p>
+            </div>
+          </a>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+
+    @if (results().topics.length) {
+    <section class="dsearch__section" aria-labelledby="dsearch-topics-heading">
+      <h2 id="dsearch-topics-heading" class="dsearch__section-title">Tópicos</h2>
+      <ul class="dsearch__list">
+        @for (topic of results().topics; track trackByTopicId($index, topic)) {
+        <li class="dsearch__row dsearch__row--static">
+          <p class="dsearch__row-title">{{ topic.name }}</p>
+          <p class="dsearch__row-meta">{{ topic.newsCount }} artigos</p>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+
+    @if (results().authors.length) {
+    <section class="dsearch__section" aria-labelledby="dsearch-authors-heading">
+      <h2 id="dsearch-authors-heading" class="dsearch__section-title">Autores</h2>
+      <ul class="dsearch__list">
+        @for (author of results().authors; track trackByAuthorId($index, author)) {
+        <li class="dsearch__row dsearch__row--static dsearch__row--author">
+          <img
+            class="dsearch__avatar"
+            [src]="authorAvatarUrl(author.avatarUrl)"
+            (error)="onAuthorAvatarError($event)"
+            referrerpolicy="no-referrer"
+            [alt]="author.name"
+            width="40"
+            height="40"
+            loading="lazy"
+            decoding="async"
+          />
+          <div>
+            <p class="dsearch__row-title">{{ author.name }}</p>
+          </div>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+    }
+  </main>
+  <app-legal-footer />
+</div>
+<app-nav></app-nav>

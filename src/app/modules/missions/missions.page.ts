@@ -2,10 +2,12 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { NavComponent } from '../../shared/components/nav/nav.component';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 import { HomeService } from '../home/services/home.service';
 import { MissionApiItem } from '../../shared/interface/home.interface';
 import { MissionFeedbackService } from '../../shared/services/mission-feedback.service';
 import { SeoService } from '../../shared/services/seo.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 export interface Mission {
   id: string;
@@ -59,7 +61,7 @@ function apiMissionToMission(item: MissionApiItem): Mission {
 @Component({
   selector: 'app-missions',
   standalone: true,
-  imports: [RouterLink, NavComponent],
+  imports: [RouterLink, NavComponent, LegalFooterComponent],
   templateUrl: './missions.page.html',
   styleUrl: './missions.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,7 +81,7 @@ export class MissionsPage implements OnInit {
     this.seoService.setPage({
       title: 'Missões',
       description: 'Complete missões, ganhe XP e suba de nível lendo notícias no CityPenha.',
-      url: 'https://citypenha.com.br/missions',
+      url: `${SITE_URL}/missions`,
       type: 'website',
     });
 

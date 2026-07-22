@@ -10,6 +10,10 @@ export const routes: Routes = [
     path: 'discovery/topics',
     loadComponent: () => import('./modules/discovery/topics/topics.page').then(m => m.DiscoveryTopicsPage),
   },
+  {
+    path: 'discovery/search',
+    loadComponent: () => import('./modules/discovery/search/search.page').then(m => m.DiscoverySearchPage),
+  },
   { path: 'noticias/:categorySlug/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
   { path: 'login', loadComponent: () => import('./modules/login/login.page').then(m => m.LoginPage) },
   { path: 'login/email', loadComponent: () => import('./modules/login/login-email.page').then(m => m.LoginEmailPage) },
@@ -45,8 +49,28 @@ export const routes: Routes = [
     loadComponent: () => import('./modules/missions/missions.page').then(m => m.MissionsPage),
   },
   {
+    path: 'politica-de-privacidade',
+    loadComponent: () =>
+      import('./modules/legal/privacy-policy/privacy-policy.page').then((m) => m.PrivacyPolicyPage),
+  },
+  {
+    path: 'termos-de-uso',
+    loadComponent: () =>
+      import('./modules/legal/terms-of-use/terms-of-use.page').then((m) => m.TermsOfUsePage),
+  },
+  {
+    path: 'sobre-nos',
+    loadComponent: () =>
+      import('./modules/legal/about/about.page').then((m) => m.AboutPage),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadChildren: () => import('./modules/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+  },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./modules/not-found/not-found.page').then((m) => m.NotFoundPage),
   },
 ];

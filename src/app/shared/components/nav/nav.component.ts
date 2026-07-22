@@ -3,6 +3,7 @@ import { Destroyable } from '../../utils/destroyable';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntil } from 'rxjs';
 import { UserStateService } from '../../../core/state/user-state.service';
+import { FeedbackService } from '../../services/feedback.service';
 
 @Component({
   selector: 'app-nav',
@@ -14,6 +15,7 @@ import { UserStateService } from '../../../core/state/user-state.service';
 })
 export class NavComponent extends Destroyable {
   private readonly userState = inject(UserStateService);
+  private readonly feedback = inject(FeedbackService);
   readonly router = inject(Router);
   currentPath = signal<string>(this.router.url);
   photoURL = signal<string | null>(null);
@@ -33,5 +35,7 @@ export class NavComponent extends Destroyable {
       });
   }
 
-  // teardown handled by Destroyable
+  onQrCodeClick(): void {
+    this.feedback.showComingSoon();
+  }
 }

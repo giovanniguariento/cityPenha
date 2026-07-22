@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { Destroyable } from '../../shared/utils/destroyable';
 import { NavComponent } from '../../shared/components/nav/nav.component';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 import { ProfilePageHeaderComponent } from '../../shared/components/profile-page-header/profile-page-header.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserStateService } from '../../core/state/user-state.service';
@@ -31,12 +32,14 @@ import { HomeService } from '../home/services/home.service';
 import { MissionFeedbackService } from '../../shared/services/mission-feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { OnboardingService } from '../../shared/services/onboarding.service';
+import { SeoService } from '../../shared/services/seo.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 type ProfileTab = 'geral' | 'missoes' | 'loja';
 
 @Component({
   selector: 'app-profile',
-  imports: [NavComponent, CommonModule, RouterLink, ProfilePageHeaderComponent],
+  imports: [NavComponent, LegalFooterComponent, CommonModule, RouterLink, ProfilePageHeaderComponent],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -48,6 +51,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
   private readonly homeService = inject(HomeService);
   private readonly missionFeedback = inject(MissionFeedbackService);
   private readonly onboarding = inject(OnboardingService);
+  private readonly seo = inject(SeoService);
   private readonly cdr = inject(ChangeDetectorRef);
   private static readonly XP_ICON = 'assets/xp-icon.svg';
   private static readonly MISSION_ICON = 'assets/mission-icon.svg';
@@ -126,6 +130,12 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
 
   constructor() {
     super();
+
+    this.seo.setNoIndexPage({
+      title: 'Perfil',
+      description: 'Seu perfil no CityPenha.',
+      url: `${SITE_URL}/profile`,
+    });
 
     // Re-mede a largura da tag sempre que o nível (e, portanto, o texto) muda.
     effect(() => {

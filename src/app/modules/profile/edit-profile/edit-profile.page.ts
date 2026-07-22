@@ -20,6 +20,7 @@ import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
+import { LegalFooterComponent } from '../../../shared/components/legal-footer/legal-footer.component';
 import { ProfilePageHeaderComponent } from '../../../shared/components/profile-page-header/profile-page-header.component';
 import { UpdateMeRequest } from '../../../shared/interface/home.interface';
 import { FeedbackService } from '../../../shared/services/feedback.service';
@@ -45,7 +46,7 @@ function nicknameOptionalMinLength(control: AbstractControl): ValidationErrors |
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavComponent, ProfilePageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, NavComponent, LegalFooterComponent, ProfilePageHeaderComponent],
   templateUrl: './edit-profile.page.html',
   styleUrl: './edit-profile.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

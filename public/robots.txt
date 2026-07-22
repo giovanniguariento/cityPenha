@@ -2,6 +2,9 @@ User-agent: *
 Disallow: /admin
 Disallow: /profile
 Disallow: /favorites
+Disallow: /login
+Disallow: /signup
+Disallow: /discovery/search
 Allow: /
 
-Sitemap: https://citypenha.com.br/sitemap.xml
+Sitemap: https://citypenhadigital.com.br/sitemap.xml

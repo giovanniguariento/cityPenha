@@ -227,15 +227,48 @@ button:disabled {
   opacity: 0.65;
 }
 
-// Customize the entire app. Change :root to your selector if you want to scope the styles.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Snackbar — tokens do design system CityPenha (brand vermelho)
 :root {
-  @include mat.snack-bar-overrides((container-color: #ffffff,
-      supporting-text-color: #2f2f2f,
+  @include mat.snack-bar-overrides((
+      container-color: vars.$bg-surface,
+      supporting-text-color: vars.$text-primary,
+      button-color: vars.$brand-primary,
+      container-shape: 12px,
     ));
 }
 
-.app-feedback-snackbar .mat-mdc-snack-bar-label {
-  animation: app-snack-in 0.22s ease-out;
+.app-feedback-snackbar {
+  .mat-mdc-snack-bar-label {
+    animation: app-snack-in 0.22s ease-out;
+    font-family: 'Montserrat', 'Roboto', sans-serif;
+    font-weight: 500;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    font-family: 'Montserrat', 'Roboto', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+}
+
+.app-feedback-snackbar--success .mat-mdc-button.mat-mdc-snack-bar-action {
+  color: vars.$brand-primary;
+}
+
+.app-feedback-snackbar--error .mat-mdc-button.mat-mdc-snack-bar-action {
+  color: vars.$brand-accent;
 }
 
 @keyframes app-snack-in {
@@ -351,4 +384,83 @@ button:disabled {
 
 .driver-popover.citypenha-tour .driver-popover-arrow {
   border-color: #ffffff;
+}
+
+/* Transparent backdrop for tabs-card options menu (CDK overlay) */
+.cdk-overlay-backdrop.tabs-card-menu-backdrop {
+  background: transparent;
+}
+
+/* Menu styles live globally so they apply when CDK attaches the panel outside the component host */
+.tabs-card-options-menu {
+  width: max-content;
+  min-width: 220px;
+  max-width: min(280px, 85vw);
+  padding: 4px 0;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+
+  .options-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-bottom: 1px solid #eeeeee;
+    background: transparent;
+    color: #6b6b6b;
+    font-size: 14px;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      background: #f7f7f7;
+    }
+  }
+
+  .options-menu__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+
+    svg {
+      display: block;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .options-menu__label {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .soon-badge {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f0f0f0;
+    color: #8a8a8a;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
 }

@@ -1,9 +1,134 @@
-<div *ngIf="newsDestaque" class="container" [style.backgroundImage]="`url('${this.newsDestaque.image}')`"
-  [routerLink]="['/noticias', newsDestaque.categorySlug, newsDestaque.slug]">
+<div
+  *ngIf="newsDestaque"
+  class="container"
+  [class.menu-open]="menuOpen()"
+  [style.backgroundImage]="`url('${this.newsDestaque.image}')`"
+  [routerLink]="['/noticias', newsDestaque.categorySlug, newsDestaque.slug]"
+>
   <div class="header">
     <span class="exp" data-tour="feed-xp">+10 XP</span>
-    <div class="options"></div>
-    <img src="assets/vector.svg" alt="">
+    <div class="options" #optionsRoot>
+      <button
+        type="button"
+        class="menu-trigger"
+        aria-label="Mais opções"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="toggleMenu($event)"
+      >
+        <img src="assets/vector.svg" alt="" />
+      </button>
+
+      @if (menuOpen()) {
+      <div class="options-menu" role="menu" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="options-menu__item"
+          role="menuitem"
+          [disabled]="savePending()"
+          [attr.aria-busy]="savePending()"
+          (click)="onSaveArticle($event)"
+        >
+          <span class="options-menu__icon" aria-hidden="true">
+            @if (bookmarked()) {
+            <svg width="16" height="16" viewBox="0 0 15 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M0 7.50606C0 5.51022 0 4.5123 0.262197 3.70469C0.792114 2.07245 2.07078 0.792755 3.70169 0.262409C4.50865 0 5.50577 0 7.5 0C9.49423 0 10.4913 0 11.2983 0.262409C12.9292 0.792755 14.2079 2.07245 14.7378 3.70469C15 4.5123 15 5.51022 15 7.50606V15.4275C15 17.4832 15 18.5111 14.6336 19.0547C14.186 19.7187 13.4059 20.0778 12.6109 19.9858C11.96 19.9104 11.1802 19.2415 9.62069 17.9036C8.93419 17.3147 8.59094 17.0203 8.21391 16.8869C7.75196 16.7236 7.24804 16.7236 6.78609 16.8869C6.40906 17.0203 6.06581 17.3147 5.37931 17.9036C3.81975 19.2415 3.03997 19.9104 2.38914 19.9858C1.59405 20.0778 0.813973 19.7187 0.366381 19.0547C0 18.5111 0 17.4832 0 15.4275V7.50606Z"
+                fill="#6B6B6B"
+              />
+            </svg>
+            } @else {
+            <svg width="16" height="16" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M8 10V1.33333H1.33333V10L4.66667 8.54667L8 10ZM8 0C8.35362 0 8.69276 0.140476 8.94281 0.390524C9.19286 0.640573 9.33333 0.979711 9.33333 1.33333V12L4.66667 10L0 12V1.33333C0 0.593333 0.6 0 1.33333 0H8ZM4 2.66667H5.33333V4H6.66667V5.33333H5.33333V6.66667H4V5.33333H2.66667V4H4V2.66667Z"
+                fill="#6B6B6B"
+              />
+            </svg>
+            }
+          </span>
+          <span class="options-menu__label">{{ bookmarked() ? 'Remover dos salvos' : 'Salvar artigo' }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="options-menu__item"
+          role="menuitem"
+          (click)="onComingSoon($event, 'Silenciar autor')"
+        >
+          <span class="options-menu__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M3 3l18 18M10.5 10.7a2.5 2.5 0 003.5 3.5M9.9 5.1A10.5 10.5 0 0121 12c-.5 1-1.1 1.9-1.8 2.7M6.1 6.1A10.5 10.5 0 003 12c1.7 3.4 5.1 6 9 6 1.4 0 2.7-.3 3.9-.8"
+                stroke="#6B6B6B"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="options-menu__label">Silenciar autor</span>
+          <span class="soon-badge">Em breve</span>
+        </button>
+
+        <button
+          type="button"
+          class="options-menu__item"
+          role="menuitem"
+          (click)="onComingSoon($event, 'Mostrar mais disso')"
+        >
+          <span class="options-menu__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" stroke="#6B6B6B" stroke-width="1.6" />
+              <circle cx="9" cy="10" r="1" fill="#6B6B6B" />
+              <circle cx="15" cy="10" r="1" fill="#6B6B6B" />
+              <path
+                d="M8.5 14.5c1 1.2 2.2 1.8 3.5 1.8s2.5-.6 3.5-1.8"
+                stroke="#6B6B6B"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <span class="options-menu__label">Mostrar mais disso</span>
+          <span class="soon-badge">Em breve</span>
+        </button>
+
+        <button
+          type="button"
+          class="options-menu__item"
+          role="menuitem"
+          (click)="onComingSoon($event, 'Mostrar menos disso')"
+        >
+          <span class="options-menu__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" stroke="#6B6B6B" stroke-width="1.6" />
+              <circle cx="9" cy="10" r="1" fill="#6B6B6B" />
+              <circle cx="15" cy="10" r="1" fill="#6B6B6B" />
+              <path d="M9 15.5h6" stroke="#6B6B6B" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="options-menu__label">Mostrar menos disso</span>
+          <span class="soon-badge">Em breve</span>
+        </button>
+
+        <button
+          type="button"
+          class="options-menu__item"
+          role="menuitem"
+          (click)="onComingSoon($event, 'Reportar')"
+        >
+          <span class="options-menu__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" stroke="#6B6B6B" stroke-width="1.6" />
+              <path d="M12 7.5v6" stroke="#6B6B6B" stroke-width="1.6" stroke-linecap="round" />
+              <circle cx="12" cy="16.5" r="1" fill="#6B6B6B" />
+            </svg>
+          </span>
+          <span class="options-menu__label">Reportar</span>
+          <span class="soon-badge">Em breve</span>
+        </button>
+      </div>
+      }
+    </div>
   </div>
 
   <div class="content">
@@ -18,7 +143,7 @@
         title="Você já leu esta notícia"
         >Lido</span>
     </div>
-    <h1 class="title">{{ newsDestaque.title | decodeHtmlEntities }}</h1>
+    <h2 class="title">{{ newsDestaque.title | decodeHtmlEntities }}</h2>
     <div class="author">
       <img [src]="newsDestaque.author.avatarUrl" alt=" foto do author">
       <span class="name">{{newsDestaque.author.name}}</span>

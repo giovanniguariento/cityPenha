@@ -7,6 +7,7 @@ import { HomeService } from '../../home/services/home.service';
 import { Auth } from '@angular/fire/auth';
 import { TabsCardComponent } from '../../home/components/tabs-card/tabs-card.component';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
+import { LegalFooterComponent } from '../../../shared/components/legal-footer/legal-footer.component';
 import { decodeHtmlEntities } from '../../../shared/utils/decode-html-entities';
 
 const PLACEHOLDER_IMAGE =
@@ -89,7 +90,7 @@ function mapFolderPostItem(item: FolderPostItem): Post {
 
 @Component({
   selector: 'app-category',
-  imports: [RouterLink, TabsCardComponent, NavComponent],
+  imports: [RouterLink, TabsCardComponent, NavComponent, LegalFooterComponent],
   templateUrl: './category.page.html',
   styleUrl: './category.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

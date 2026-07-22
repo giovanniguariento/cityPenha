@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, inject, PLA
 import { isPlatformBrowser } from '@angular/common';
 import { Destroyable } from '../../shared/utils/destroyable';
 import { NavComponent } from '../../shared/components/nav/nav.component'
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component'
 import { HeaderComponent } from '../../shared/components/header/header.component'
 import { CardNoticiaComponent } from '../home/components/card-noticia/card-noticia.component'
 import { CardExpComponent } from '../home/components/card-exp/card-exp.component'
@@ -13,10 +14,11 @@ import { takeUntil } from 'rxjs';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { SeoService } from '../../shared/services/seo.service';
 import { OnboardingService } from '../../shared/services/onboarding.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-home',
-  imports: [NavComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent, TabsComponent, HomeSkeletonComponent],
+  imports: [NavComponent, LegalFooterComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent, TabsComponent, HomeSkeletonComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
@@ -39,7 +41,7 @@ export class HomePage extends Destroyable {
     this.seoService.setPage({
       title: 'CityPenha — Portal de Notícias',
       description: 'As últimas notícias de Penha e região. Fique por dentro de tudo que acontece na sua cidade.',
-      url: 'https://citypenha.com.br/home',
+      url: `${SITE_URL}/home`,
       type: 'website',
     });
     this.homeData$

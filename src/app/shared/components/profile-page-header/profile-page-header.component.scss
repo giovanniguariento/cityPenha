@@ -40,6 +40,11 @@
   align-items: center;
   justify-content: center;
 
+  .material-icons {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
   &:visited {
     color: #ffffff;
   }

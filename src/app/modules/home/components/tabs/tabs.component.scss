@@ -14,11 +14,4 @@
     height: 300px;
     margin-top: 26px;
   }
-
-  ::ng-deep .mat-mdc-tab-body-wrapper,
-  .mat-mdc-tab-body.mat-mdc-tab-body-active,
-  .mat-mdc-tab-body-content {
-    overflow: unset;
-    padding-bottom: 130px;
-  }
 }

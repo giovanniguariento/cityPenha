@@ -7,6 +7,7 @@
 } @else {
 <app-header></app-header>
 <main class="home-main home-main--enter">
+  <h1 class="visually-hidden">CityPenha — Portal de notícias</h1>
   <app-card-exp></app-card-exp>
   @if (!hasFeedContent()) {
   <p class="home-empty">Nenhuma notícia disponível no momento.</p>
@@ -22,4 +23,5 @@
   <app-tabs [tabs]="tabs()"></app-tabs>
 </main>
 }
+<app-legal-footer [aboveNav]="true" />
 <app-nav></app-nav>

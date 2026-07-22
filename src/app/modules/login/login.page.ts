@@ -9,11 +9,14 @@ import { FeedbackService } from '../../shared/services/feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { first } from 'rxjs/operators';
 import { APP_ASSETS } from '../../shared/constants/app-assets';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
+import { SeoService } from '../../shared/services/seo.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, MatProgressSpinnerModule, RouterLink],
+  imports: [CommonModule, MatProgressSpinnerModule, RouterLink, LegalFooterComponent],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -23,9 +26,18 @@ export class LoginPage {
   private readonly authService = inject(AuthService);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
+  private readonly seo = inject(SeoService);
 
   readonly submitting = signal(false);
   readonly logoUrl = APP_ASSETS.logo;
+
+  constructor() {
+    this.seo.setNoIndexPage({
+      title: 'Entrar',
+      description: 'Faça login no CityPenha.',
+      url: `${SITE_URL}/login`,
+    });
+  }
 
   onSkip(): void {
     this.router.navigate(['/home']);

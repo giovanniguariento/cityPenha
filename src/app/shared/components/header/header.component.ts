@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LoginRequiredDialogComponent } from '../login-required-dialog/login-required-dialog.component';
 import { Auth } from '@angular/fire/auth';
 import { APP_ASSETS } from '../../constants/app-assets';
+import { FeedbackService } from '../../services/feedback.service';
 
 @Component({
   selector: 'app-header',
@@ -17,6 +18,7 @@ export class HeaderComponent {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly auth = inject(Auth);
+  private readonly feedback = inject(FeedbackService);
 
   readonly logoUrl = APP_ASSETS.logo;
 
@@ -29,5 +31,9 @@ export class HeaderComponent {
         data: { points: 10, actionLabel: 'acessar a frequência', noRedirect: true, isFrequencyContext: true }
       });
     }
+  }
+
+  onNotificationsClick(): void {
+    this.feedback.showComingSoon();
   }
 }

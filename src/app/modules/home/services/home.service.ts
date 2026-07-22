@@ -7,6 +7,7 @@ import {
   PublicUser,
   BlogResponse,
   DiscoveryResponse,
+  DiscoverySearchResponse,
   FolderPostMutationPayload,
   FolderPostsData,
   FrequencyData,
@@ -71,6 +72,21 @@ export class HomeService {
     return this.http
       .get<ApiSuccessEnvelope<DiscoveryResponse>>(`${environment.apiUrl}/discovery`, { params })
       .pipe(this.unwrapData<DiscoveryResponse>());
+  }
+
+  /**
+   * GET /discovery/search — optionalAuth; `q` min 2 chars; `limit` per group (default 3, max 20).
+   */
+  searchDiscovery(q: string, limit?: number): Observable<DiscoverySearchResponse> {
+    let params = new HttpParams().set('q', q.trim());
+    if (limit != null && Number.isFinite(limit)) {
+      params = params.set('limit', String(limit));
+    }
+    return this.http
+      .get<ApiSuccessEnvelope<DiscoverySearchResponse>>(`${environment.apiUrl}/discovery/search`, {
+        params,
+      })
+      .pipe(this.unwrapData<DiscoverySearchResponse>());
   }
 
   /**

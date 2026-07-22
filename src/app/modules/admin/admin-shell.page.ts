@@ -5,6 +5,7 @@ import { filter, map, startWith } from 'rxjs/operators';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserStateService } from '../../core/state/user-state.service';
 import { APP_ASSETS } from '../../shared/constants/app-assets';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 
 interface AdminNavItem {
   label: string;
@@ -16,7 +17,7 @@ interface AdminNavItem {
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LegalFooterComponent],
   templateUrl: './admin-shell.page.html',
   styleUrl: './admin-shell.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

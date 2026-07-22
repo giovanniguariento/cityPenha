@@ -3,9 +3,10 @@ import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { plainTextFromHtml } from '../utils/decode-html-entities';
+import { SITE_URL } from '../constants/site-url';
 
 const SITE_NAME = 'CityPenha';
-const BASE_URL = 'https://citypenha.com.br';
+const BASE_URL = SITE_URL;
 const DEFAULT_DESCRIPTION = 'As últimas notícias de Penha e região.';
 const DEFAULT_IMAGE = `${BASE_URL}/assets/og-default.jpg`;
 const JSON_LD_ID = 'structured-data';
@@ -33,6 +34,8 @@ export interface PageSeoConfig {
   url?: string;
   image?: string;
   type?: 'website' | 'article';
+  /** When true, sets robots noindex,nofollow (auth/search/thin pages). */
+  noindex?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -52,6 +55,7 @@ export class SeoService {
 
     this.titleService.setTitle(`${config.title} | ${SITE_NAME}`);
     this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
 
     // Open Graph
     this.meta.updateTag({ property: 'og:type', content: 'article' });
@@ -96,6 +100,10 @@ export class SeoService {
         '@type': 'Organization',
         name: SITE_NAME,
         url: BASE_URL,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${BASE_URL}/assets/logo.png`,
+        },
       },
       url: config.url,
       mainEntityOfPage: config.url,
@@ -132,6 +140,17 @@ export class SeoService {
     this.setCanonical(url);
     this.removeArticleTags();
     this.removeJsonLd();
+
+    if (config.noindex) {
+      this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+    } else {
+      this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    }
+  }
+
+  /** Convenience for auth / private / thin pages that must not be indexed. */
+  setNoIndexPage(config: Omit<PageSeoConfig, 'noindex'>): void {
+    this.setPage({ ...config, noindex: true });
   }
 
   setCanonical(url: string): void {
@@ -169,6 +188,7 @@ export class SeoService {
     this.meta.removeTag('name="twitter:title"');
     this.meta.removeTag('name="twitter:description"');
     this.meta.removeTag('name="twitter:image"');
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
     this.removeArticleTags();
     this.setCanonical(BASE_URL);
     this.removeJsonLd();

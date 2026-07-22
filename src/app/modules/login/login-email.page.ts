@@ -9,11 +9,14 @@ import { PublicUser } from '../../shared/interface/home.interface';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { firebaseAuthErrorMessage } from '../../shared/utils/firebase-auth-error-message';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
+import { SeoService } from '../../shared/services/seo.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-login-email-page',
   standalone: true,
-  imports: [ReactiveFormsModule, MatProgressSpinnerModule, RouterLink],
+  imports: [ReactiveFormsModule, MatProgressSpinnerModule, RouterLink, LegalFooterComponent],
   templateUrl: './login-email.page.html',
   styleUrl: './login-email.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +27,7 @@ export class LoginEmailPage {
   private readonly authService = inject(AuthService);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
+  private readonly seo = inject(SeoService);
 
   readonly submitting = signal(false);
   readonly showPassword = signal(false);
@@ -33,6 +37,13 @@ export class LoginEmailPage {
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
+  constructor() {
+    this.seo.setNoIndexPage({
+      title: 'Entrar com e-mail',
+      description: 'Faça login no CityPenha com e-mail e senha.',
+      url: `${SITE_URL}/login/email`,
+    });
+  }
   goBack(): void {
     void this.router.navigate(['/login']);
   }

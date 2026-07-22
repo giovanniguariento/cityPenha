@@ -1,13 +1,127 @@
 <div class="discovery">
   <header class="discovery__top">
     <h1 class="discovery__title">Descoberta</h1>
-    <div class="discovery__search" role="search">
-      <img class="discovery__search-icon" src="assets/search.svg" alt="" width="20" height="20" />
-      <input type="search" class="discovery__search-input" placeholder="Pesquisar" autocomplete="off"
-        aria-label="Pesquisar" />
-      <button type="button" class="discovery__search-filter" aria-label="Filtros">
-        <img src="assets/filter-sliders.svg" alt="" width="16" height="14" />
-      </button>
+    <div class="discovery__search-wrap" #searchWrap>
+      <div class="discovery__search" role="search">
+        <img class="discovery__search-icon" src="assets/search.svg" alt="" width="20" height="20" />
+        <input
+          type="search"
+          class="discovery__search-input"
+          placeholder="Pesquisar"
+          autocomplete="off"
+          aria-label="Pesquisar"
+          [attr.aria-expanded]="searchOpen()"
+          aria-controls="discovery-search-panel"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (focus)="onSearchFocus()"
+          (keydown)="onSearchKeydown($event)"
+        />
+        <button type="button" class="discovery__search-filter" aria-label="Filtros">
+          <img src="assets/filter-sliders.svg" alt="" width="16" height="14" />
+        </button>
+      </div>
+
+      @if (searchOpen()) {
+      <div
+        id="discovery-search-panel"
+        class="discovery__search-panel"
+        role="listbox"
+        aria-label="Resultados da pesquisa"
+      >
+        @if (searchLoading()) {
+        <p class="discovery__search-status">A pesquisar…</p>
+        } @else if (searchError()) {
+        <p class="discovery__search-status discovery__search-status--error" role="alert">{{ searchError() }}</p>
+        } @else if (!searchHasAny()) {
+        <p class="discovery__search-status">Nenhum resultado encontrado.</p>
+        } @else {
+        @if (searchResults().posts.length) {
+        <section class="discovery__search-section" aria-label="Notícias">
+          <h2 class="discovery__search-section-title">Notícias</h2>
+          <ul class="discovery__search-list">
+            @for (post of searchResults().posts; track trackByPostId($index, post)) {
+            <li>
+              <a
+                class="discovery__search-item discovery__search-item--post"
+                [routerLink]="['/noticias', post.categorySlug, post.slug]"
+                (click)="closeSearch()"
+              >
+                @if (post.image) {
+                <img
+                  class="discovery__search-thumb"
+                  [src]="post.image"
+                  alt=""
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                />
+                }
+                <span class="discovery__search-item-text">
+                  <span class="discovery__search-item-title">{{ post.title | decodeHtmlEntities }}</span>
+                  @if (post.categoryName) {
+                  <span class="discovery__search-item-meta">{{ post.categoryName }}</span>
+                  }
+                </span>
+              </a>
+            </li>
+            }
+          </ul>
+        </section>
+        }
+
+        @if (searchResults().topics.length) {
+        <section class="discovery__search-section" aria-label="Tópicos">
+          <h2 class="discovery__search-section-title">Tópicos</h2>
+          <ul class="discovery__search-list">
+            @for (topic of searchResults().topics; track trackByTopicId($index, topic)) {
+            <li class="discovery__search-item discovery__search-item--static">
+              <span class="discovery__search-item-title">{{ topic.name }}</span>
+              <span class="discovery__search-item-meta">{{ topic.newsCount }} artigos</span>
+            </li>
+            }
+          </ul>
+        </section>
+        }
+
+        @if (searchResults().authors.length) {
+        <section class="discovery__search-section" aria-label="Autores">
+          <h2 class="discovery__search-section-title">Autores</h2>
+          <ul class="discovery__search-list">
+            @for (author of searchResults().authors; track trackByAuthorId($index, author)) {
+            <li class="discovery__search-item discovery__search-item--static discovery__search-item--author">
+              <img
+                class="discovery__search-avatar"
+                [src]="authorAvatarUrl(author.avatarUrl)"
+                (error)="onAuthorAvatarError($event)"
+                referrerpolicy="no-referrer"
+                [alt]="author.name"
+                width="28"
+                height="28"
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="discovery__search-item-title">{{ author.name }}</span>
+            </li>
+            }
+          </ul>
+        </section>
+        }
+        }
+
+        @if (searchQuery().trim().length >= 2) {
+        <a
+          class="discovery__search-see-all"
+          [routerLink]="['/discovery/search']"
+          [queryParams]="{ q: searchQuery().trim() }"
+          (click)="closeSearch()"
+        >
+          Ver todos os resultados
+        </a>
+        }
+      </div>
+      }
     </div>
   </header>
 
@@ -118,5 +232,6 @@
       }
     </section>
   </main>
+  <app-legal-footer />
 </div>
 <app-nav></app-nav>

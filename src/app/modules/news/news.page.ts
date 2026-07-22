@@ -3,6 +3,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, computed, inject, 
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HomeService } from '../home/services/home.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { sanitizeWordpressHtml } from '../../shared/utils/sanitize-wordpress-html';
 import { EMPTY, switchMap, take, takeUntil, tap } from 'rxjs';
 import { PostDetail } from '../../shared/interface/home.interface';
 import { Destroyable } from '../../shared/utils/destroyable';
@@ -23,6 +24,8 @@ import { plainTextFromHtml } from '../../shared/utils/decode-html-entities';
 import { getOrCreateVisitorId } from '../../shared/utils/visitor-id';
 import { UserStateService } from '../../core/state/user-state.service';
 import { CommentsSectionComponent } from './components/comments/comments-section/comments-section.component';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-news-page',
@@ -35,6 +38,7 @@ import { CommentsSectionComponent } from './components/comments/comments-section
     DecodeHtmlEntitiesPipe,
     NewsSkeletonComponent,
     CommentsSectionComponent,
+    LegalFooterComponent,
   ],
   templateUrl: './news.page.html',
   styleUrl: './news.page.scss',
@@ -141,7 +145,7 @@ export class NewsPageComponent extends Destroyable {
           const sanitizedPost: PostDetail = {
             ...post,
             content: typeof post.content === 'string'
-              ? this.sanitizer.bypassSecurityTrustHtml(post.content)
+              ? this.sanitizer.bypassSecurityTrustHtml(sanitizeWordpressHtml(post.content))
               : post.content
           };
           this.loadingPost.set(false);
@@ -159,7 +163,7 @@ export class NewsPageComponent extends Destroyable {
             title: post.title,
             description: post.resume ?? post.title,
             image: post.image,
-            url: `https://citypenha.com.br/noticias/${post.categorySlug}/${post.slug}`,
+            url: `${SITE_URL}/noticias/${post.categorySlug}/${post.slug}`,
             publishedAt: post.date,
             authorName: post.author?.name,
             category: post.categoryName,

@@ -34,7 +34,7 @@
           [disabled]="avatarUploading() || loading()"
           (click)="onEditPhotoClick(fileInput)"
         >
-          <i class="fa fa-pencil" aria-hidden="true"></i>
+          <img src="assets/edit.svg" alt="" width="14" height="14" aria-hidden="true" />
           <span>@if (avatarUploading()) { A enviar… } @else { Editar }</span>
         </button>
       </div>
@@ -75,4 +75,5 @@
 </form>
 }
 
+<app-legal-footer [aboveNav]="true" />
 <app-nav></app-nav>

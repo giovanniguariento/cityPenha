@@ -28,4 +28,18 @@ export class FeedbackService {
       horizontalPosition: 'center',
     });
   }
+
+  /** Funcionalidade ainda não disponível. */
+  showComingSoon(durationMs = 3000): void {
+    this.snackBar.open(
+      'Em breve! Esta funcionalidade estará disponível em uma próxima atualização.',
+      'OK',
+      {
+        duration: durationMs,
+        panelClass: [PANEL, 'app-feedback-snackbar--success'],
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+      },
+    );
+  }
 }

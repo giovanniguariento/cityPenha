@@ -1,0 +1,38 @@
+.legal-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 24px 24px;
+  text-align: center;
+
+  &--above-nav {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.legal-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.legal-footer__sep {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #c7c7cc;
+}
+
+.legal-footer__link {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #8e8e93;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover,
+  &:focus-visible {
+    color: #5e5f60;
+  }
+}

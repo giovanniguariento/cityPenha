@@ -9,9 +9,9 @@
     <span>descubra</span>
   </div>
   <div class="container-center">
-    <div class="button-center">
+    <button type="button" class="button-center" aria-label="QR Code" (click)="onQrCodeClick()">
       <img src="assets/qrcode.svg" alt="">
-    </div>
+    </button>
   </div>
   <div class="button-container button-radius-left" routerLink="/favorites"
     [class.selected]="currentPath().includes('favorites')">

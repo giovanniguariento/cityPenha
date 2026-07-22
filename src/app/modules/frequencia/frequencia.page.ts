@@ -7,10 +7,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { HomeService } from '../home/services/home.service';
 import { LoginRequiredDialogComponent } from '../../shared/components/login-required-dialog/login-required-dialog.component';
+import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { take } from 'rxjs';
 import { SeoService } from '../../shared/services/seo.service';
 import { FeedbackService } from '../../shared/services/feedback.service';
+import { SITE_URL } from '../../shared/constants/site-url';
 
 const WEEKDAY_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -59,7 +61,7 @@ function saturdayOfWeekContaining(dateKey: string): string {
 @Component({
   selector: 'app-frequencia',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, LegalFooterComponent],
   templateUrl: './frequencia.page.html',
   styleUrl: './frequencia.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -170,7 +172,7 @@ export class FrequenciaPage implements OnInit {
     this.seoService.setPage({
       title: 'Frequência de Leitura',
       description: 'Acompanhe sua sequência de leitura diária e construa o hábito de se informar com o CityPenha.',
-      url: 'https://citypenha.com.br/frequencia',
+      url: `${SITE_URL}/frequencia`,
       type: 'website',
     });
 
