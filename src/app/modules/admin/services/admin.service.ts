@@ -209,12 +209,18 @@ export class AdminService {
       .pipe(this.unwrap<AdminWordpressAccessItem>());
   }
 
-  /** POST /admin/users/:userId/wordpress-access/provision — gera credenciais legadas. */
-  provisionWordpressAccess(userId: string): Observable<AdminWordpressAccessItem> {
+  /**
+   * POST /admin/users/:userId/wordpress-access/provision — gera credenciais.
+   * `force=true` regenera a senha mesmo quando já existe uma (ressincroniza com o WordPress).
+   */
+  provisionWordpressAccess(
+    userId: string,
+    force = false
+  ): Observable<AdminWordpressAccessItem> {
     return this.http
       .post<ApiSuccessEnvelope<AdminWordpressAccessItem>>(
         `${this.base}/users/${userId}/wordpress-access/provision`,
-        {}
+        { force }
       )
       .pipe(this.unwrap<AdminWordpressAccessItem>());
   }

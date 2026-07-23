@@ -183,6 +183,34 @@ export class AdminWordpressAccessPage {
       });
   }
 
+  canResetPassword(item: AdminWordpressAccessItem): boolean {
+    return item.wordpressId != null && item.credentialsStatus === 'ready';
+  }
+
+  resetPassword(item: AdminWordpressAccessItem): void {
+    if (this.provisioningUserId() || !this.canResetPassword(item)) return;
+
+    const ref = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+      ConfirmDialogComponent,
+      {
+        data: {
+          message:
+            'Isso vai gerar uma NOVA senha no WordPress e substituir a atual. Use quando a senha exibida não estiver funcionando no login WordPress. Continuar?',
+          confirmLabel: 'Redefinir senha',
+          cancelLabel: 'Cancelar',
+        },
+      }
+    );
+
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.runProvision(item.userId, true);
+      });
+  }
+
   formatDate(iso: string): string {
     try {
       return new Intl.DateTimeFormat('pt-BR', {
@@ -203,10 +231,10 @@ export class AdminWordpressAccessPage {
     return 'Pendente';
   }
 
-  private runProvision(userId: string): void {
+  private runProvision(userId: string, force = false): void {
     this.provisioningUserId.set(userId);
     this.admin
-      .provisionWordpressAccess(userId)
+      .provisionWordpressAccess(userId, force)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (updated) => {
