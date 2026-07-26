@@ -28,6 +28,19 @@ export function isInvalidOrExpiredTokenError(err: unknown): boolean {
  */
 export function apiErrorMessage(err: unknown, fallback = GENERIC): string {
   if (err instanceof HttpErrorResponse) {
+    // Rede indisponível.
+    if (err.status === 0) {
+      return 'Sem ligação à internet. Verifique a rede e tente de novo.';
+    }
+    // Erros de servidor (5xx) nunca expõem detalhe técnico ao utilizador.
+    // O corpo cru (ex.: "pool timeout...") vai apenas para o console/monitoramento.
+    if (err.status >= 500) {
+      if (typeof console !== 'undefined') {
+        console.error('[api] server error', err.status, err.error);
+      }
+      return 'O servidor está indisponível. Tente novamente em instantes.';
+    }
+    // Erros de cliente (4xx): usa a mensagem amigável do backend quando existir.
     const body = err.error;
     if (typeof body === 'string' && body.trim()) {
       return body.trim();
@@ -38,17 +51,11 @@ export function apiErrorMessage(err: unknown, fallback = GENERIC): string {
     if (isRecord(body) && typeof body['message'] === 'string' && body['message'].trim()) {
       return body['message'].trim();
     }
-    if (err.status === 0) {
-      return 'Sem ligação à internet. Verifique a rede e tente de novo.';
-    }
     if (err.status === 401 || err.status === 403) {
       return 'Sessão inválida ou sem permissão. Faça login novamente.';
     }
     if (err.status === 404) {
       return 'Conteúdo não encontrado.';
-    }
-    if (err.status >= 500) {
-      return 'O servidor está indisponível. Tente mais tarde.';
     }
     return fallback;
   }

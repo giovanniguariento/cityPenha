@@ -1,0 +1,74 @@
+$accent-red: #ff3b30;
+$text-primary: #1a1a1a;
+$text-secondary: #8e8e93;
+
+.state-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 40px 24px;
+  box-sizing: border-box;
+
+  // Ocupa a área visível entre o topo e a navbar/rodapé,
+  // mantendo o estado centralizado (padrão de apps).
+  &--fill {
+    min-height: 60vh;
+    min-height: calc(100dvh - 190px);
+  }
+}
+
+.state-view__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  color: $text-secondary;
+
+  .state-view[data-variant='error'] &,
+  .state-view[data-variant='offline'] & {
+    background: rgba(255, 59, 48, 0.1);
+    color: $accent-red;
+  }
+}
+
+.state-view__title {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.state-view__message {
+  margin: 0;
+  max-width: 320px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: $text-secondary;
+}
+
+.state-view__action {
+  margin-top: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 999px;
+  background: $accent-red;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.92;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}

@@ -8,6 +8,7 @@ import {
   BlogResponse,
   DiscoveryResponse,
   DiscoverySearchResponse,
+  DiscoveryTopicPostsResponse,
   FolderPostMutationPayload,
   FolderPostsData,
   FrequencyData,
@@ -87,6 +88,22 @@ export class HomeService {
         params,
       })
       .pipe(this.unwrapData<DiscoverySearchResponse>());
+  }
+
+  /**
+   * GET /discovery/topics/:slug — artigos de um tópico, paginado (optionalAuth).
+   */
+  getTopicPosts(slug: string, page = 1, perPage = 20): Observable<DiscoveryTopicPostsResponse> {
+    let params = new HttpParams().set('page', String(page));
+    if (perPage != null && Number.isFinite(perPage)) {
+      params = params.set('perPage', String(perPage));
+    }
+    return this.http
+      .get<ApiSuccessEnvelope<DiscoveryTopicPostsResponse>>(
+        `${environment.apiUrl}/discovery/topics/${encodeURIComponent(slug)}`,
+        { params }
+      )
+      .pipe(this.unwrapData<DiscoveryTopicPostsResponse>());
   }
 
   /**

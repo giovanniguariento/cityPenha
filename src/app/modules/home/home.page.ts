@@ -8,6 +8,7 @@ import { CardNoticiaComponent } from '../home/components/card-noticia/card-notic
 import { CardExpComponent } from '../home/components/card-exp/card-exp.component'
 import { TabsComponent } from '../home/components/tabs/tabs.component'
 import { HomeSkeletonComponent } from '../../shared/components/home-skeleton/home-skeleton.component';
+import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { HomeService } from './services/home.service';
 import { Category, Post } from '../../shared/interface/home.interface';
 import { takeUntil } from 'rxjs';
@@ -18,7 +19,7 @@ import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
   selector: 'app-home',
-  imports: [NavComponent, LegalFooterComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent, TabsComponent, HomeSkeletonComponent],
+  imports: [NavComponent, LegalFooterComponent, HeaderComponent, CardNoticiaComponent, CardExpComponent, TabsComponent, HomeSkeletonComponent, StateViewComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
@@ -34,7 +35,6 @@ export class HomePage extends Destroyable {
   posts = signal<Post[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  homeData$ = this.homeService.getResourcesHome();
 
   constructor() {
     super();
@@ -44,7 +44,15 @@ export class HomePage extends Destroyable {
       url: `${SITE_URL}/home`,
       type: 'website',
     });
-    this.homeData$
+    this.load();
+  }
+
+  /** Carrega o feed da home. Reutilizado pelo botão "Tentar novamente". */
+  private load(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.homeService
+      .getResourcesHome()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -59,6 +67,11 @@ export class HomePage extends Destroyable {
           this.error.set(apiErrorMessage(err, 'Não foi possível carregar o início.'));
         },
       });
+  }
+
+  /** Tenta recarregar o feed após um erro. */
+  reload(): void {
+    this.load();
   }
 
   hasFeedContent(): boolean {

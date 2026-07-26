@@ -1,9 +1,12 @@
 @if (loading()) {
 <app-home-skeleton />
 } @else if (error()) {
-<div class="home-state home-state--error">
-  <p>{{ error() }}</p>
-</div>
+<app-state-view
+  variant="error"
+  title="Não foi possível carregar"
+  [message]="error()!"
+  [fill]="true"
+  (retry)="reload()" />
 } @else {
 <app-header></app-header>
 <main class="home-main home-main--enter">

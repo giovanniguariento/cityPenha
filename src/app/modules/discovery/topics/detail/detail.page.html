@@ -1,0 +1,41 @@
+<div class="container">
+
+  <header class="topic-header">
+    <a routerLink="/discovery/topics" class="back" aria-label="Voltar para tópicos">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </a>
+    <h1>{{ topicTitle() }}</h1>
+  </header>
+
+  @if (loading()) {
+  <p class="state-msg">Carregando artigos...</p>
+  } @else if (error()) {
+  <div class="topic-alert" role="alert">
+    <p class="state-msg state-msg--error">{{ error() }}</p>
+    <button type="button" class="topic-retry" (click)="retry()">Tentar novamente</button>
+  </div>
+  } @else if (posts().length === 0) {
+  <p class="state-msg">Nenhum artigo neste tópico.</p>
+  } @else {
+  <div class="posts-list">
+    @for (item of posts(); track trackByPostId($index, item)) {
+    <app-tabs-card [card]="item" [category]="item.categoryName"></app-tabs-card>
+    }
+  </div>
+
+  @if (hasMore()) {
+  <button type="button" class="load-more" (click)="loadMore()" [disabled]="loadingMore()">
+    {{ loadingMore() ? 'Carregando...' : 'Carregar mais' }}
+  </button>
+  }
+  }
+
+  <div class="spacer"></div>
+
+  <app-legal-footer />
+</div>
+<app-nav></app-nav>

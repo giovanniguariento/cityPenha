@@ -16,6 +16,15 @@ $accent-red: #ff3b30;
 .container {
   padding: 20px;
   padding-bottom: 100px; // Espaço extra para o scroll não bater na navbar
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+// Empurra o rodapé para o fim quando o conteúdo é curto
+.spacer {
+  flex: 1 1 auto;
 }
 
 .header {

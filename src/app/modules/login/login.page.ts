@@ -46,6 +46,11 @@ export class LoginPage {
   onLogin(provider: string): void {
     if (provider === 'email') {
       void this.router.navigate(['/login/email']);
+      return;
+    }
+
+    if (provider === 'apple' || provider === 'facebook') {
+      this.feedback.showComingSoon();
     }
   }
 

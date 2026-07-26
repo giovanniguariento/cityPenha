@@ -315,6 +315,14 @@ export interface DiscoverySearchResponse {
   authors: DiscoveryPopularAuthor[];
 }
 
+/** Conteúdo de `data` em GET /discovery/topics/:slug. */
+export interface DiscoveryTopicPostsResponse {
+  topic: DiscoveryTopic;
+  posts: Post[];
+  page: number;
+  hasMore: boolean;
+}
+
 /** Autor de um comentário (nickname tem prioridade sobre name). */
 export interface CommentAuthor {
   id: string;

@@ -7,6 +7,7 @@ import { HomeService } from '../../home/services/home.service';
 import { DiscoveryTopic } from '../../../shared/interface/home.interface';
 import { Destroyable } from '../../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../../shared/utils/api-error-message';
+import { FeedbackService } from '../../../shared/services/feedback.service';
 
 const PLACEHOLDER_IMAGES = ['assets/topicos.jpg', 'assets/escolha-editores.jpg', 'assets/noticias-mundo.jpg'];
 
@@ -19,12 +20,11 @@ const PLACEHOLDER_IMAGES = ['assets/topicos.jpg', 'assets/escolha-editores.jpg',
 })
 export class DiscoveryTopicsPage extends Destroyable {
   private readonly homeService = inject(HomeService);
+  private readonly feedback = inject(FeedbackService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly topics = signal<DiscoveryTopic[]>([]);
-  /** IDs que o utilizador segue (resto = "Seguir"). */
-  readonly followingIds = signal<Set<number>>(new Set());
   readonly searchQuery = signal('');
 
   readonly filteredTopics = computed(() => {
@@ -53,20 +53,10 @@ export class DiscoveryTopicsPage extends Destroyable {
     return PLACEHOLDER_IMAGES[index % PLACEHOLDER_IMAGES.length];
   }
 
-  isFollowing(topic: DiscoveryTopic): boolean {
-    return this.followingIds().has(topic.id);
-  }
-
-  toggleFollow(topic: DiscoveryTopic, event: Event): void {
+  toggleFollow(_topic: DiscoveryTopic, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    const next = new Set(this.followingIds());
-    if (next.has(topic.id)) {
-      next.delete(topic.id);
-    } else {
-      next.add(topic.id);
-    }
-    this.followingIds.set(next);
+    this.feedback.showComingSoon();
   }
 
   onSearchInput(event: Event): void {
@@ -88,7 +78,6 @@ export class DiscoveryTopicsPage extends Destroyable {
         next: (data) => {
           const list = data.topics ?? [];
           this.topics.set(list);
-          this.initFollowingDefaults(list);
           this.loading.set(false);
           this.error.set(null);
         },
@@ -97,20 +86,5 @@ export class DiscoveryTopicsPage extends Destroyable {
           this.error.set(apiErrorMessage(err, 'Não foi possível carregar os tópicos.'));
         },
       });
-  }
-
-  /**
-   * Alinha ao mock: quase todos "Seguindo"; um item em "Seguir".
-   * Escolhe o 7.º item (índice 6) quando existir, senão o último.
-   */
-  private initFollowingDefaults(list: DiscoveryTopic[]): void {
-    const following = new Set<number>();
-    const notFollowingIndex = list.length > 7 ? 6 : Math.max(0, list.length - 1);
-    list.forEach((t, i) => {
-      if (i !== notFollowingIndex) {
-        following.add(t.id);
-      }
-    });
-    this.followingIds.set(following);
   }
 }

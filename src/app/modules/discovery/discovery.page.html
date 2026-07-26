@@ -17,9 +17,6 @@
           (focus)="onSearchFocus()"
           (keydown)="onSearchKeydown($event)"
         />
-        <button type="button" class="discovery__search-filter" aria-label="Filtros">
-          <img src="assets/filter-sliders.svg" alt="" width="16" height="14" />
-        </button>
       </div>
 
       @if (searchOpen()) {
@@ -133,25 +130,30 @@
     </div>
     }
 
-    <button type="button" class="discovery__banner" aria-label="Descubra novas experiências">
+    <button type="button" class="discovery__banner discovery__banner--soon" disabled
+      aria-label="Descubra novas experiências (em breve)">
       <span class="discovery__banner-text">Descubra novas experiências</span>
+      <span class="discovery__soon-badge">Em breve</span>
     </button>
 
     <section class="discovery__bento" aria-label="Categorias">
-      <button type="button" class="discovery__bento-card discovery__bento-card--tall discovery__bento-card--editors"
-        [attr.aria-label]="'Escolha dos editores'">
+      <button type="button"
+        class="discovery__bento-card discovery__bento-card--tall discovery__bento-card--editors discovery__bento-card--soon"
+        disabled aria-label="Escolha dos editores (em breve)">
         <img class="discovery__bento-img" src="assets/escolha-editores.jpg" alt="" loading="lazy" decoding="async" />
         <span class="discovery__bento-label">Escolha dos editores</span>
+        <span class="discovery__soon-badge">Em breve</span>
       </button>
       <a routerLink="/discovery/topics" class="discovery__bento-card discovery__bento-card--topics"
         [attr.aria-label]="topics().length ? 'Tópicos, ' + topics().length + ' categorias' : 'Tópicos'">
         <img class="discovery__bento-img" src="assets/topicos.jpg" alt="" loading="lazy" decoding="async" />
         <span class="discovery__bento-label">Tópicos</span>
       </a>
-      <button type="button" class="discovery__bento-card discovery__bento-card--world"
-        [attr.aria-label]="worldNews().length ? 'Notícias do mundo, ' + worldNews().length + ' publicações' : 'Notícias do mundo'">
+      <button type="button" class="discovery__bento-card discovery__bento-card--world discovery__bento-card--soon"
+        disabled aria-label="Notícias do mundo (em breve)">
         <img class="discovery__bento-img" src="assets/noticias-mundo.jpg" alt="" loading="lazy" decoding="async" />
         <span class="discovery__bento-label">Notícias do mundo</span>
+        <span class="discovery__soon-badge">Em breve</span>
       </button>
     </section>
 
