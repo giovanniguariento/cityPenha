@@ -51,7 +51,12 @@ export class SeoService {
    */
   setArticle(config: ArticleSeoConfig): void {
     const description = this.truncate(plainTextFromHtml(config.description));
-    const image = this.buildOgImageUrl(config);
+    const image = this.buildDynamicOgImageUrl({
+      title: config.title,
+      description: config.description,
+      image: config.image,
+      date: config.publishedAt,
+    });
 
     this.titleService.setTitle(`${config.title} | ${SITE_NAME}`);
     this.meta.updateTag({ name: 'description', content: description });
@@ -116,7 +121,11 @@ export class SeoService {
    */
   setPage(config: PageSeoConfig): void {
     const description = this.truncate(plainTextFromHtml(config.description));
-    const image = config.image ? this.toOgImageUrl(config.image) : DEFAULT_IMAGE;
+    const image = this.buildDynamicOgImageUrl({
+      title: config.title,
+      description: config.description,
+      image: config.image,
+    });
     const url = config.url ?? BASE_URL;
     const type = config.type ?? 'website';
 
@@ -210,14 +219,29 @@ export class SeoService {
     return text.slice(0, maxLength - 3) + '...';
   }
 
-  private buildOgImageUrl(config: ArticleSeoConfig): string {
+  /**
+   * Builds the URL for the backend's branded OG image template, shared by
+   * articles and generic pages. `imageUrl` (background photo) and `date` are
+   * omitted when absent — pages render on the template's dark gradient without
+   * a date, matching the news layout with only the text changed.
+   */
+  private buildDynamicOgImageUrl(config: {
+    title: string;
+    description: string;
+    image?: string;
+    date?: string;
+  }): string {
     const apiBase = environment.apiUrl.replace(/\/$/, '');
     const params = new URLSearchParams({
       title: config.title,
       description: plainTextFromHtml(config.description).slice(0, 160),
-      date: config.publishedAt ?? '',
-      imageUrl: this.toOgImageUrl(config.image),
     });
+    if (config.image) {
+      params.set('imageUrl', this.toOgImageUrl(config.image));
+    }
+    if (config.date) {
+      params.set('date', config.date);
+    }
     return `${apiBase}/og-image?${params.toString()}`;
   }
 

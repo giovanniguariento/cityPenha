@@ -5,9 +5,24 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
+
+/**
+ * CSR shell (browser index.html), read once and cached.
+ * Served as a 200 fallback when SSR yields no response so that direct hits /
+ * crawlers never receive a 404 for a valid client route (the app hydrates on
+ * the client instead).
+ */
+let cachedIndexHtml: string | null = null;
+function getIndexHtml(): string {
+  if (cachedIndexHtml === null) {
+    cachedIndexHtml = readFileSync(join(browserDistFolder, 'index.html'), 'utf-8');
+  }
+  return cachedIndexHtml;
+}
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
@@ -167,7 +182,14 @@ app.use((req, res, next) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      return response ? writeResponseToNodeResponse(response, res) : next();
+      if (response) {
+        return writeResponseToNodeResponse(response, res);
+      }
+      // SSR produced no response (e.g. a navigation error). Fall back to the
+      // CSR shell with 200 instead of a 404 so crawlers can still index the
+      // route and users get a working (client-rendered) page.
+      res.status(200).type('text/html').send(getIndexHtml());
+      return;
     })
     .catch((err) => {
       if (settled) return;
