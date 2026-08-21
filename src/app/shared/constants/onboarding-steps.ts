@@ -113,7 +113,7 @@ export function buildOnboardingSteps(
     const post = context.firstPost;
     if (post?.slug && post?.categorySlug) {
       steps.push({
-        route: `/noticias/${post.categorySlug}/${post.slug}`,
+        route: `/artigos/${post.categorySlug}/${post.slug}`,
         element: '[data-tour="article-content"]',
         title: 'Role até o fim para ganhar',
         description:

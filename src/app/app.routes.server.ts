@@ -6,7 +6,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'discovery/topics', renderMode: RenderMode.Server },
   { path: 'discovery/topics/:slug', renderMode: RenderMode.Server },
   { path: 'discovery/search', renderMode: RenderMode.Server },
-  { path: 'noticias/:categorySlug/:slug', renderMode: RenderMode.Server },
+  { path: 'artigos/:categorySlug/:slug', renderMode: RenderMode.Server },
   { path: 'frequencia', renderMode: RenderMode.Server },
   { path: 'missions', renderMode: RenderMode.Server },
   { path: 'politica-de-privacidade', renderMode: RenderMode.Server },

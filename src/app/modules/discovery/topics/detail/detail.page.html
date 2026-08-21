@@ -4,12 +4,34 @@
     <a routerLink="/discovery/topics" class="back" aria-label="Voltar para tópicos">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
+        <polyline points="15 18 9 12 15 6"></polyline>
       </svg>
     </a>
-    <h1>{{ topicTitle() }}</h1>
   </header>
+
+  <section class="topic-hero">
+    @if (topicImage(); as img) {
+    <img class="topic-hero__thumb" [src]="img" alt="" width="64" height="64" decoding="async" />
+    } @else {
+    <div class="topic-hero__thumb topic-hero__thumb--empty" aria-hidden="true"></div>
+    }
+    <div class="topic-hero__body">
+      <h1 class="topic-hero__name">{{ topicTitle() }}</h1>
+      @if (topicCount() !== null) {
+      <p class="topic-hero__meta">{{ topicCount() }} artigos</p>
+      }
+    </div>
+    <button type="button" class="topic-hero__follow topic-hero__follow--soon" (click)="follow($event)"
+      [attr.aria-label]="'Seguir ' + topicTitle() + ' — em breve'">
+      <svg class="topic-hero__follow-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <polyline points="12 7 12 12 15 14"></polyline>
+      </svg>
+      Em breve
+    </button>
+  </section>
 
   @if (loading()) {
   <p class="state-msg">Carregando artigos...</p>

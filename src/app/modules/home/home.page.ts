@@ -39,11 +39,12 @@ export class HomePage extends Destroyable {
   constructor() {
     super();
     this.seoService.setPage({
-      title: 'CityPenha — Portal de Notícias',
-      description: 'As últimas notícias de Penha e região. Fique por dentro de tudo que acontece na sua cidade.',
+      title: 'CityPenha Digital',
+      description: 'CityPenha Digital: conteúdo editorial de qualidade sobre a Penha e região desde 2006.',
       url: `${SITE_URL}/home`,
       type: 'website',
     });
+    this.seoService.setHomeStructuredData();
     this.load();
   }
 

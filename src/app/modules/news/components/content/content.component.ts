@@ -59,7 +59,7 @@ export class ContentComponent implements OnDestroy {
     try {
       const shareData = {
         title: 'Acesse o CityPenha',
-        text: 'Veja agora essa noticia',
+        text: 'Veja agora essa matéria',
         url: window.location.href,
       };
       await navigator.share(shareData);

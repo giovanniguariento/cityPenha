@@ -76,7 +76,12 @@ app.get('/robots.txt', (_req, res) => {
 
 /** 301 redirect: preserve SEO equity for any previously indexed /news/:slug URLs. */
 app.get('/news/:slug', (req, res) => {
-  res.redirect(301, `/noticias/geral/${req.params['slug']}`);
+  res.redirect(301, `/artigos/geral/${req.params['slug']}`);
+});
+
+/** 301 redirect: articles moved from /noticias/ to /artigos/ (magazine rebrand). */
+app.get('/noticias/:categorySlug/:slug', (req, res) => {
+  res.redirect(301, `/artigos/${req.params['categorySlug']}/${req.params['slug']}`);
 });
 
 interface SitemapUrl {
@@ -112,7 +117,7 @@ app.get('/sitemap.xml', async (_req, res) => {
       };
       const posts = body?.data?.posts ?? [];
       articleUrls = posts.map((p) => ({
-        loc: `${SITE_URL}/noticias/${p.categorySlug || 'geral'}/${p.slug}`,
+        loc: `${SITE_URL}/artigos/${p.categorySlug || 'geral'}/${p.slug}`,
         changefreq: 'weekly',
         priority: '0.9',
         lastmod: p.lastmod || undefined,
@@ -151,6 +156,24 @@ app.use(
     etag: true,
     lastModified: true,
     setHeaders(res, filePath) {
+      const fileName = filePath.split(/[/\\]/).pop() ?? '';
+
+      // Service worker: precisa ser revalidado sempre e servido a partir da raiz
+      // (scope '/') para poder controlar toda a aplicação.
+      if (fileName === 'sw.js') {
+        res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Service-Worker-Allowed', '/');
+        return;
+      }
+
+      // Manifest do PWA com o content-type correto.
+      if (fileName === 'manifest.webmanifest') {
+        res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+        return;
+      }
+
       if (isImmutableBundle(filePath)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         return;

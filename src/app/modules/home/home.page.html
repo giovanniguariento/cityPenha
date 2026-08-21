@@ -1,19 +1,15 @@
 @if (loading()) {
 <app-home-skeleton />
 } @else if (error()) {
-<app-state-view
-  variant="error"
-  title="Não foi possível carregar"
-  [message]="error()!"
-  [fill]="true"
+<app-state-view variant="error" title="Não foi possível carregar" [message]="error()!" [fill]="true"
   (retry)="reload()" />
 } @else {
 <app-header></app-header>
 <main class="home-main home-main--enter">
-  <h1 class="visually-hidden">CityPenha — Portal de notícias</h1>
+  <h1 class="visually-hidden">CityPenha Digital</h1>
   <app-card-exp></app-card-exp>
   @if (!hasFeedContent()) {
-  <p class="home-empty">Nenhuma notícia disponível no momento.</p>
+  <p class="home-empty">Nenhuma matéria disponível no momento.</p>
   }
   <swiper-container class="mySwiper" pagination="true" [attr.loop]="posts().length > 2 ? 'true' : 'false'" speed="320"
     slides-per-view="1" space-between="8">

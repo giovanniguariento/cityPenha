@@ -58,6 +58,15 @@
   z-index: 2; // acima do .content (z-index: 1 via > *)
 
   color: #FF1500;
+
+  // Garante legibilidade do XP e do menu sobre qualquer imagem de fundo
+  .exp {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  }
+
+  .menu-trigger img {
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
+  }
 }
 
 .options {

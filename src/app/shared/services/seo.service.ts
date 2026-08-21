@@ -5,9 +5,10 @@ import { environment } from '../../../environments/environment';
 import { plainTextFromHtml } from '../utils/decode-html-entities';
 import { SITE_URL } from '../constants/site-url';
 
-const SITE_NAME = 'CityPenha';
+const SITE_NAME = 'CityPenha Digital';
 const BASE_URL = SITE_URL;
-const DEFAULT_DESCRIPTION = 'As últimas notícias de Penha e região.';
+const DEFAULT_DESCRIPTION =
+  'CityPenha Digital: conteúdo editorial de qualidade sobre a Penha e região desde 2006.';
 const DEFAULT_IMAGE = `${BASE_URL}/assets/og-default.jpg`;
 const JSON_LD_ID = 'structured-data';
 const OG_IMAGE_WIDTH = '1200';
@@ -90,10 +91,10 @@ export class SeoService {
 
     this.setCanonical(config.url);
 
-    // JSON-LD — NewsArticle structured data (helps Google News indexing)
+    // JSON-LD — Article structured data (editorial magazine content)
     this.setJsonLd({
       '@context': 'https://schema.org',
-      '@type': 'NewsArticle',
+      '@type': 'Article',
       headline: config.title,
       description,
       image: [image],
@@ -160,6 +161,36 @@ export class SeoService {
   /** Convenience for auth / private / thin pages that must not be indexed. */
   setNoIndexPage(config: Omit<PageSeoConfig, 'noindex'>): void {
     this.setPage({ ...config, noindex: true });
+  }
+
+  /**
+   * Injects Organization + WebSite JSON-LD for the homepage. This is the
+   * primary signal Google uses to render the "site name" (next to the favicon)
+   * in search results. Call after setPage() since setPage() clears JSON-LD.
+   */
+  setHomeStructuredData(): void {
+    this.setJsonLd({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          name: SITE_NAME,
+          url: BASE_URL,
+          description: DEFAULT_DESCRIPTION,
+          foundingDate: '2006',
+          logo: {
+            '@type': 'ImageObject',
+            url: `${BASE_URL}/assets/logo.png`,
+          },
+        },
+        {
+          '@type': 'WebSite',
+          name: SITE_NAME,
+          url: BASE_URL,
+          inLanguage: 'pt-BR',
+        },
+      ],
+    });
   }
 
   setCanonical(url: string): void {

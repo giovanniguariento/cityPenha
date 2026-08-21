@@ -28,6 +28,7 @@ import {
 import { Destroyable } from '../../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../../shared/utils/api-error-message';
 import { DecodeHtmlEntitiesPipe } from '../../../shared/pipes/decode-html-entities.pipe';
+import { HighlightTermPipe } from '../../../shared/pipes/highlight-term.pipe';
 import { SeoService } from '../../../shared/services/seo.service';
 import { SITE_URL } from '../../../shared/constants/site-url';
 
@@ -42,7 +43,13 @@ const EMPTY_SEARCH: DiscoverySearchResponse = { posts: [], topics: [], authors: 
 
 @Component({
   selector: 'app-discovery-search',
-  imports: [NavComponent, LegalFooterComponent, RouterLink, DecodeHtmlEntitiesPipe],
+  imports: [
+    NavComponent,
+    LegalFooterComponent,
+    RouterLink,
+    DecodeHtmlEntitiesPipe,
+    HighlightTermPipe,
+  ],
   templateUrl: './search.page.html',
   styleUrl: './search.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

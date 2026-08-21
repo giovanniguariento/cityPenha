@@ -19,9 +19,8 @@ $brand: #ff1500;
 .topic-header {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-top: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 
   .back {
     display: flex;
@@ -29,6 +28,7 @@ $brand: #ff1500;
     justify-content: center;
     width: 40px;
     height: 40px;
+    margin-left: -8px;
     border-radius: 12px;
     color: $text-primary;
     text-decoration: none;
@@ -38,14 +38,90 @@ $brand: #ff1500;
       opacity: 0.7;
     }
   }
+}
 
-  h1 {
-    font-size: 24px;
-    font-weight: 700;
-    color: $text-primary;
-    margin: 0;
-    line-height: 1.2;
+.topic-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.topic-hero__thumb {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 22px;
+  object-fit: cover;
+  object-position: center;
+
+  &--empty {
+    background: #f0f0f0;
   }
+}
+
+.topic-hero__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.topic-hero__name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: $text-primary;
+}
+
+.topic-hero__meta {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #999999;
+}
+
+.topic-hero__follow {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  min-width: 92px;
+  box-sizing: border-box;
+  text-align: center;
+  cursor: pointer;
+
+  &--soon {
+    background: #f4f4f4;
+    border-color: #ececec;
+    color: #8a8c90;
+  }
+
+  &:active {
+    opacity: 0.88;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $brand;
+    outline-offset: 2px;
+  }
+}
+
+.topic-hero__follow-icon {
+  flex-shrink: 0;
+  display: block;
+  opacity: 0.85;
 }
 
 .posts-list {

@@ -34,14 +34,14 @@
         <p class="discovery__search-status">Nenhum resultado encontrado.</p>
         } @else {
         @if (searchResults().posts.length) {
-        <section class="discovery__search-section" aria-label="Notícias">
-          <h2 class="discovery__search-section-title">Notícias</h2>
+        <section class="discovery__search-section" aria-label="Matérias">
+          <h2 class="discovery__search-section-title">Matérias</h2>
           <ul class="discovery__search-list">
             @for (post of searchResults().posts; track trackByPostId($index, post)) {
             <li>
               <a
                 class="discovery__search-item discovery__search-item--post"
-                [routerLink]="['/noticias', post.categorySlug, post.slug]"
+                [routerLink]="['/artigos', post.categorySlug, post.slug]"
                 (click)="closeSearch()"
               >
                 @if (post.image) {
@@ -181,7 +181,7 @@
       <ul class="discovery__article-list">
         @for (post of trendingTopics(); track trackByPostId($index, post); let idx = $index) {
         <li class="discovery__article">
-          <a class="discovery__article-link" [routerLink]="['/noticias', post.categorySlug, post.slug]">
+          <a class="discovery__article-link" [routerLink]="['/artigos', post.categorySlug, post.slug]">
             <span class="discovery__article-index" aria-hidden="true">{{ indexLabel(idx) }}</span>
             <div class="discovery__article-body">
               <p class="discovery__article-title">{{ post.title | decodeHtmlEntities }}</p>

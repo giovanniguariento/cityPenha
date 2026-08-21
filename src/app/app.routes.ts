@@ -18,7 +18,7 @@ export const routes: Routes = [
     path: 'discovery/topics/:slug',
     loadComponent: () => import('./modules/discovery/topics/detail/detail.page').then(m => m.DiscoveryTopicDetailPage),
   },
-  { path: 'noticias/:categorySlug/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
+  { path: 'artigos/:categorySlug/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
   { path: 'login', loadComponent: () => import('./modules/login/login.page').then(m => m.LoginPage) },
   { path: 'login/email', loadComponent: () => import('./modules/login/login-email.page').then(m => m.LoginEmailPage) },
   { path: 'login/forgot-password', loadComponent: () => import('./modules/login/forgot-password.page').then(m => m.ForgotPasswordPage) },

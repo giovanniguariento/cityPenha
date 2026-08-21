@@ -46,11 +46,11 @@
     } @else {
     @if (results().posts.length) {
     <section class="dsearch__section" aria-labelledby="dsearch-posts-heading">
-      <h2 id="dsearch-posts-heading" class="dsearch__section-title">Notícias</h2>
+      <h2 id="dsearch-posts-heading" class="dsearch__section-title">Matérias</h2>
       <ul class="dsearch__list">
         @for (post of results().posts; track trackByPostId($index, post)) {
         <li>
-          <a class="dsearch__row dsearch__row--post" [routerLink]="['/noticias', post.categorySlug, post.slug]">
+          <a class="dsearch__row dsearch__row--post" [routerLink]="['/artigos', post.categorySlug, post.slug]">
             @if (post.image) {
             <img
               class="dsearch__thumb"
@@ -63,8 +63,17 @@
             />
             }
             <div class="dsearch__row-body">
-              <p class="dsearch__row-title">{{ post.title | decodeHtmlEntities }}</p>
+              <p
+                class="dsearch__row-title"
+                [innerHTML]="post.title | decodeHtmlEntities | highlightTerm: searchQuery()"
+              ></p>
               <p class="dsearch__row-meta">{{ articleMeta(post) }}</p>
+              @if (post.matchSnippet) {
+              <p
+                class="dsearch__row-snippet"
+                [innerHTML]="post.matchSnippet | highlightTerm: searchQuery()"
+              ></p>
+              }
             </div>
           </a>
         </li>

@@ -163,7 +163,7 @@ export class NewsPageComponent extends Destroyable {
             title: post.title,
             description: post.resume ?? post.title,
             image: post.image,
-            url: `${SITE_URL}/noticias/${post.categorySlug}/${post.slug}`,
+            url: `${SITE_URL}/artigos/${post.categorySlug}/${post.slug}`,
             publishedAt: post.date,
             authorName: post.author?.name,
             category: post.categoryName,

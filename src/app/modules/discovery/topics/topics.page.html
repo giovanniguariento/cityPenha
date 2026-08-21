@@ -45,7 +45,8 @@
     <ul class="topics__list">
       @for (topic of filteredTopics(); track trackByTopicId($index, topic); let i = $index) {
       <li class="topics__item">
-        <a class="topics__link" [routerLink]="['/discovery/topics', topic.slug]" [state]="{ topicName: topic.name }"
+        <a class="topics__link" [routerLink]="['/discovery/topics', topic.slug]"
+          [state]="{ topicName: topic.name, newsCount: topic.newsCount, topicImage: topicImage(topic, i) }"
           [attr.aria-label]="'Ver artigos de ' + topic.name">
           <img class="topics__thumb" [src]="topicImage(topic, i)" alt="" width="64" height="64" loading="lazy"
             decoding="async" />

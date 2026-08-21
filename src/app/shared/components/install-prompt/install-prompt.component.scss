@@ -1,0 +1,206 @@
+:host {
+  --install-brand: #e60000;
+  --install-brand-dark: #c40000;
+}
+
+.install-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  animation: install-slide-up 260ms ease-out;
+
+  @media (min-width: 640px) {
+    left: auto;
+    right: 20px;
+    max-width: 380px;
+  }
+}
+
+.install-banner__icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.install-banner__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.install-banner__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.install-banner__text {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #5a5a5a;
+}
+
+.install-banner__actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.install-banner__btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  white-space: nowrap;
+  transition: background-color 150ms ease, opacity 150ms ease;
+}
+
+.install-banner__btn--primary {
+  background: var(--install-brand);
+  color: #ffffff;
+
+  &:hover {
+    background: var(--install-brand-dark);
+  }
+}
+
+.install-banner__btn--ghost {
+  background: transparent;
+  color: #6b6b6b;
+  padding: 4px 14px;
+
+  &:hover {
+    color: #1a1a1a;
+  }
+}
+
+.ios-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  animation: install-fade-in 200ms ease-out;
+
+  @media (min-width: 640px) {
+    align-items: center;
+  }
+}
+
+.ios-sheet__card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.25);
+  animation: install-slide-up 280ms ease-out;
+
+  @media (min-width: 640px) {
+    border-radius: 20px;
+  }
+}
+
+.ios-sheet__title {
+  margin: 0 0 6px;
+  font-size: 19px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.ios-sheet__intro {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #5a5a5a;
+}
+
+.ios-sheet__steps {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #2a2a2a;
+  }
+}
+
+.ios-sheet__step-badge {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--install-brand);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ios-sheet__share {
+  font-weight: 700;
+  color: #007aff;
+}
+
+.ios-sheet__close {
+  width: 100%;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  background: var(--install-brand);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px;
+
+  &:hover {
+    background: var(--install-brand-dark);
+  }
+}
+
+@keyframes install-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes install-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

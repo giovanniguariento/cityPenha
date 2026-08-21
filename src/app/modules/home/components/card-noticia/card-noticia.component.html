@@ -3,7 +3,7 @@
   class="container"
   [class.menu-open]="menuOpen()"
   [style.backgroundImage]="`url('${this.newsDestaque.image}')`"
-  [routerLink]="['/noticias', newsDestaque.categorySlug, newsDestaque.slug]"
+  [routerLink]="['/artigos', newsDestaque.categorySlug, newsDestaque.slug]"
 >
   <div class="header">
     <span class="exp" data-tour="feed-xp">+10 XP</span>
