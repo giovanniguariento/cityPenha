@@ -7,8 +7,10 @@ import { SITE_URL } from '../constants/site-url';
 
 const SITE_NAME = 'CityPenha Digital';
 const BASE_URL = SITE_URL;
+const DEFAULT_TITLE =
+  'CityPenha Digital - Conteúdo, Conexão e Interatividade Gamificada';
 const DEFAULT_DESCRIPTION =
-  'CityPenha Digital: conteúdo editorial de qualidade sobre a Penha e região desde 2006.';
+  'Mais que informação, um espaço vivo de interação, conhecimento e benefícios. Explore conteúdos, conecte-se com a região e ganhe recompensas participando!';
 const DEFAULT_IMAGE = `${BASE_URL}/assets/og-default.jpg`;
 const JSON_LD_ID = 'structured-data';
 const OG_IMAGE_WIDTH = '1200';
@@ -18,6 +20,18 @@ const OG_IMAGE_TYPE = 'image/jpeg';
 const WP_OG_SIZE_SUFFIX = '-1024x576';
 const WP_UPLOADS_PATH = '/wp-content/uploads/';
 const WP_SIZE_SUFFIX_PATTERN = /-(\d+)x(\d+)(\.(jpe?g|png|webp|gif))$/i;
+/** WordPress publishes site-local timestamps with no offset; América/São_Paulo has no DST. */
+const SITE_UTC_OFFSET = '-03:00';
+const TIMEZONE_SUFFIX_PATTERN = /(Z|[+-]\d{2}:?\d{2})$/;
+
+/** Player of a watch page — presence switches the page's schema to VideoObject. */
+export interface ArticleVideoSeoConfig {
+  contentUrl?: string;
+  embedUrl?: string;
+  thumbnailUrl?: string;
+  width?: number;
+  height?: number;
+}
 
 export interface ArticleSeoConfig {
   title: string;
@@ -27,6 +41,7 @@ export interface ArticleSeoConfig {
   publishedAt?: string;
   authorName?: string;
   category?: string;
+  video?: ArticleVideoSeoConfig;
 }
 
 export interface PageSeoConfig {
@@ -52,19 +67,25 @@ export class SeoService {
    */
   setArticle(config: ArticleSeoConfig): void {
     const description = this.truncate(plainTextFromHtml(config.description));
-    const image = this.buildDynamicOgImageUrl({
-      title: config.title,
-      description: config.description,
-      image: config.image,
-      date: config.publishedAt,
-    });
+    const isWatchPage = Boolean(config.video);
+    const videoThumbnail = isWatchPage
+      ? this.toAbsoluteUrl(config.video!.thumbnailUrl || config.image)
+      : undefined;
+    const image = isWatchPage
+      ? videoThumbnail!
+      : this.buildDynamicOgImageUrl({
+          title: config.title,
+          description: config.description,
+          image: config.image,
+          date: config.publishedAt,
+        });
 
     this.titleService.setTitle(`${config.title} | ${SITE_NAME}`);
     this.meta.updateTag({ name: 'description', content: description });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
 
     // Open Graph
-    this.meta.updateTag({ property: 'og:type', content: 'article' });
+    this.meta.updateTag({ property: 'og:type', content: isWatchPage ? 'video.other' : 'article' });
     this.meta.updateTag({ property: 'og:site_name', content: SITE_NAME });
     this.meta.updateTag({ property: 'og:title', content: config.title });
     this.meta.updateTag({ property: 'og:description', content: description });
@@ -73,14 +94,20 @@ export class SeoService {
     this.setOgImageMeta(image);
     this.meta.updateTag({ property: 'og:locale', content: 'pt_BR' });
 
-    if (config.publishedAt) {
-      this.meta.updateTag({ property: 'article:published_time', content: config.publishedAt });
-    }
-    if (config.authorName) {
-      this.meta.updateTag({ property: 'article:author', content: config.authorName });
-    }
-    if (config.category) {
-      this.meta.updateTag({ property: 'article:section', content: config.category });
+    if (isWatchPage) {
+      this.removeArticleTags();
+      this.setWatchPageVideoTags(config.video!);
+    } else {
+      this.removeWatchPageVideoTags();
+      if (config.publishedAt) {
+        this.meta.updateTag({ property: 'article:published_time', content: config.publishedAt });
+      }
+      if (config.authorName) {
+        this.meta.updateTag({ property: 'article:author', content: config.authorName });
+      }
+      if (config.category) {
+        this.meta.updateTag({ property: 'article:section', content: config.category });
+      }
     }
 
     // Twitter / X Card
@@ -91,8 +118,22 @@ export class SeoService {
 
     this.setCanonical(config.url);
 
-    // JSON-LD — Article structured data (editorial magazine content)
-    this.setJsonLd({
+    // JSON-LD — a single-video post must declare VideoObject; describing it as an
+    // Article makes Google treat the video as supplementary and skip indexing it
+    // ("video isn't on a watch page").
+    this.setJsonLd(
+      isWatchPage
+        ? this.buildVideoObjectSchema(config, description, videoThumbnail!)
+        : this.buildArticleSchema(config, description, image)
+    );
+  }
+
+  private buildArticleSchema(
+    config: ArticleSeoConfig,
+    description: string,
+    image: string
+  ): object {
+    return {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: config.title,
@@ -102,18 +143,68 @@ export class SeoService {
       author: config.authorName
         ? [{ '@type': 'Person', name: config.authorName }]
         : [{ '@type': 'Organization', name: SITE_NAME }],
-      publisher: {
-        '@type': 'Organization',
-        name: SITE_NAME,
-        url: BASE_URL,
-        logo: {
-          '@type': 'ImageObject',
-          url: `${BASE_URL}/assets/logo.png`,
-        },
-      },
+      publisher: this.publisherSchema(),
       url: config.url,
       mainEntityOfPage: config.url,
-    });
+    };
+  }
+
+  private buildVideoObjectSchema(
+    config: ArticleSeoConfig,
+    description: string,
+    videoThumbnail: string
+  ): object {
+    const video = config.video!;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: config.title,
+      description,
+      thumbnailUrl: [videoThumbnail],
+      ...(config.publishedAt
+        ? { uploadDate: this.withTimezone(config.publishedAt) }
+        : {}),
+      ...(video.contentUrl ? { contentUrl: this.toAbsoluteUrl(video.contentUrl) } : {}),
+      ...(video.embedUrl ? { embedUrl: this.toAbsoluteUrl(video.embedUrl) } : {}),
+      ...(video.width ? { width: video.width } : {}),
+      ...(video.height ? { height: video.height } : {}),
+      inLanguage: 'pt-BR',
+      publisher: this.publisherSchema(),
+      url: config.url,
+      mainEntityOfPage: config.url,
+    };
+  }
+
+  private setWatchPageVideoTags(video: ArticleVideoSeoConfig): void {
+    const videoUrl = video.contentUrl || video.embedUrl;
+    if (!videoUrl) return;
+
+    const absoluteVideoUrl = this.toAbsoluteUrl(videoUrl);
+    this.meta.updateTag({ property: 'og:video', content: absoluteVideoUrl });
+    this.meta.updateTag({ property: 'og:video:secure_url', content: absoluteVideoUrl });
+    this.meta.updateTag({ property: 'og:video:type', content: video.contentUrl ? 'video/mp4' : 'text/html' });
+    if (video.width) {
+      this.meta.updateTag({ property: 'og:video:width', content: String(video.width) });
+    }
+    if (video.height) {
+      this.meta.updateTag({ property: 'og:video:height', content: String(video.height) });
+    }
+  }
+
+  private publisherSchema(): object {
+    return {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: BASE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${BASE_URL}/assets/logo.png`,
+      },
+    };
+  }
+
+  private withTimezone(date: string): string {
+    return TIMEZONE_SUFFIX_PATTERN.test(date) ? date : `${date}${SITE_UTC_OFFSET}`;
   }
 
   /**
@@ -130,12 +221,21 @@ export class SeoService {
     const url = config.url ?? BASE_URL;
     const type = config.type ?? 'website';
 
-    this.titleService.setTitle(`${config.title} | ${SITE_NAME}`);
+    const documentTitle =
+      config.title === SITE_NAME || config.title === DEFAULT_TITLE
+        ? DEFAULT_TITLE
+        : `${config.title} | ${SITE_NAME}`;
+    const ogTitle =
+      config.title === SITE_NAME || config.title === DEFAULT_TITLE
+        ? DEFAULT_TITLE
+        : config.title;
+
+    this.titleService.setTitle(documentTitle);
     this.meta.updateTag({ name: 'description', content: description });
 
     this.meta.updateTag({ property: 'og:type', content: type });
     this.meta.updateTag({ property: 'og:site_name', content: SITE_NAME });
-    this.meta.updateTag({ property: 'og:title', content: config.title });
+    this.meta.updateTag({ property: 'og:title', content: ogTitle });
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:url', content: url });
     this.meta.updateTag({ property: 'og:image', content: image });
@@ -143,7 +243,7 @@ export class SeoService {
     this.meta.updateTag({ property: 'og:locale', content: 'pt_BR' });
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title', content: config.title });
+    this.meta.updateTag({ name: 'twitter:title', content: ogTitle });
     this.meta.updateTag({ name: 'twitter:description', content: description });
     this.meta.updateTag({ name: 'twitter:image', content: image });
 
@@ -214,11 +314,11 @@ export class SeoService {
 
   /** Resets head to portal defaults — call in ngOnDestroy of article pages. */
   resetToDefault(): void {
-    this.titleService.setTitle(SITE_NAME);
+    this.titleService.setTitle(DEFAULT_TITLE);
     this.meta.updateTag({ name: 'description', content: DEFAULT_DESCRIPTION });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:site_name', content: SITE_NAME });
-    this.meta.updateTag({ property: 'og:title', content: SITE_NAME });
+    this.meta.updateTag({ property: 'og:title', content: DEFAULT_TITLE });
     this.meta.updateTag({ property: 'og:description', content: DEFAULT_DESCRIPTION });
     this.meta.updateTag({ property: 'og:url', content: BASE_URL });
     this.meta.updateTag({ property: 'og:image', content: DEFAULT_IMAGE });
@@ -230,6 +330,7 @@ export class SeoService {
     this.meta.removeTag('name="twitter:image"');
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
     this.removeArticleTags();
+    this.removeWatchPageVideoTags();
     this.setCanonical(BASE_URL);
     this.removeJsonLd();
   }
@@ -238,6 +339,14 @@ export class SeoService {
     this.meta.removeTag('property="article:published_time"');
     this.meta.removeTag('property="article:author"');
     this.meta.removeTag('property="article:section"');
+  }
+
+  private removeWatchPageVideoTags(): void {
+    this.meta.removeTag('property="og:video"');
+    this.meta.removeTag('property="og:video:secure_url"');
+    this.meta.removeTag('property="og:video:type"');
+    this.meta.removeTag('property="og:video:width"');
+    this.meta.removeTag('property="og:video:height"');
   }
 
   private removeJsonLd(): void {

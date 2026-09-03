@@ -39,8 +39,9 @@ export class HomePage extends Destroyable {
   constructor() {
     super();
     this.seoService.setPage({
-      title: 'CityPenha Digital',
-      description: 'CityPenha Digital: conteúdo editorial de qualidade sobre a Penha e região desde 2006.',
+      title: 'CityPenha Digital - Conteúdo, Conexão e Interatividade Gamificada',
+      description:
+        'Mais que informação, um espaço vivo de interação, conhecimento e benefícios. Explore conteúdos, conecte-se com a região e ganhe recompensas participando!',
       url: `${SITE_URL}/home`,
       type: 'website',
     });

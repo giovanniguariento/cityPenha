@@ -99,7 +99,11 @@
   <div class="description" [innerHTML]="news()?.resume"></div>
   <div class="info">
     <div class="details">
+      @if (!news()?.onlyVideo) {
       <span>{{news()?.readingTime}} Min Leitura</span>
+      } @else {
+      <span>Vídeo</span>
+      }
       @if (viewsCount() > 0) {
       <span>{{ viewsCount() }} visualizações</span>
       }
@@ -219,8 +223,12 @@
 </div>
 
 @if (news()) {
+@defer (on viewport; prefetch on idle) {
 <app-comments-section [wordpressPostId]="news()!.id" [currentUserId]="currentUserId()"
   [pastArticleStart]="articleContentStarted()" />
+} @placeholder {
+<div class="comments-placeholder" aria-hidden="true"></div>
+}
 }
 
 <app-legal-footer />

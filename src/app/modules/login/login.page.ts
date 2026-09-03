@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../shared/services/auth.service';
@@ -12,6 +12,8 @@ import { APP_ASSETS } from '../../shared/constants/app-assets';
 import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 import { SeoService } from '../../shared/services/seo.service';
 import { SITE_URL } from '../../shared/constants/site-url';
+
+type LoginProvider = 'google' | 'facebook';
 
 @Component({
   selector: 'app-login-page',
@@ -28,7 +30,8 @@ export class LoginPage {
   private readonly feedback = inject(FeedbackService);
   private readonly seo = inject(SeoService);
 
-  readonly submitting = signal(false);
+  readonly submittingProvider = signal<LoginProvider | null>(null);
+  readonly submitting = computed(() => this.submittingProvider() !== null);
   readonly logoUrl = APP_ASSETS.logo;
 
   constructor() {
@@ -37,6 +40,10 @@ export class LoginPage {
       description: 'Faça login no CityPenha.',
       url: `${SITE_URL}/login`,
     });
+  }
+
+  isSubmitting(provider: LoginProvider): boolean {
+    return this.submittingProvider() === provider;
   }
 
   onSkip(): void {
@@ -49,7 +56,12 @@ export class LoginPage {
       return;
     }
 
-    if (provider === 'apple' || provider === 'facebook') {
+    if (provider === 'facebook') {
+      void this.facebookLogin();
+      return;
+    }
+
+    if (provider === 'apple') {
       this.feedback.showComingSoon();
     }
   }
@@ -58,7 +70,7 @@ export class LoginPage {
     if (this.submitting()) {
       return;
     }
-    this.submitting.set(true);
+    this.submittingProvider.set('google');
     try {
       const authentication = await this.authService.loginWithGoogle();
       this.homeService
@@ -66,7 +78,7 @@ export class LoginPage {
         .pipe(first())
         .subscribe({
           next: (res: PublicUser) => {
-            this.submitting.set(false);
+            this.submittingProvider.set(null);
             if (res?.id) {
               try {
                 localStorage.setItem('userId', res.id);
@@ -77,15 +89,50 @@ export class LoginPage {
             this.router.navigate(['/home']);
           },
           error: (err: unknown) => {
-            this.submitting.set(false);
+            this.submittingProvider.set(null);
             this.feedback.showError(
               apiErrorMessage(err, 'Não foi possível completar o cadastro. Tente novamente.')
             );
           },
         });
     } catch {
-      this.submitting.set(false);
+      this.submittingProvider.set(null);
       this.feedback.showError('Não foi possível iniciar sessão com o Google.');
+    }
+  }
+
+  async facebookLogin(): Promise<void> {
+    if (this.submitting()) {
+      return;
+    }
+    this.submittingProvider.set('facebook');
+    try {
+      const authentication = await this.authService.loginWithFacebook();
+      this.homeService
+        .signup(authentication)
+        .pipe(first())
+        .subscribe({
+          next: (res: PublicUser) => {
+            this.submittingProvider.set(null);
+            if (res?.id) {
+              try {
+                localStorage.setItem('userId', res.id);
+              } catch {
+                // ignore storage errors
+              }
+            }
+            this.router.navigate(['/home']);
+          },
+          error: (err: unknown) => {
+            this.submittingProvider.set(null);
+            this.feedback.showError(
+              apiErrorMessage(err, 'Não foi possível completar o cadastro. Tente novamente.')
+            );
+          },
+        });
+    } catch {
+      this.submittingProvider.set(null);
+      this.feedback.showError('Não foi possível iniciar sessão com o Facebook.');
     }
   }
 

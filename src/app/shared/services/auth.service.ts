@@ -3,6 +3,7 @@ import { isPlatformServer } from '@angular/common';
 import {
   Auth,
   createUserWithEmailAndPassword,
+  FacebookAuthProvider,
   GoogleAuthProvider,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -33,6 +34,20 @@ export class AuthService {
       const user = authentication.user;
       if (!user) {
         throw new Error('Google-Login error: No user returned');
+      }
+      return authentication;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async loginWithFacebook(): Promise<UserCredential> {
+    const provider = new FacebookAuthProvider();
+    try {
+      const authentication = await signInWithPopup(this.auth, provider);
+      const user = authentication.user;
+      if (!user) {
+        throw new Error('Facebook-Login error: No user returned');
       }
       return authentication;
     } catch (error) {

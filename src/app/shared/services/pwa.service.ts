@@ -11,10 +11,16 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+const INSTALLED_KEY = 'citypenha_pwa_installed';
+const DISMISS_KEY = 'citypenha_install_dismissed_at';
+/** Após dispensar o banner flutuante, ele só reaparece depois desse período. */
+const DISMISS_DURATION_MS = 1000 * 60 * 60 * 24 * 14; // 14 dias
+
 @Injectable({ providedIn: 'root' })
 export class PwaService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly doc = inject(DOCUMENT);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   /** Evento de instalação guardado (Android/Chromium) para disparar depois. */
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
@@ -22,8 +28,16 @@ export class PwaService {
   /** `true` quando o Chromium sinalizou que o app é instalável via prompt. */
   readonly canInstall = signal(false);
 
-  /** `true` depois que o app foi instalado nesta sessão. */
-  readonly installed = signal(false);
+  /**
+   * `true` depois que o app foi instalado. Persistido porque `appinstalled` só
+   * dispara uma vez: sem a flag, o convite voltaria a aparecer em visitas pelo
+   * navegador. O iOS não emite esse evento, então lá a detecção fica por conta
+   * de `isStandalone`.
+   */
+  readonly installed = signal(this.readInstalledFlag());
+
+  /** Banner flutuante dispensado recentemente (persistido em localStorage). */
+  private readonly floatingDismissed = signal(this.isRecentlyDismissed());
 
   /** `true` em iPhone/iPad no Safari (não há prompt programático). */
   readonly isIos = computed(() => this.detectIos());
@@ -31,11 +45,35 @@ export class PwaService {
   /** `true` quando já está rodando como app instalado (standalone). */
   readonly isStandalone = computed(() => this.detectStandalone());
 
+  /** O app ainda pode ser instalado por este usuário? */
+  readonly shouldOfferInstall = computed(
+    () => this.isBrowser && !this.isStandalone() && !this.installed(),
+  );
+
+  /** Banner flutuante deve aparecer? */
+  readonly showFloatingPrompt = computed(
+    () =>
+      this.shouldOfferInstall() &&
+      !this.floatingDismissed() &&
+      (this.canInstall() || this.isIos()),
+  );
+
+  /**
+   * Slide de instalação na home, para quem já dispensou o banner flutuante.
+   *
+   * Decidido uma única vez, na carga da página, e não como signal de propósito:
+   * o carrossel da home é um Swiper em modo loop, que monta os índices dos
+   * slides na inicialização. Um slide que entra ou sai depois disso desalinha a
+   * numeração da paginação. Por isso o convite só entra a partir da próxima
+   * visita à home — o que combina com o "Agora não" do banner.
+   */
+  readonly showHomeInstallSlide = this.shouldOfferInstall() && this.isRecentlyDismissed();
+
   private initialized = false;
 
   /** Registra o service worker e começa a escutar os eventos de instalação. */
   init(): void {
-    if (this.initialized || !isPlatformBrowser(this.platformId)) {
+    if (this.initialized || !this.isBrowser) {
       return;
     }
     this.initialized = true;
@@ -54,7 +92,7 @@ export class PwaService {
     win.addEventListener('appinstalled', () => {
       this.deferredPrompt = null;
       this.canInstall.set(false);
-      this.installed.set(true);
+      this.markInstalled();
     });
 
     this.registerServiceWorker(win);
@@ -74,10 +112,56 @@ export class PwaService {
     this.deferredPrompt = null;
     this.canInstall.set(false);
     if (choice.outcome === 'accepted') {
-      this.installed.set(true);
+      this.markInstalled();
       return true;
     }
     return false;
+  }
+
+  /** Esconde o banner flutuante; o convite continua disponível pelo slide da home. */
+  dismissFloatingPrompt(): void {
+    this.floatingDismissed.set(true);
+    this.writeStorage(DISMISS_KEY, String(Date.now()));
+  }
+
+  private markInstalled(): void {
+    this.installed.set(true);
+    this.writeStorage(INSTALLED_KEY, '1');
+  }
+
+  private readInstalledFlag(): boolean {
+    return this.storage()?.getItem(INSTALLED_KEY) === '1';
+  }
+
+  private isRecentlyDismissed(): boolean {
+    const raw = this.storage()?.getItem(DISMISS_KEY);
+    if (!raw) {
+      return false;
+    }
+    const at = Number(raw);
+    if (!Number.isFinite(at)) {
+      return false;
+    }
+    return Date.now() - at < DISMISS_DURATION_MS;
+  }
+
+  private writeStorage(key: string, value: string): void {
+    try {
+      this.storage()?.setItem(key, value);
+    } catch {
+      // localStorage pode estar indisponível (modo privado). Ignora.
+    }
+  }
+
+  private storage(): Storage | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+    try {
+      return this.doc.defaultView?.localStorage ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private registerServiceWorker(win: Window): void {
@@ -93,7 +177,7 @@ export class PwaService {
   }
 
   private detectIos(): boolean {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.isBrowser) {
       return false;
     }
     const nav = this.doc.defaultView?.navigator;
@@ -108,7 +192,7 @@ export class PwaService {
   }
 
   private detectStandalone(): boolean {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.isBrowser) {
       return false;
     }
     const win = this.doc.defaultView;

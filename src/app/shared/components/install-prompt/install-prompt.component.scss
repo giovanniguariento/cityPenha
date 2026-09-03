@@ -90,101 +90,6 @@
   }
 }
 
-.ios-sheet {
-  position: fixed;
-  inset: 0;
-  z-index: 1001;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  animation: install-fade-in 200ms ease-out;
-
-  @media (min-width: 640px) {
-    align-items: center;
-  }
-}
-
-.ios-sheet__card {
-  width: 100%;
-  max-width: 460px;
-  background: #ffffff;
-  border-radius: 20px 20px 0 0;
-  padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.25);
-  animation: install-slide-up 280ms ease-out;
-
-  @media (min-width: 640px) {
-    border-radius: 20px;
-  }
-}
-
-.ios-sheet__title {
-  margin: 0 0 6px;
-  font-size: 19px;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.ios-sheet__intro {
-  margin: 0 0 16px;
-  font-size: 14px;
-  color: #5a5a5a;
-}
-
-.ios-sheet__steps {
-  list-style: none;
-  margin: 0 0 20px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: 14px;
-    line-height: 1.4;
-    color: #2a2a2a;
-  }
-}
-
-.ios-sheet__step-badge {
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--install-brand);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ios-sheet__share {
-  font-weight: 700;
-  color: #007aff;
-}
-
-.ios-sheet__close {
-  width: 100%;
-  cursor: pointer;
-  border: none;
-  border-radius: 12px;
-  background: var(--install-brand);
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px;
-
-  &:hover {
-    background: var(--install-brand-dark);
-  }
-}
-
 @keyframes install-slide-up {
   from {
     opacity: 0;
@@ -193,14 +98,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes install-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }

@@ -78,9 +78,9 @@
         type="submit"
         class="btn-submit"
         [disabled]="submitting()"
-        [attr.aria-busy]="submitting()"
+        [attr.aria-busy]="isSubmitting('email')"
       >
-        @if (submitting()) {
+        @if (isSubmitting('email')) {
         <mat-spinner diameter="22" />
         <span>Entrando…</span>
         } @else {
@@ -95,10 +95,10 @@
           type="button"
           class="btn-social"
           [disabled]="submitting()"
-          [attr.aria-busy]="submitting()"
+          [attr.aria-busy]="isSubmitting('google')"
           (click)="googleLogin()"
         >
-          @if (submitting()) {
+          @if (isSubmitting('google')) {
           <mat-spinner diameter="18" />
           } @else {
           <img src="assets/gmail-icon.svg" alt="" aria-hidden="true" />
@@ -120,9 +120,14 @@
           type="button"
           class="btn-social"
           [disabled]="submitting()"
+          [attr.aria-busy]="isSubmitting('facebook')"
           (click)="onSocialLogin('facebook')"
         >
+          @if (isSubmitting('facebook')) {
+          <mat-spinner diameter="18" />
+          } @else {
           <img src="assets/facebook-icon.svg" alt="" aria-hidden="true" />
+          }
           <span>Facebook</span>
         </button>
       </div>

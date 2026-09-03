@@ -158,6 +158,11 @@
   }
 }
 
+/** Reserves space so the deferred comments block only triggers once scrolled to. */
+.comments-placeholder {
+  min-height: 240px;
+}
+
 .reading-time-bar,
 .progress {
   border-radius: 20px;

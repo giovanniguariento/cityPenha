@@ -1,0 +1,43 @@
+<div class="install-sheet" role="dialog" aria-modal="true" aria-labelledby="install-sheet-title" (click)="closed.emit()">
+  <div class="install-sheet__card" (click)="$event.stopPropagation()">
+    @if (isIos()) {
+      <h2 id="install-sheet-title" class="install-sheet__title">Adicionar à Tela de Início</h2>
+      <p class="install-sheet__intro">No iPhone/iPad, o atalho é adicionado pelo Safari em 3 passos:</p>
+
+      <ol class="install-sheet__steps">
+        <li>
+          <span class="install-sheet__step-badge">1</span>
+          <span>Toque no botão <strong>Compartilhar</strong> <span class="install-sheet__share" aria-hidden="true">&#x2191;</span> na barra do Safari.</span>
+        </li>
+        <li>
+          <span class="install-sheet__step-badge">2</span>
+          <span>Escolha <strong>Adicionar à Tela de Início</strong>.</span>
+        </li>
+        <li>
+          <span class="install-sheet__step-badge">3</span>
+          <span>Confirme em <strong>Adicionar</strong>. Pronto! O ícone aparece na tela inicial.</span>
+        </li>
+      </ol>
+    } @else {
+      <h2 id="install-sheet-title" class="install-sheet__title">Instalar o CityPenha</h2>
+      <p class="install-sheet__intro">O atalho é adicionado pelo menu do navegador em 3 passos:</p>
+
+      <ol class="install-sheet__steps">
+        <li>
+          <span class="install-sheet__step-badge">1</span>
+          <span>Abra o menu do navegador, no canto superior da tela.</span>
+        </li>
+        <li>
+          <span class="install-sheet__step-badge">2</span>
+          <span>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</span>
+        </li>
+        <li>
+          <span class="install-sheet__step-badge">3</span>
+          <span>Confirme em <strong>Instalar</strong>. Pronto! O ícone aparece na tela inicial.</span>
+        </li>
+      </ol>
+    }
+
+    <button type="button" class="install-sheet__close" (click)="closed.emit()">Entendi</button>
+  </div>
+</div>

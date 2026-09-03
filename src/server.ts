@@ -89,6 +89,41 @@ interface SitemapUrl {
   changefreq: string;
   priority: string;
   lastmod?: string;
+  video?: {
+    title: string;
+    description: string;
+    thumbnailUrl: string;
+    contentUrl?: string;
+    embedUrl?: string;
+  };
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function buildVideoSitemapBlock(video: NonNullable<SitemapUrl['video']>): string {
+  const lines = [
+    '    <video:video>',
+    `      <video:thumbnail_loc>${escapeXml(video.thumbnailUrl)}</video:thumbnail_loc>`,
+    `      <video:title>${escapeXml(video.title)}</video:title>`,
+    `      <video:description>${escapeXml(video.description)}</video:description>`,
+  ];
+
+  if (video.contentUrl) {
+    lines.push(`      <video:content_loc>${escapeXml(video.contentUrl)}</video:content_loc>`);
+  }
+  if (video.embedUrl) {
+    lines.push(`      <video:player_loc>${escapeXml(video.embedUrl)}</video:player_loc>`);
+  }
+
+  lines.push('    </video:video>');
+  return lines.join('\n');
 }
 
 /** Dynamic XML sitemap — fetches all published articles from the API. */
@@ -113,14 +148,22 @@ app.get('/sitemap.xml', async (_req, res) => {
     });
     if (response.ok) {
       const body = (await response.json()) as {
-        data?: { posts?: { slug: string; categorySlug: string; lastmod: string }[] };
+        data?: {
+          posts?: {
+            slug: string;
+            categorySlug: string;
+            lastmod: string;
+            video?: SitemapUrl['video'];
+          }[];
+        };
       };
       const posts = body?.data?.posts ?? [];
       articleUrls = posts.map((p) => ({
         loc: `${SITE_URL}/artigos/${p.categorySlug || 'geral'}/${p.slug}`,
         changefreq: 'weekly',
-        priority: '0.9',
+        priority: p.video ? '0.95' : '0.9',
         lastmod: p.lastmod || undefined,
+        ...(p.video ? { video: p.video } : {}),
       }));
     }
   } catch {
@@ -128,14 +171,19 @@ app.get('/sitemap.xml', async (_req, res) => {
   }
 
   const allUrls = [...staticUrls, ...articleUrls];
+  const hasVideoEntries = allUrls.some((u) => u.video);
   const urlEntries = allUrls
     .map((u) => {
       const lastmod = u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : '';
-      return `  <url>\n    <loc>${u.loc}</loc>${lastmod}\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`;
+      const videoBlock = u.video ? `\n${buildVideoSitemapBlock(u.video)}` : '';
+      return `  <url>\n    <loc>${escapeXml(u.loc)}</loc>${lastmod}${videoBlock}\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`;
     })
     .join('\n');
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>`;
+  const xmlnsVideo = hasVideoEntries
+    ? '\n        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"'
+    : '';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${xmlnsVideo}>\n${urlEntries}\n</urlset>`;
 
   res.type('application/xml').send(xml);
 });

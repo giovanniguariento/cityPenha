@@ -26,6 +26,10 @@ import { UserStateService } from '../../core/state/user-state.service';
 import { CommentsSectionComponent } from './components/comments/comments-section/comments-section.component';
 import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 import { SITE_URL } from '../../shared/constants/site-url';
+import {
+  extractPostVideoFromHtml,
+  prepareWatchPageMediaHtml,
+} from '../../shared/utils/extract-post-video';
 
 @Component({
   selector: 'app-news-page',
@@ -142,11 +146,21 @@ export class NewsPageComponent extends Destroyable {
       )
       .subscribe({
         next: (post) => {
+          const rawContent = typeof post.content === 'string' ? post.content : '';
+          const videoMeta = post.onlyVideo
+            ? post.video ?? extractPostVideoFromHtml(rawContent, post.image)
+            : undefined;
+          const preparedContent =
+            post.onlyVideo && rawContent
+              ? prepareWatchPageMediaHtml(rawContent, videoMeta?.thumbnailUrl)
+              : rawContent;
+
           const sanitizedPost: PostDetail = {
             ...post,
-            content: typeof post.content === 'string'
-              ? this.sanitizer.bypassSecurityTrustHtml(sanitizeWordpressHtml(post.content))
-              : post.content
+            content: preparedContent
+              ? this.sanitizer.bypassSecurityTrustHtml(sanitizeWordpressHtml(preparedContent))
+              : post.content,
+            ...(videoMeta ? { video: videoMeta } : {}),
           };
           this.loadingPost.set(false);
           this.loadError.set(null);
@@ -158,7 +172,7 @@ export class NewsPageComponent extends Destroyable {
           this.savePending.set(false);
           this.firstRenderAt = Date.now();
 
-          // SEO: set article meta tags, OG, Twitter Card, canonical, JSON-LD
+          // SEO: watch pages must emit VideoObject; plain Article schema makes Google skip video indexing.
           this.seoService.setArticle({
             title: post.title,
             description: post.resume ?? post.title,
@@ -167,6 +181,7 @@ export class NewsPageComponent extends Destroyable {
             publishedAt: post.date,
             authorName: post.author?.name,
             category: post.categoryName,
+            video: videoMeta,
           });
 
           if (isPlatformBrowser(this.platformId)) {

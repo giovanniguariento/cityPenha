@@ -24,14 +24,14 @@
         <span>Continue com o E-mail</span>
       </button>
 
-      <button type="button" class="btn btn-social" [disabled]="submitting()" [attr.aria-busy]="submitting()"
+      <button type="button" class="btn btn-social" [disabled]="submitting()" [attr.aria-busy]="isSubmitting('google')"
         (click)="googleLogin()">
-        @if (submitting()) {
+        @if (isSubmitting('google')) {
         <mat-spinner diameter="22" />
         } @else {
         <img src="assets/gmail-icon.svg" alt="" srcset="">
         }
-        <span>{{ submitting() ? 'Entrando…' : 'Continue com Google' }}</span>
+        <span>{{ isSubmitting('google') ? 'Entrando…' : 'Continue com Google' }}</span>
       </button>
 
       <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('apple')">
@@ -39,9 +39,14 @@
         <span>Continue com a Apple</span>
       </button>
 
-      <button type="button" class="btn btn-social" [disabled]="submitting()" (click)="onLogin('facebook')">
+      <button type="button" class="btn btn-social" [disabled]="submitting()" [attr.aria-busy]="isSubmitting('facebook')"
+        (click)="onLogin('facebook')">
+        @if (isSubmitting('facebook')) {
+        <mat-spinner diameter="22" />
+        } @else {
         <img src="assets/facebook-icon.svg" alt="" srcset="">
-        <span>Continue com o Facebook</span>
+        }
+        <span>{{ isSubmitting('facebook') ? 'Entrando…' : 'Continue com o Facebook' }}</span>
       </button>
 
     </div>

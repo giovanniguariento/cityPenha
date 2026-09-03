@@ -1,6 +1,6 @@
 <div class="card-exp-frame" data-tour="card-exp">
-  <swiper-container class="card-exp-swiper" pagination="true" slides-per-view="1" loop="true" autoplay="true"
-    autoplay-delay="4000" autoplay-disable-on-interaction="false">
+  <swiper-container #swiper class="card-exp-swiper" init="false" pagination="true" slides-per-view="1" loop="true"
+    autoplay="true" autoplay-delay="4000" autoplay-disable-on-interaction="false">
     <swiper-slide>
       <div class="slide-content" role="link" tabindex="0" aria-label="Ver missões e começar"
         (click)="onMissionsActivate()" (keydown.enter)="onMissionsActivate()"
@@ -37,5 +37,29 @@
         </div>
       </div>
     </swiper-slide>
+    @if (showInstallSlide) {
+    <swiper-slide>
+      <div class="slide-content" role="link" tabindex="0" aria-label="Instalar o aplicativo CityPenha"
+        (click)="onInstallActivate()" (keydown.enter)="onInstallActivate()"
+        (keydown.space)="onInstallActivate($event)">
+        <div class="left">
+          <div class="slide-copy">
+            <h2>Instale o CityPenha</h2>
+            <p>Adicione o atalho na tela inicial e abra como um app.</p>
+          </div>
+          <div class="exp-container">
+            <span>Instalar</span>
+          </div>
+        </div>
+        <div class="right">
+          <img class="install-icon" src="icons/icon-192.png" alt="">
+        </div>
+      </div>
+    </swiper-slide>
+    }
   </swiper-container>
 </div>
+
+@if (showInstallSteps()) {
+<app-install-steps-sheet (closed)="closeInstallSteps()" />
+}

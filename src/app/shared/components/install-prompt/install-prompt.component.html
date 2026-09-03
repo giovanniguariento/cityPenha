@@ -12,8 +12,8 @@
         <button type="button" class="install-banner__btn install-banner__btn--primary" (click)="install()">
           Instalar
         </button>
-      } @else if (isIos()) {
-        <button type="button" class="install-banner__btn install-banner__btn--primary" (click)="openIosSteps()">
+      } @else {
+        <button type="button" class="install-banner__btn install-banner__btn--primary" (click)="openSteps()">
           Como instalar
         </button>
       }
@@ -24,28 +24,6 @@
   </div>
 }
 
-@if (showIosSteps()) {
-  <div class="ios-sheet" role="dialog" aria-modal="true" aria-labelledby="ios-sheet-title" (click)="closeIosSteps()">
-    <div class="ios-sheet__card" (click)="$event.stopPropagation()">
-      <h2 id="ios-sheet-title" class="ios-sheet__title">Adicionar à Tela de Início</h2>
-      <p class="ios-sheet__intro">No iPhone/iPad, o atalho é adicionado pelo Safari em 3 passos:</p>
-
-      <ol class="ios-sheet__steps">
-        <li>
-          <span class="ios-sheet__step-badge">1</span>
-          <span>Toque no botão <strong>Compartilhar</strong> <span class="ios-sheet__share" aria-hidden="true">&#x2191;</span> na barra do Safari.</span>
-        </li>
-        <li>
-          <span class="ios-sheet__step-badge">2</span>
-          <span>Escolha <strong>Adicionar à Tela de Início</strong>.</span>
-        </li>
-        <li>
-          <span class="ios-sheet__step-badge">3</span>
-          <span>Confirme em <strong>Adicionar</strong>. Pronto! O ícone aparece na tela inicial.</span>
-        </li>
-      </ol>
-
-      <button type="button" class="ios-sheet__close" (click)="closeIosSteps()">Entendi</button>
-    </div>
-  </div>
+@if (showSteps()) {
+  <app-install-steps-sheet (closed)="closeSteps()" />
 }

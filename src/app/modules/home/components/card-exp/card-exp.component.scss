@@ -175,3 +175,14 @@ img {
   width: 81px;
   padding: 0 20px;
 }
+
+.install-icon {
+  width: 72px;
+  padding: 0;
+  margin: auto 24px;
+  border-radius: 16px;
+  // `margin: auto` centra na área de conteúdo, mas o card tem 30px de padding
+  // no topo contra 22px embaixo. Sobe metade da diferença para o ícone cair no
+  // centro do card, que é o que o olho compara.
+  transform: translateY(-4px);
+}

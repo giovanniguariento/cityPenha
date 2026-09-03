@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -12,6 +12,8 @@ import { firebaseAuthErrorMessage } from '../../shared/utils/firebase-auth-error
 import { LegalFooterComponent } from '../../shared/components/legal-footer/legal-footer.component';
 import { SeoService } from '../../shared/services/seo.service';
 import { SITE_URL } from '../../shared/constants/site-url';
+
+type LoginProvider = 'email' | 'google' | 'facebook';
 
 @Component({
   selector: 'app-login-email-page',
@@ -29,7 +31,8 @@ export class LoginEmailPage {
   private readonly feedback = inject(FeedbackService);
   private readonly seo = inject(SeoService);
 
-  readonly submitting = signal(false);
+  readonly submittingProvider = signal<LoginProvider | null>(null);
+  readonly submitting = computed(() => this.submittingProvider() !== null);
   readonly showPassword = signal(false);
 
   readonly form = this.fb.nonNullable.group({
@@ -44,6 +47,11 @@ export class LoginEmailPage {
       url: `${SITE_URL}/login/email`,
     });
   }
+
+  isSubmitting(provider: LoginProvider): boolean {
+    return this.submittingProvider() === provider;
+  }
+
   goBack(): void {
     void this.router.navigate(['/login']);
   }
@@ -52,15 +60,27 @@ export class LoginEmailPage {
     this.showPassword.update((value) => !value);
   }
 
-  onSocialLogin(_provider: string): void {
-    // Placeholder for future provider implementations
+  onSocialLogin(provider: string): void {
+    if (provider === 'google') {
+      void this.googleLogin();
+      return;
+    }
+
+    if (provider === 'facebook') {
+      void this.facebookLogin();
+      return;
+    }
+
+    if (provider === 'apple') {
+      this.feedback.showComingSoon();
+    }
   }
 
   async googleLogin(): Promise<void> {
     if (this.submitting()) {
       return;
     }
-    this.submitting.set(true);
+    this.submittingProvider.set('google');
     try {
       const authentication = await this.authService.loginWithGoogle();
       this.homeService
@@ -68,7 +88,7 @@ export class LoginEmailPage {
         .pipe(first())
         .subscribe({
           next: (res: PublicUser) => {
-            this.submitting.set(false);
+            this.submittingProvider.set(null);
             if (res?.id) {
               try {
                 localStorage.setItem('userId', res.id);
@@ -79,15 +99,50 @@ export class LoginEmailPage {
             void this.router.navigate(['/home']);
           },
           error: (err: unknown) => {
-            this.submitting.set(false);
+            this.submittingProvider.set(null);
             this.feedback.showError(
               apiErrorMessage(err, 'Não foi possível completar o cadastro. Tente novamente.')
             );
           },
         });
     } catch {
-      this.submitting.set(false);
+      this.submittingProvider.set(null);
       this.feedback.showError('Não foi possível iniciar sessão com o Google.');
+    }
+  }
+
+  async facebookLogin(): Promise<void> {
+    if (this.submitting()) {
+      return;
+    }
+    this.submittingProvider.set('facebook');
+    try {
+      const authentication = await this.authService.loginWithFacebook();
+      this.homeService
+        .signup(authentication)
+        .pipe(first())
+        .subscribe({
+          next: (res: PublicUser) => {
+            this.submittingProvider.set(null);
+            if (res?.id) {
+              try {
+                localStorage.setItem('userId', res.id);
+              } catch {
+                // ignore storage errors
+              }
+            }
+            void this.router.navigate(['/home']);
+          },
+          error: (err: unknown) => {
+            this.submittingProvider.set(null);
+            this.feedback.showError(
+              apiErrorMessage(err, 'Não foi possível completar o cadastro. Tente novamente.')
+            );
+          },
+        });
+    } catch {
+      this.submittingProvider.set(null);
+      this.feedback.showError('Não foi possível iniciar sessão com o Facebook.');
     }
   }
 
@@ -105,7 +160,7 @@ export class LoginEmailPage {
 
     const { email, password } = this.form.getRawValue();
 
-    this.submitting.set(true);
+    this.submittingProvider.set('email');
     try {
       const authentication = await this.authService.loginWithEmail(email, password);
 
@@ -114,7 +169,7 @@ export class LoginEmailPage {
         .pipe(first())
         .subscribe({
           next: (res: PublicUser) => {
-            this.submitting.set(false);
+            this.submittingProvider.set(null);
             if (res?.id) {
               try {
                 localStorage.setItem('userId', res.id);
@@ -125,14 +180,14 @@ export class LoginEmailPage {
             void this.router.navigate(['/home']);
           },
           error: (err: unknown) => {
-            this.submitting.set(false);
+            this.submittingProvider.set(null);
             this.feedback.showError(
               apiErrorMessage(err, 'Não foi possível completar o login. Tente novamente.')
             );
           },
         });
     } catch (err: unknown) {
-      this.submitting.set(false);
+      this.submittingProvider.set(null);
       this.feedback.showError(
         firebaseAuthErrorMessage(err, 'Não foi possível iniciar sessão. Tente novamente.')
       );

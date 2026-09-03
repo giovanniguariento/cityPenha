@@ -59,6 +59,17 @@ export interface BlogResponse {
   carousel: Post[];
 }
 
+/** Player metadata of a watch page (`onlyVideo`), used for VideoObject JSON-LD. */
+export interface PostVideo {
+  /** Direct media file URL, for self-hosted videos. */
+  contentUrl?: string;
+  /** Player URL, for iframe embeds (YouTube, Vimeo, ...). */
+  embedUrl?: string;
+  thumbnailUrl?: string;
+  width?: number;
+  height?: number;
+}
+
 // Post detail interface (for single post page)
 export interface PostDetail extends Post {
   content: string | SafeHtml;
@@ -66,6 +77,7 @@ export interface PostDetail extends Post {
   resume?: string;
   date?: string;
   onlyVideo?: boolean;
+  video?: PostVideo;
 }
 
 /** Payload útil de POST /post/:wordpressPostId/like (após unwrap de `data`). */
