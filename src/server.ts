@@ -12,9 +12,7 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 /**
  * CSR shell (browser index.html), read once and cached.
- * Served as a 200 fallback when SSR yields no response so that direct hits /
- * crawlers never receive a 404 for a valid client route (the app hydrates on
- * the client instead).
+ * Used only as a last-resort fallback when SSR itself fails for a *known* route.
  */
 let cachedIndexHtml: string | null = null;
 function getIndexHtml(): string {
@@ -42,6 +40,80 @@ function resolveSiteUrl(): string {
 
 const API_URL = (process.env['API_URL'] ?? 'https://citypenhadigital.com.br/api').replace(/\/$/, '');
 const SITE_URL = resolveSiteUrl();
+const ADSENSE_PUBLISHER_ID = 'pub-6632437874949746';
+
+/** Exact public paths that exist in the Angular router. */
+const KNOWN_EXACT_PATHS = new Set([
+  '/home',
+  '/discovery',
+  '/discovery/topics',
+  '/discovery/search',
+  '/frequencia',
+  '/missions',
+  '/politica-de-privacidade',
+  '/termos-de-uso',
+  '/sobre-nos',
+  '/contato',
+  '/login',
+  '/login/email',
+  '/login/forgot-password',
+  '/signup',
+  '/favorites',
+  '/profile',
+  '/profile/edit',
+  '/admin',
+]);
+
+const KNOWN_PREFIXES = ['/artigos/', '/discovery/topics/', '/favorites/', '/admin/'];
+
+function isKnownRoute(pathname: string): boolean {
+  if (KNOWN_EXACT_PATHS.has(pathname)) {
+    return true;
+  }
+  return KNOWN_PREFIXES.some((p) => pathname.startsWith(p));
+}
+
+interface CachedPostSlug {
+  slug: string;
+  categorySlug: string;
+}
+
+let slugCache: { at: number; bySlug: Map<string, CachedPostSlug> } | null = null;
+const SLUG_CACHE_TTL_MS = 5 * 60 * 1000;
+
+async function getPostSlugIndex(): Promise<Map<string, CachedPostSlug>> {
+  if (slugCache && Date.now() - slugCache.at < SLUG_CACHE_TTL_MS) {
+    return slugCache.bySlug;
+  }
+
+  const bySlug = new Map<string, CachedPostSlug>();
+  try {
+    const response = await fetch(`${API_URL}/sitemap/slugs`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (response.ok) {
+      const body = (await response.json()) as {
+        data?: { posts?: { slug: string; categorySlug: string }[] };
+      };
+      for (const p of body?.data?.posts ?? []) {
+        if (p?.slug) {
+          bySlug.set(p.slug, {
+            slug: p.slug,
+            categorySlug: p.categorySlug || 'geral',
+          });
+        }
+      }
+    }
+  } catch {
+    // Keep previous cache on failure so redirects still work briefly.
+    if (slugCache) {
+      return slugCache.bySlug;
+    }
+  }
+
+  slugCache = { at: Date.now(), bySlug };
+  return bySlug;
+}
 
 /** Liveness probe without Angular SSR (healthcheck must not render /home). */
 app.get('/health', (_req, res) => {
@@ -51,6 +123,13 @@ app.get('/health', (_req, res) => {
 /** Canonicalize root to /home (avoids duplicate indexing of / vs /home). */
 app.get('/', (_req, res) => {
   res.redirect(301, '/home');
+});
+
+/** AdSense seller authorization file (must be plain text at the domain root). */
+app.get('/ads.txt', (_req, res) => {
+  res
+    .type('text/plain')
+    .send(`google.com, ${ADSENSE_PUBLISHER_ID}, DIRECT, f08c47fec0942fa0\n`);
 });
 
 /** Dynamic robots.txt so Sitemap URL always matches SITE_URL. */
@@ -66,6 +145,9 @@ app.get('/robots.txt', (_req, res) => {
         'Disallow: /login',
         'Disallow: /signup',
         'Disallow: /discovery/search',
+        'Disallow: /frequencia',
+        'Disallow: /missions',
+        'Disallow: /blog/wp-json/',
         'Allow: /',
         '',
         `Sitemap: ${SITE_URL}/sitemap.xml`,
@@ -74,14 +156,52 @@ app.get('/robots.txt', (_req, res) => {
     );
 });
 
-/** 301 redirect: preserve SEO equity for any previously indexed /news/:slug URLs. */
-app.get('/news/:slug', (req, res) => {
-  res.redirect(301, `/artigos/geral/${req.params['slug']}`);
+/**
+ * Legacy /news/:slug → resolve real category (never force /geral/).
+ * Falls back to /geral/ only when the slug index is unavailable.
+ */
+app.get('/news/:slug', async (req, res) => {
+  const slug = req.params['slug'];
+  const index = await getPostSlugIndex();
+  const entry = index.get(slug);
+  const category = entry?.categorySlug || 'geral';
+  res.redirect(301, `/artigos/${category}/${slug}`);
 });
 
 /** 301 redirect: articles moved from /noticias/ to /artigos/ (magazine rebrand). */
 app.get('/noticias/:categorySlug/:slug', (req, res) => {
   res.redirect(301, `/artigos/${req.params['categorySlug']}/${req.params['slug']}`);
+});
+
+/**
+ * Canonicalize article URLs: wrong category → 301; unknown slug → rewrite to
+ * the Angular 404 route so RESPONSE_INIT can emit HTTP 404.
+ */
+app.get('/artigos/:categorySlug/:slug', async (req, res, next) => {
+  const categorySlug = req.params['categorySlug'];
+  const slug = req.params['slug'];
+  const index = await getPostSlugIndex();
+
+  // Empty index (API down) → let Angular SSR try the API itself.
+  if (index.size === 0) {
+    next();
+    return;
+  }
+
+  const entry = index.get(slug);
+  if (!entry) {
+    // Force the catch-all NotFoundPage by rewriting the URL Angular sees.
+    req.url = '/__not-found__';
+    next();
+    return;
+  }
+
+  if (entry.categorySlug !== categorySlug) {
+    res.redirect(301, `/artigos/${entry.categorySlug}/${entry.slug}`);
+    return;
+  }
+
+  next();
 });
 
 interface SitemapUrl {
@@ -126,21 +246,21 @@ function buildVideoSitemapBlock(video: NonNullable<SitemapUrl['video']>): string
   return lines.join('\n');
 }
 
-/** Dynamic XML sitemap — fetches all published articles from the API. */
+/** Dynamic XML sitemap — only substantial articles + editorial static pages. */
 app.get('/sitemap.xml', async (_req, res) => {
   const today = new Date().toISOString().slice(0, 10);
   const staticUrls: SitemapUrl[] = [
     { loc: `${SITE_URL}/home`, changefreq: 'daily', priority: '1.0', lastmod: today },
     { loc: `${SITE_URL}/discovery`, changefreq: 'daily', priority: '0.8', lastmod: today },
     { loc: `${SITE_URL}/discovery/topics`, changefreq: 'weekly', priority: '0.6', lastmod: today },
-    { loc: `${SITE_URL}/missions`, changefreq: 'weekly', priority: '0.5', lastmod: today },
-    { loc: `${SITE_URL}/frequencia`, changefreq: 'weekly', priority: '0.4', lastmod: today },
     { loc: `${SITE_URL}/politica-de-privacidade`, changefreq: 'yearly', priority: '0.3' },
     { loc: `${SITE_URL}/termos-de-uso`, changefreq: 'yearly', priority: '0.3' },
     { loc: `${SITE_URL}/sobre-nos`, changefreq: 'yearly', priority: '0.3' },
+    { loc: `${SITE_URL}/contato`, changefreq: 'yearly', priority: '0.3' },
   ];
 
   let articleUrls: SitemapUrl[] = [];
+  let topicUrls: SitemapUrl[] = [];
 
   try {
     const response = await fetch(`${API_URL}/sitemap/posts`, {
@@ -158,19 +278,30 @@ app.get('/sitemap.xml', async (_req, res) => {
         };
       };
       const posts = body?.data?.posts ?? [];
-      articleUrls = posts.map((p) => ({
-        loc: `${SITE_URL}/artigos/${p.categorySlug || 'geral'}/${p.slug}`,
+      const categories = new Set<string>();
+      articleUrls = posts.map((p) => {
+        const cat = p.categorySlug || 'geral';
+        categories.add(cat);
+        return {
+          loc: `${SITE_URL}/artigos/${cat}/${p.slug}`,
+          changefreq: 'weekly',
+          priority: p.video ? '0.95' : '0.9',
+          lastmod: p.lastmod || undefined,
+          ...(p.video ? { video: p.video } : {}),
+        };
+      });
+      topicUrls = [...categories].map((slug) => ({
+        loc: `${SITE_URL}/discovery/topics/${slug}`,
         changefreq: 'weekly',
-        priority: p.video ? '0.95' : '0.9',
-        lastmod: p.lastmod || undefined,
-        ...(p.video ? { video: p.video } : {}),
+        priority: '0.55',
+        lastmod: today,
       }));
     }
   } catch {
     // If the API is unreachable, serve the sitemap with static URLs only
   }
 
-  const allUrls = [...staticUrls, ...articleUrls];
+  const allUrls = [...staticUrls, ...topicUrls, ...articleUrls];
   const hasVideoEntries = allUrls.some((u) => u.video);
   const urlEntries = allUrls
     .map((u) => {
@@ -206,8 +337,6 @@ app.use(
     setHeaders(res, filePath) {
       const fileName = filePath.split(/[/\\]/).pop() ?? '';
 
-      // Service worker: precisa ser revalidado sempre e servido a partir da raiz
-      // (scope '/') para poder controlar toda a aplicação.
       if (fileName === 'sw.js') {
         res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
         res.setHeader('Cache-Control', 'no-cache');
@@ -215,7 +344,6 @@ app.use(
         return;
       }
 
-      // Manifest do PWA com o content-type correto.
       if (fileName === 'manifest.webmanifest') {
         res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
         res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
@@ -238,6 +366,8 @@ const SSR_TIMEOUT_MS = 10_000;
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
+  const pathname = (req.path || '/').split('?')[0] || '/';
+  const known = isKnownRoute(pathname) || pathname === '/__not-found__';
   let settled = false;
 
   const timer = setTimeout(() => {
@@ -253,12 +383,27 @@ app.use((req, res, next) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+
       if (response) {
+        // Unknown paths that somehow still returned 200 → force 404.
+        if (!known && response.status === 200) {
+          const headers = new Headers(response.headers);
+          const forced = new Response(response.body, {
+            status: 404,
+            statusText: 'Not Found',
+            headers,
+          });
+          return writeResponseToNodeResponse(forced, res);
+        }
         return writeResponseToNodeResponse(response, res);
       }
-      // SSR produced no response (e.g. a navigation error). Fall back to the
-      // CSR shell with 200 instead of a 404 so crawlers can still index the
-      // route and users get a working (client-rendered) page.
+
+      // SSR produced no response.
+      if (!known) {
+        res.status(404).type('text/html').send(getIndexHtml());
+        return;
+      }
+      // Known route but SSR failed — CSR shell so the app can still boot.
       res.status(200).type('text/html').send(getIndexHtml());
       return;
     })

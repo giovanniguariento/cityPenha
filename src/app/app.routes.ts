@@ -68,6 +68,11 @@ export const routes: Routes = [
       import('./modules/legal/about/about.page').then((m) => m.AboutPage),
   },
   {
+    path: 'contato',
+    loadComponent: () =>
+      import('./modules/legal/contact/contact.page').then((m) => m.ContactPage),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadChildren: () => import('./modules/admin/admin.routes').then((m) => m.ADMIN_ROUTES),

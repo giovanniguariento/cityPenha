@@ -1,6 +1,15 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  PLATFORM_ID,
+  RESPONSE_INIT,
+  signal,
+} from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HomeService } from '../home/services/home.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { sanitizeWordpressHtml } from '../../shared/utils/sanitize-wordpress-html';
@@ -30,6 +39,9 @@ import {
   extractPostVideoFromHtml,
   prepareWatchPageMediaHtml,
 } from '../../shared/utils/extract-post-video';
+import { articleWordCount, hasEnoughContentForAds } from '../../shared/utils/article-word-count';
+import { AdsenseLoaderService } from '../../shared/services/adsense-loader.service';
+import { AdsenseUnitComponent } from '../../shared/components/adsense-unit/adsense-unit.component';
 
 @Component({
   selector: 'app-news-page',
@@ -43,6 +55,7 @@ import {
     NewsSkeletonComponent,
     CommentsSectionComponent,
     LegalFooterComponent,
+    AdsenseUnitComponent,
   ],
   templateUrl: './news.page.html',
   styleUrl: './news.page.scss',
@@ -69,9 +82,16 @@ export class NewsPageComponent extends Destroyable {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly homeService = inject(HomeService);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly seoService = inject(SeoService);
   private readonly userState = inject(UserStateService);
+  private readonly adsense = inject(AdsenseLoaderService);
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
+
+  /** Raw HTML word count — used for AdSense gate and thin-content noindex. */
+  readonly contentWordCount = signal(0);
+  readonly showAds = signal(false);
 
   readonly currentUserId = computed(() => this.userState.getUserIdFromStorage());
   /** Coalesces scroll events to at most one DOM update per animation frame. */
@@ -140,8 +160,24 @@ export class NewsPageComponent extends Destroyable {
           this.clearLikeThankYouTimer();
           this.likeFeedbackThankYou.set(false);
           this.viewsCount.set(0);
+          this.contentWordCount.set(0);
+          this.showAds.set(false);
         }),
-        switchMap((params) => this.homeService.getPost(params['slug'])),
+        switchMap((params) =>
+          this.homeService.getPost(params['slug']).pipe(
+            tap({
+              next: (post) => {
+                const routeCategory = params['categorySlug'] as string | undefined;
+                const realCategory = post.categorySlug || 'geral';
+                if (routeCategory && routeCategory !== realCategory) {
+                  void this.router.navigate(['/artigos', realCategory, post.slug], {
+                    replaceUrl: true,
+                  });
+                }
+              },
+            })
+          )
+        ),
         takeUntil(this.destroy$)
       )
       .subscribe({
@@ -154,6 +190,11 @@ export class NewsPageComponent extends Destroyable {
             post.onlyVideo && rawContent
               ? prepareWatchPageMediaHtml(rawContent, videoMeta?.thumbnailUrl)
               : rawContent;
+
+          const words = articleWordCount(preparedContent || rawContent);
+          this.contentWordCount.set(words);
+          const enoughForAds = hasEnoughContentForAds(preparedContent || rawContent);
+          this.showAds.set(enoughForAds);
 
           const sanitizedPost: PostDetail = {
             ...post,
@@ -172,17 +213,23 @@ export class NewsPageComponent extends Destroyable {
           this.savePending.set(false);
           this.firstRenderAt = Date.now();
 
-          // SEO: watch pages must emit VideoObject; plain Article schema makes Google skip video indexing.
+          const articleUrl = `${SITE_URL}/artigos/${post.categorySlug}/${post.slug}`;
+
+          // Always indexable for Search — AdSense is gated separately by word count.
           this.seoService.setArticle({
             title: post.title,
             description: post.resume ?? post.title,
             image: post.image,
-            url: `${SITE_URL}/artigos/${post.categorySlug}/${post.slug}`,
+            url: articleUrl,
             publishedAt: post.date,
             authorName: post.author?.name,
             category: post.categoryName,
             video: videoMeta,
+            contentHtml: preparedContent,
           });
+          if (enoughForAds) {
+            this.adsense.enable();
+          }
 
           if (isPlatformBrowser(this.platformId)) {
             setTimeout(() => this.updateReadingProgress(), 0);
@@ -191,6 +238,16 @@ export class NewsPageComponent extends Destroyable {
         error: (err: unknown) => {
           this.loadingPost.set(false);
           this.loadError.set(apiErrorMessage(err, 'Não foi possível carregar a notícia.'));
+          this.showAds.set(false);
+          if (this.responseInit) {
+            this.responseInit.status = 404;
+            this.responseInit.statusText = 'Not Found';
+          }
+          this.seoService.setNoIndexPage({
+            title: 'Artigo não encontrado',
+            description: 'O artigo solicitado não existe ou foi removido.',
+            url: `${SITE_URL}/404`,
+          });
         },
       });
   }

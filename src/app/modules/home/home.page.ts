@@ -15,6 +15,7 @@ import { takeUntil } from 'rxjs';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { SeoService } from '../../shared/services/seo.service';
 import { OnboardingService } from '../../shared/services/onboarding.service';
+import { AdsenseLoaderService } from '../../shared/services/adsense-loader.service';
 import { SITE_URL } from '../../shared/constants/site-url';
 
 @Component({
@@ -30,6 +31,7 @@ export class HomePage extends Destroyable {
   private readonly seoService = inject(SeoService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly onboarding = inject(OnboardingService);
+  private readonly adsense = inject(AdsenseLoaderService);
 
   tabs = signal<Category[]>([]);
   posts = signal<Post[]>([]);
@@ -63,6 +65,9 @@ export class HomePage extends Destroyable {
           this.loading.set(false);
           this.error.set(null);
           this.maybeStartOnboarding();
+          if (this.hasFeedContent()) {
+            this.adsense.enable();
+          }
         },
         error: (err: unknown) => {
           this.loading.set(false);

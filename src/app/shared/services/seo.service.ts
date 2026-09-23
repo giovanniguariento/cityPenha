@@ -3,6 +3,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { plainTextFromHtml } from '../utils/decode-html-entities';
+import { articlePlainText, countWords } from '../utils/article-word-count';
 import { SITE_URL } from '../constants/site-url';
 
 const SITE_NAME = 'CityPenha Digital';
@@ -42,6 +43,8 @@ export interface ArticleSeoConfig {
   authorName?: string;
   category?: string;
   video?: ArticleVideoSeoConfig;
+  /** Raw article HTML — emitted as `articleBody`/`wordCount` in the schema. */
+  contentHtml?: string;
 }
 
 export interface PageSeoConfig {
@@ -133,6 +136,9 @@ export class SeoService {
     description: string,
     image: string
   ): object {
+    const body = articlePlainText(config.contentHtml);
+    const words = countWords(body);
+
     return {
       '@context': 'https://schema.org',
       '@type': 'Article',
@@ -146,6 +152,9 @@ export class SeoService {
       publisher: this.publisherSchema(),
       url: config.url,
       mainEntityOfPage: config.url,
+      inLanguage: 'pt-BR',
+      ...(config.category ? { articleSection: config.category } : {}),
+      ...(words > 0 ? { articleBody: body, wordCount: words } : {}),
     };
   }
 

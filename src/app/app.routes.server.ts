@@ -12,5 +12,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'politica-de-privacidade', renderMode: RenderMode.Server },
   { path: 'termos-de-uso', renderMode: RenderMode.Server },
   { path: 'sobre-nos', renderMode: RenderMode.Server },
-  { path: '**', renderMode: RenderMode.Client },
+  { path: 'contato', renderMode: RenderMode.Server },
+  // SSR so RESPONSE_INIT can emit a real HTTP 404 (CSR shell was soft-404ing crawlers).
+  { path: '**', renderMode: RenderMode.Server },
 ];

@@ -20,7 +20,7 @@ const WP_HTML_CONFIG: Config = {
 };
 
 /**
- * Sanitizes WordPress HTML before Angular TrustHtml / outerHTML binding.
+ * Sanitizes WordPress HTML before Angular TrustHtml / innerHTML binding.
  * Safe for SSR (isomorphic-dompurify).
  */
 export function sanitizeWordpressHtml(html: string): string {

@@ -7,7 +7,6 @@ import {
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { InMemoryScrollingOptions, provideRouter, withInMemoryScrolling, withPreloading } from '@angular/router';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import localePt from '@angular/common/locales/pt';
@@ -47,7 +46,6 @@ const browserAppConfig: ApplicationConfig = {
       inMemoryScrollingFeature,
       withPreloading(IdlePreloadStrategy),
     ),
-    provideClientHydration(withEventReplay()),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth()),
   ],

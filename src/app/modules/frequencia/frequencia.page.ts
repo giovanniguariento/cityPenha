@@ -169,11 +169,10 @@ export class FrequenciaPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.seoService.setPage({
+    this.seoService.setNoIndexPage({
       title: 'Frequência de Leitura',
       description: 'Acompanhe sua sequência de leitura diária e construa o hábito de se informar com o CityPenha.',
       url: `${SITE_URL}/frequencia`,
-      type: 'website',
     });
 
     // Não usar auth.currentUser aqui: no carregamento direto da rota o Firebase ainda pode

@@ -24,6 +24,7 @@ import { Destroyable } from '../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { DecodeHtmlEntitiesPipe } from '../../shared/pipes/decode-html-entities.pipe';
 import { SeoService } from '../../shared/services/seo.service';
+import { AdsenseLoaderService } from '../../shared/services/adsense-loader.service';
 import { SITE_URL } from '../../shared/constants/site-url';
 
 const DEFAULT_AUTHOR_AVATAR =
@@ -45,6 +46,7 @@ const EMPTY_SEARCH: DiscoverySearchResponse = { posts: [], topics: [], authors: 
 export class DiscoveryPage extends Destroyable {
   private readonly homeService = inject(HomeService);
   private readonly seoService = inject(SeoService);
+  private readonly adsense = inject(AdsenseLoaderService);
   private readonly search$ = new Subject<string>();
 
   readonly searchWrap = viewChild<ElementRef<HTMLElement>>('searchWrap');
@@ -208,6 +210,7 @@ export class DiscoveryPage extends Destroyable {
           this.popularAuthors.set(data.popularAuthors ?? []);
           this.loading.set(false);
           this.error.set(null);
+          this.adsense.enable();
         },
         error: (err: unknown) => {
           this.loading.set(false);

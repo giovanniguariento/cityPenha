@@ -90,7 +90,7 @@
   </div>
   }
 
-  <main [outerHTML]="news()?.content"></main>
+  <main class="article-body" [innerHTML]="news()?.content"></main>
 </div>
 
 <div class="content content--enter" *ngIf="news()">
@@ -161,7 +161,11 @@
     </div>
   </div>
 
-  <main [outerHTML]="news()?.content" *ngIf="!news()?.onlyVideo"></main>
+  <main class="article-body" [innerHTML]="news()?.content" *ngIf="!news()?.onlyVideo"></main>
+
+  @if (showAds()) {
+  <app-adsense-unit />
+  }
 
   <div class="container-tag">
     @for (tag of news()?.tags; track tag) {

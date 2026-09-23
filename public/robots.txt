@@ -5,6 +5,9 @@ Disallow: /favorites
 Disallow: /login
 Disallow: /signup
 Disallow: /discovery/search
+Disallow: /frequencia
+Disallow: /missions
+Disallow: /blog/wp-json/
 Allow: /
 
 Sitemap: https://citypenhadigital.com.br/sitemap.xml

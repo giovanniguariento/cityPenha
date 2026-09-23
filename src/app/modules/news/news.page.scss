@@ -98,6 +98,15 @@
   }
 }
 
+/* Article HTML is nested inside <main> so it survives SSR; the wrapper has to
+   reproduce the column gap the blocks used to get as direct flex children. */
+.article-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
 ::ng-deep .wp-block-embed {
   margin-top: -86px;
 }

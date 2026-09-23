@@ -9,6 +9,10 @@ import { LegalFooterComponent } from '../../../../shared/components/legal-footer
 import { Destroyable } from '../../../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../../../shared/utils/api-error-message';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
+import { SeoService } from '../../../../shared/services/seo.service';
+import { AdsenseLoaderService } from '../../../../shared/services/adsense-loader.service';
+import { SITE_URL } from '../../../../shared/constants/site-url';
+import { plainTextFromHtml } from '../../../../shared/utils/decode-html-entities';
 
 const PER_PAGE = 20;
 const PLACEHOLDER_IMAGES = ['assets/topicos.jpg', 'assets/escolha-editores.jpg', 'assets/noticias-mundo.jpg'];
@@ -24,6 +28,8 @@ export class DiscoveryTopicDetailPage extends Destroyable {
   private readonly route = inject(ActivatedRoute);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
+  private readonly seoService = inject(SeoService);
+  private readonly adsense = inject(AdsenseLoaderService);
 
   readonly posts = signal<Post[]>([]);
   readonly loading = signal(true);
@@ -135,13 +141,38 @@ export class DiscoveryTopicDetailPage extends Destroyable {
           }
           this.loading.set(false);
           this.error.set(null);
+          this.applyTopicSeo();
+          if (data.posts.length > 0) {
+            this.adsense.enable();
+          }
         },
         error: (err: unknown) => {
           this.loading.set(false);
           this.posts.set([]);
           this.hasMore.set(false);
           this.error.set(apiErrorMessage(err, 'Não foi possível carregar os artigos.'));
+          this.seoService.setNoIndexPage({
+            title: 'Tópico não encontrado',
+            description: 'O tópico solicitado não existe ou não possui artigos.',
+            url: `${SITE_URL}/discovery/topics`,
+          });
         },
       });
+  }
+
+  private applyTopicSeo(): void {
+    const title = this.topicTitle();
+    const count = this.topicCount();
+    const description =
+      count != null
+        ? `Explore ${count} artigos sobre ${plainTextFromHtml(title)} no CityPenha Digital.`
+        : `Artigos sobre ${plainTextFromHtml(title)} no CityPenha Digital.`;
+    this.seoService.setPage({
+      title,
+      description,
+      url: `${SITE_URL}/discovery/topics/${this.slug}`,
+      image: this.topicImage() ?? undefined,
+      type: 'website',
+    });
   }
 }

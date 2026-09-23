@@ -78,11 +78,10 @@ export class MissionsPage implements OnInit {
   readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.seoService.setPage({
+    this.seoService.setNoIndexPage({
       title: 'Missões',
       description: 'Complete missões, ganhe XP e suba de nível lendo notícias no CityPenha.',
       url: `${SITE_URL}/missions`,
-      type: 'website',
     });
 
     this.homeService
