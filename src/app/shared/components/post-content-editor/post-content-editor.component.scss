@@ -1,0 +1,119 @@
+@use '../../../../styles/variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.post-content-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-content-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 2px 0;
+  background: inherit;
+}
+
+.post-content-editor__btn {
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  padding: 8px 10px;
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  color: var(--text-primary, #{$text-primary});
+  touch-action: manipulation;
+
+  &--active {
+    background: rgba(0, 0, 0, 0.12);
+    font-weight: 700;
+  }
+}
+
+.post-content-editor__surface {
+  display: block;
+  width: 100%;
+}
+
+.post-content-editor__fallback {
+  min-height: 96px;
+  font-size: 0.875rem;
+  color: var(--text-muted, #{$text-muted});
+  padding: 8px 0;
+}
+
+:host ::ng-deep .post-content-editor__prose {
+  outline: none;
+  min-height: 96px;
+  padding: 4px 0 8px;
+  line-height: 1.5;
+  font-size: 0.9375rem;
+  color: inherit;
+
+  p {
+    margin: 0 0 0.5em;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 0.5em;
+    padding-left: 1.25rem;
+  }
+
+  a {
+    color: var(--brand-primary, #{$brand-primary});
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin: 0.75em 0 0.4em;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 1.0625rem;
+    margin: 0.65em 0 0.35em;
+    font-weight: 700;
+  }
+
+  blockquote {
+    margin: 0.5em 0;
+    padding-left: 0.75rem;
+    border-left: 3px solid rgba(0, 0, 0, 0.15);
+    color: var(--text-muted, #{$text-muted});
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    margin: 1em 0;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  p.is-editor-empty:first-child::before {
+    color: var(--text-muted, #{$text-muted});
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+}
+
+.post-content-editor--article ::ng-deep .post-content-editor__prose {
+  min-height: 220px;
+}

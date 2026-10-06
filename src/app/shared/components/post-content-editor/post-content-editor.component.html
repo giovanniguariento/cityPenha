@@ -1,0 +1,109 @@
+<div class="post-content-editor" [class.post-content-editor--article]="mode() === 'article'">
+  <div class="post-content-editor__toolbar" role="toolbar" aria-label="Formatação">
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().bold"
+      (click)="toggleBold()"
+      aria-label="Negrito"
+      [attr.aria-pressed]="active().bold"
+    >
+      <b>B</b>
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().italic"
+      (click)="toggleItalic()"
+      aria-label="Itálico"
+      [attr.aria-pressed]="active().italic"
+    >
+      <i>I</i>
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().underline"
+      (click)="toggleUnderline()"
+      aria-label="Sublinhado"
+      [attr.aria-pressed]="active().underline"
+    >
+      <u>U</u>
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().bulletList"
+      (click)="toggleBulletList()"
+      aria-label="Lista"
+      [attr.aria-pressed]="active().bulletList"
+    >
+      •
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().orderedList"
+      (click)="toggleOrderedList()"
+      aria-label="Lista numerada"
+      [attr.aria-pressed]="active().orderedList"
+    >
+      1.
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().link"
+      (click)="setLink()"
+      aria-label="Link"
+      [attr.aria-pressed]="active().link"
+    >
+      Link
+    </button>
+
+    @if (mode() === 'article') {
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().heading2"
+      (click)="toggleHeading(2)"
+      aria-label="Título"
+      [attr.aria-pressed]="active().heading2"
+    >
+      H2
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().heading3"
+      (click)="toggleHeading(3)"
+      aria-label="Subtítulo"
+      [attr.aria-pressed]="active().heading3"
+    >
+      H3
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      [class.post-content-editor__btn--active]="active().blockquote"
+      (click)="toggleBlockquote()"
+      aria-label="Citação"
+      [attr.aria-pressed]="active().blockquote"
+    >
+      “
+    </button>
+    <button type="button" class="post-content-editor__btn" (click)="insertHorizontalRule()" aria-label="Separador">
+      ―
+    </button>
+    <button type="button" class="post-content-editor__btn" (click)="insertImage()" aria-label="Imagem">
+      Img
+    </button>
+    }
+  </div>
+
+  @if (editor(); as ed) {
+  <tiptap-editor class="post-content-editor__surface" [editor]="ed"></tiptap-editor>
+  } @else {
+  <div class="post-content-editor__fallback" aria-hidden="true">A carregar editor…</div>
+  }
+</div>

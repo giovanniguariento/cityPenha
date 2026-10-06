@@ -224,6 +224,16 @@ export class AdminService {
       )
       .pipe(this.unwrap<AdminWordpressAccessItem>());
   }
+
+  /** PATCH /admin/users/:userId/can-create-posts — libera/revoga postagens no app. */
+  setCanCreatePosts(userId: string, enabled: boolean): Observable<AdminWordpressAccessItem> {
+    return this.http
+      .patch<ApiSuccessEnvelope<AdminWordpressAccessItem>>(
+        `${this.base}/users/${userId}/can-create-posts`,
+        { enabled }
+      )
+      .pipe(this.unwrap<AdminWordpressAccessItem>());
+  }
 }
 
 /** Mantém o tipo exportado para conveniência em consumidores do service. */

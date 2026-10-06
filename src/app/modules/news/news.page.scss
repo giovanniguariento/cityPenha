@@ -230,14 +230,22 @@
     color: #000000;
   }
 
-  .description p {
+  .description {
     font-family: Lato;
     font-weight: 400;
-    font-style: Regular;
     font-size: 18px;
     line-height: 120%;
-    letter-spacing: 0%;
     color: #858585;
+
+    p {
+      font-family: inherit;
+      font-weight: inherit;
+      font-style: Regular;
+      font-size: inherit;
+      line-height: inherit;
+      letter-spacing: 0%;
+      color: inherit;
+    }
   }
 
   .info {

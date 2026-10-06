@@ -1,6 +1,11 @@
 <header>
   <img [src]="logoUrl" alt="City Penha Digital" class="logo">
   <div>
+    @if (canCreatePosts()) {
+    <button type="button" class="icon-button" aria-label="Nova postagem" (click)="onCreatePostClick()">
+      <img src="assets/create.svg" alt="">
+    </button>
+    }
     <button type="button" class="icon-button" data-tour="header-frequency" aria-label="Raio" (click)="onFrequenciaClick()">
       <img src="assets/lightningBolt.svg" alt="">
     </button>

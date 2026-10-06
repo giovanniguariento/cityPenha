@@ -127,6 +127,8 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
   /** True while GET /user/me is in flight (utilizador Firebase autenticado). */
   readonly apiLoading = signal(false);
   readonly apiError = signal<string | null>(null);
+  /** Shown when the user can create short posts / articles. */
+  readonly canCreatePosts = signal(false);
 
   constructor() {
     super();
@@ -161,6 +163,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
         switchMap((fbUser) => {
           if (!fbUser) {
             this.stats = [];
+            this.canCreatePosts.set(false);
             this.apiLoading.set(false);
             this.apiError.set(null);
             return of<UserMePayload | null>(null);
@@ -223,6 +226,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
       about: u.about != null ? String(u.about).trim() : '',
       level: res.level?.levelNumber ?? current.level,
     }));
+    this.canCreatePosts.set(u.canCreatePosts === true);
     const missionsCount = Number(res.completedMissionsCount ?? 0);
     this.stats = this.buildStats(u, missionsCount);
     this.missions.set(res.missions ?? []);

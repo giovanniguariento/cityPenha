@@ -39,6 +39,7 @@ export class AdminWordpressAccessPage {
   readonly loadingMore = signal(false);
   readonly error = signal<string | null>(null);
   readonly provisioningUserId = signal<string | null>(null);
+  readonly togglingUserId = signal<string | null>(null);
   readonly revealedPasswordIds = signal<Set<string>>(new Set());
 
   constructor() {
@@ -229,6 +230,38 @@ export class AdminWordpressAccessPage {
     if (item.wordpressId == null) return 'Sem conta WP';
     if (item.credentialsStatus === 'ready') return 'Pronto';
     return 'Pendente';
+  }
+
+  toggleCanCreatePosts(item: AdminWordpressAccessItem, input: HTMLInputElement): void {
+    const enabled = input.checked;
+    if (this.togglingUserId() || item.canCreatePosts === enabled) {
+      input.checked = item.canCreatePosts;
+      return;
+    }
+
+    this.togglingUserId.set(item.userId);
+    this.admin
+      .setCanCreatePosts(item.userId, enabled)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.items.update((list) =>
+            list.map((it) => (it.userId === item.userId ? updated : it))
+          );
+          this.togglingUserId.set(null);
+          this.feedback.showSuccess(
+            enabled ? 'Postagens liberadas para o usuário.' : 'Postagens bloqueadas para o usuário.'
+          );
+        },
+        error: (err) => {
+          // [checked] binding is unchanged on failure, so Angular won't revert the DOM state.
+          input.checked = item.canCreatePosts;
+          this.togglingUserId.set(null);
+          this.feedback.showError(
+            apiErrorMessage(err, 'Não foi possível atualizar a permissão de postagens.')
+          );
+        },
+      });
   }
 
   private runProvision(userId: string, force = false): void {

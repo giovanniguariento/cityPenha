@@ -557,13 +557,14 @@
 
   input {
     appearance: none;
+    margin: 0;
     width: 38px;
     height: 22px;
     border-radius: 999px;
     background: var(--admin-border-soft);
     position: relative;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background-color 0.2s ease, box-shadow 0.15s ease, opacity 0.15s ease;
     flex-shrink: 0;
 
     &::after {
@@ -575,7 +576,16 @@
       height: 16px;
       border-radius: 50%;
       background: #ffffff;
-      transition: transform 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.15s ease;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--admin-text-soft);
+    }
+
+    &:active:not(:disabled)::after {
+      width: 20px;
     }
 
     &:checked {
@@ -584,6 +594,24 @@
       &::after {
         transform: translateX(16px);
       }
+
+      &:hover:not(:disabled) {
+        background: #e01300;
+      }
+
+      &:active:not(:disabled)::after {
+        transform: translateX(12px);
+      }
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 21, 0, 0.25);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
     }
   }
 }

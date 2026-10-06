@@ -23,7 +23,7 @@
   } @else if (items().length === 0) {
   <p class="admin-empty">Nenhum usuário encontrado.</p>
   } @else {
-  <div class="admin-table-wrap">
+  <div class="admin-table-wrap wp-table-wrap">
     <table class="admin-table wp-table">
       <thead>
         <tr>
@@ -33,6 +33,7 @@
           <th>Login WP</th>
           <th>Senha</th>
           <th>Status</th>
+          <th>Postagens</th>
           <th class="actions">Ações</th>
         </tr>
       </thead>
@@ -56,7 +57,7 @@
           <td data-label="Login WP">
             @if (item.wordpressUsername) {
             <div class="wp-credential-cell">
-              <code class="mono">{{ item.wordpressUsername }}</code>
+              <code class="mono" [title]="item.wordpressUsername">{{ item.wordpressUsername }}</code>
               @if (item.credentialsStatus === 'ready') {
               <button type="button" class="wp-icon-btn" title="Copiar login" aria-label="Copiar login"
                 (click)="copyText(item.wordpressUsername)">
@@ -101,6 +102,26 @@
             <span class="admin-chip" [class.admin-chip--success]="item.wordpressId != null && item.credentialsStatus === 'ready'"
               [class.admin-chip--warn]="item.wordpressId != null && item.credentialsStatus === 'missing'"
               [class.admin-chip--info]="item.wordpressId == null">{{ statusLabel(item) }}</span>
+          </td>
+          <td data-label="Postagens">
+            <label class="toggle wp-post-toggle" [class.is-on]="item.canCreatePosts"
+              [class.is-busy]="togglingUserId() === item.userId">
+              <input
+                type="checkbox"
+                role="switch"
+                [checked]="item.canCreatePosts"
+                [disabled]="togglingUserId() === item.userId"
+                [attr.aria-label]="'Permitir postagens para ' + item.name"
+                (change)="toggleCanCreatePosts(item, $any($event.target))"
+              />
+              <span class="wp-post-toggle__label" aria-live="polite">
+                @if (togglingUserId() === item.userId) {
+                Salvando…
+                } @else {
+                {{ item.canCreatePosts ? 'Liberado' : 'Bloqueado' }}
+                }
+              </span>
+            </label>
           </td>
           <td data-label="Ações" class="actions">
             @if (item.credentialsStatus === 'ready') {

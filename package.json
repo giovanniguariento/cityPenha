@@ -5,10 +5,12 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
     "build": "ng build --configuration=production",
+    "build:local": "ng build --configuration=development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start:ssr": "node dist/citypenha/server/server.mjs",
-    "serve:ssr": "node dist/citypenha/server/server.mjs"
+    "serve:ssr": "node dist/citypenha/server/server.mjs",
+    "start:ssr:local": "npm run build:local && node dist/citypenha/server/server.mjs"
   },
   "prettier": {
     "overrides": [
@@ -34,9 +36,21 @@
     "@angular/platform-server": "^20.1.0",
     "@angular/router": "^20.1.0",
     "@angular/ssr": "^20.1.1",
+    "@floating-ui/dom": "^1.8.0",
+    "@tiptap/core": "^3.31.4",
+    "@tiptap/extension-bubble-menu": "^3.31.4",
+    "@tiptap/extension-floating-menu": "^3.31.4",
+    "@tiptap/extension-heading": "^3.31.4",
+    "@tiptap/extension-image": "^3.31.4",
+    "@tiptap/extension-link": "^3.31.4",
+    "@tiptap/extension-placeholder": "^3.31.4",
+    "@tiptap/extension-underline": "^3.31.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
     "driver.js": "^1.6.0",
     "express": "^5.1.0",
     "isomorphic-dompurify": "^3.19.0",
+    "ngx-tiptap": "^14.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

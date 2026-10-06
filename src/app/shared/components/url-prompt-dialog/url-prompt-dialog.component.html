@@ -1,0 +1,37 @@
+<div class="url-prompt" role="dialog" aria-modal="true" [attr.aria-labelledby]="'url-prompt-title'">
+  <h2 mat-dialog-title id="url-prompt-title" class="url-prompt__title">{{ title }}</h2>
+
+  <div mat-dialog-content class="url-prompt__content">
+    <label class="url-prompt__field">
+      <span class="visually-hidden">{{ title }}</span>
+      <span class="url-prompt__shell">
+        <input
+          #urlInput
+          class="url-prompt__input"
+          type="url"
+          inputmode="url"
+          autocomplete="url"
+          [placeholder]="placeholder"
+          [ngModel]="value"
+          (ngModelChange)="onValueChange($event)"
+          (keydown.enter)="$event.preventDefault(); confirm()"
+        />
+      </span>
+    </label>
+    @if (error(); as err) {
+      <p class="url-prompt__error" role="alert">{{ err }}</p>
+    }
+    @if (allowEmpty && mode === 'link') {
+      <p class="url-prompt__hint">Deixe em branco e confirme para remover o link.</p>
+    }
+  </div>
+
+  <div mat-dialog-actions align="end" class="url-prompt__actions">
+    <button mat-button type="button" class="url-prompt__btn-cancel" (click)="cancel()">
+      {{ cancelLabel }}
+    </button>
+    <button mat-flat-button color="primary" type="button" class="url-prompt__btn-confirm" (click)="confirm()">
+      {{ confirmLabel }}
+    </button>
+  </div>
+</div>

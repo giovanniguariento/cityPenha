@@ -1,0 +1,123 @@
+<div class="edit-post">
+  <header class="edit-post__top">
+    <button type="button" class="edit-post__icon-btn" (click)="onBack()" aria-label="Voltar">
+      <img src="assets/back.svg" alt="" width="24" height="24" />
+    </button>
+    <h1 class="visually-hidden">Editar postagem</h1>
+    <img class="edit-post__logo" [src]="logoUrl" alt="" width="96" height="32" />
+    <button
+      type="button"
+      class="edit-post__share"
+      [disabled]="!canSave()"
+      (click)="save()"
+    >
+      @if (saving()) {
+      Salvando…
+      } @else {
+      Salvar
+      }
+    </button>
+  </header>
+
+  <main class="edit-post__body">
+    @if (loading()) {
+    <p class="edit-post__state" aria-busy="true">A carregar postagem…</p>
+    } @else if (loadError()) {
+    <p class="edit-post__state edit-post__state--error">{{ loadError() }}</p>
+    } @else {
+    @if (postType() === 'video') {
+    <section class="edit-post__media" aria-label="Pré-visualização do vídeo">
+      <div class="edit-post__preview-wrap">
+        @if (videoUrl()) {
+        <video class="edit-post__preview" controls [src]="videoUrl()!" playsinline></video>
+        } @else if (thumbnailUrl()) {
+        <img class="edit-post__preview-img" [src]="thumbnailUrl()!" alt="" />
+        } @else {
+        <div class="edit-post__preview-placeholder">Vídeo</div>
+        }
+        <span class="edit-post__readonly-badge">Somente leitura</span>
+      </div>
+    </section>
+    } @else if (thumbnailUrl()) {
+    <section class="edit-post__media" aria-label="Capa do artigo">
+      <div class="edit-post__preview-wrap edit-post__preview-wrap--cover">
+        <img class="edit-post__preview-img" [src]="thumbnailUrl()!" alt="" />
+        <span class="edit-post__readonly-badge">Capa (somente leitura)</span>
+      </div>
+    </section>
+    }
+
+    <label class="edit-post__title-field">
+      <span class="edit-post__title-label">
+        {{ postType() === 'article' ? 'Título' : 'Título (opcional)' }}
+      </span>
+      <input
+        type="text"
+        class="edit-post__title-input"
+        maxlength="80"
+        [placeholder]="postType() === 'article' ? 'Título do artigo' : 'Adicionar título'"
+        [ngModel]="title()"
+        (ngModelChange)="title.set($event)"
+      />
+    </label>
+
+    @if (postType() === 'article') {
+    <label class="edit-post__title-field edit-post__summary-field">
+      <span class="edit-post__title-label">Resumo (opcional)</span>
+      <textarea
+        class="edit-post__title-input edit-post__summary-input"
+        maxlength="280"
+        rows="3"
+        placeholder="Resumo exibido nas listagens. Se vazio, usa o início do conteúdo."
+        [ngModel]="summary()"
+        (ngModelChange)="summary.set($event)"
+      ></textarea>
+      <span class="edit-post__summary-count" aria-live="polite">
+        {{ summary().length }}/280
+      </span>
+    </label>
+    }
+
+    <section
+      class="edit-post__caption"
+      [attr.aria-label]="postType() === 'article' ? 'Conteúdo' : 'Legenda'"
+    >
+      <span class="edit-post__title-label">
+        {{ postType() === 'article' ? 'Conteúdo' : 'Legenda' }}
+      </span>
+      <app-post-content-editor
+        [mode]="postType() === 'article' ? 'article' : 'caption'"
+        [placeholder]="postType() === 'article' ? 'Escreva o artigo…' : 'Escreva uma legenda…'"
+        [ariaLabel]="postType() === 'article' ? 'Conteúdo do artigo' : 'Legenda da postagem'"
+        [ngModel]="contentHtml()"
+        (ngModelChange)="onContentHtmlChange($event)"
+        (plainTextChange)="onContentPlainChange($event)"
+      />
+    </section>
+
+    <section class="edit-post__category" aria-label="Categoria">
+      <span class="edit-post__title-label">Categoria</span>
+      @if (categoriesLoading()) {
+      <p class="edit-post__category-hint">A carregar categorias…</p>
+      } @else if (categories().length === 0) {
+      <p class="edit-post__category-hint">Nenhuma categoria disponível.</p>
+      } @else {
+      <div class="edit-post__chips" role="listbox" aria-label="Escolher categoria">
+        @for (cat of categories(); track cat.id) {
+        <button
+          type="button"
+          role="option"
+          class="edit-post__chip"
+          [class.edit-post__chip--active]="selectedCategoryId() === cat.id"
+          [attr.aria-selected]="selectedCategoryId() === cat.id"
+          (click)="selectCategory(cat.id)"
+        >
+          {{ cat.name }}
+        </button>
+        }
+      </div>
+      }
+    </section>
+    }
+  </main>
+</div>

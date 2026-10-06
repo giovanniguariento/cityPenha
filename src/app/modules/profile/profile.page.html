@@ -76,6 +76,17 @@
       }
     </div>
 
+    @if (canCreatePosts()) {
+    <a routerLink="/minhas-postagens" class="my-posts-link">
+      <span class="my-posts-link__icon material-icons" aria-hidden="true">article</span>
+      <span class="my-posts-link__text">
+        <strong>Minhas postagens</strong>
+        <span>Ver, editar ou excluir o que você publicou</span>
+      </span>
+      <span class="material-icons my-posts-link__chevron" aria-hidden="true">chevron_right</span>
+    </a>
+    }
+
     <div class="medals-section">
       <div class="section-header">
         <h2>Medalhas</h2>

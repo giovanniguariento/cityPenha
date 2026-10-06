@@ -196,11 +196,15 @@ export class NewsPageComponent extends Destroyable {
           const enoughForAds = hasEnoughContentForAds(preparedContent || rawContent);
           this.showAds.set(enoughForAds);
 
+          const resumeHtml = typeof post.resume === 'string' ? post.resume : '';
           const sanitizedPost: PostDetail = {
             ...post,
             content: preparedContent
               ? this.sanitizer.bypassSecurityTrustHtml(sanitizeWordpressHtml(preparedContent))
               : post.content,
+            resume: resumeHtml
+              ? this.sanitizer.bypassSecurityTrustHtml(sanitizeWordpressHtml(resumeHtml))
+              : resumeHtml,
             ...(videoMeta ? { video: videoMeta } : {}),
           };
           this.loadingPost.set(false);
@@ -218,7 +222,7 @@ export class NewsPageComponent extends Destroyable {
           // Always indexable for Search — AdSense is gated separately by word count.
           this.seoService.setArticle({
             title: post.title,
-            description: post.resume ?? post.title,
+            description: plainTextFromHtml(resumeHtml) || post.title,
             image: post.image,
             url: articleUrl,
             publishedAt: post.date,
@@ -338,9 +342,11 @@ export class NewsPageComponent extends Destroyable {
 
     const post = this.news();
     const url = window.location.href;
+    const resumeText =
+      typeof post?.resume === 'string' ? plainTextFromHtml(post.resume) : '';
     const shareData: ShareData = {
       title: post?.title ?? 'CityPenha',
-      text: post?.resume ? plainTextFromHtml(post.resume) : 'Confira essa notícia no CityPenha',
+      text: resumeText || 'Confira essa notícia no CityPenha',
       url,
     };
 

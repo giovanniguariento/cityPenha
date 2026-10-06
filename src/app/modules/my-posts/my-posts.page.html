@@ -1,0 +1,110 @@
+<div class="my-posts" (click)="closeMenu()">
+  <header class="my-posts__top">
+    <a routerLink="/profile" class="my-posts__icon-btn" aria-label="Voltar">
+      <img src="assets/back.svg" alt="" width="24" height="24" />
+    </a>
+    <h1 class="my-posts__title">Minhas postagens</h1>
+    <img class="my-posts__logo" [src]="logoUrl" alt="" width="96" height="32" />
+    <a
+      routerLink="/criar-postagem"
+      class="my-posts__icon-btn my-posts__new"
+      aria-label="Nova postagem"
+    >
+      <span class="material-icons" aria-hidden="true">add</span>
+    </a>
+  </header>
+
+  <main class="my-posts__body">
+    @if (loading()) {
+    <ul class="my-posts__list" aria-busy="true">
+      @for (_ of [1, 2, 3]; track $index) {
+      <li class="my-posts__card my-posts__card--skeleton" aria-hidden="true">
+        <div class="my-posts__thumb my-posts__thumb--skeleton"></div>
+        <div class="my-posts__meta">
+          <div class="my-posts__skel-line"></div>
+          <div class="my-posts__skel-line my-posts__skel-line--short"></div>
+        </div>
+      </li>
+      }
+    </ul>
+    } @else if (error()) {
+    <p class="my-posts__state my-posts__state--error">{{ error() }}</p>
+    } @else if (items().length === 0) {
+    <div class="my-posts__empty">
+      <p>Você ainda não publicou nenhuma postagem.</p>
+      <a routerLink="/criar-postagem" class="my-posts__cta">Criar postagem</a>
+    </div>
+    } @else {
+    <ul class="my-posts__list">
+      @for (item of items(); track item.id) {
+      <li class="my-posts__card" [class.my-posts__card--busy]="deletingId() === item.id">
+        <button type="button" class="my-posts__card-main" (click)="viewPost(item)">
+          <div
+            class="my-posts__thumb"
+            [class.my-posts__thumb--empty]="!item.thumbnailUrl"
+            [style.background-image]="item.thumbnailUrl ? 'url(' + item.thumbnailUrl + ')' : null"
+          >
+            @if (item.type === 'video') {
+            <span class="my-posts__type-badge" aria-hidden="true">
+              <span class="material-icons">play_arrow</span>
+            </span>
+            }
+          </div>
+          <div class="my-posts__meta">
+            <h2 class="my-posts__card-title">{{ item.title || 'Sem título' }}</h2>
+            <p class="my-posts__card-sub">
+              <span>{{ typeLabel(item.type) }}</span>
+              <span aria-hidden="true">·</span>
+              <span>{{ statusLabel(item.status) }}</span>
+              <span aria-hidden="true">·</span>
+              <span>{{ item.date | date: 'dd/MM/yyyy' }}</span>
+            </p>
+            @if (item.excerptPlain) {
+            <p class="my-posts__excerpt">{{ item.excerptPlain }}</p>
+            }
+          </div>
+        </button>
+
+        <div class="my-posts__actions" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="my-posts__icon-btn"
+            [attr.aria-expanded]="openMenuId() === item.id"
+            aria-label="Mais opções"
+            (click)="toggleMenu(item.id, $event)"
+          >
+            <span class="material-icons" aria-hidden="true">more_vert</span>
+          </button>
+          @if (openMenuId() === item.id) {
+          <div class="my-posts__menu" role="menu">
+            <button type="button" role="menuitem" (click)="viewPost(item)">Ver</button>
+            <button type="button" role="menuitem" (click)="editPost(item)">Editar</button>
+            <button
+              type="button"
+              role="menuitem"
+              class="my-posts__menu-danger"
+              [disabled]="deletingId() === item.id"
+              (click)="confirmDelete(item)"
+            >
+              Excluir
+            </button>
+          </div>
+          }
+        </div>
+      </li>
+      }
+    </ul>
+
+    @if (hasMore()) {
+    <button
+      type="button"
+      class="my-posts__load-more"
+      [disabled]="loadingMore()"
+      (click)="loadMore()"
+    >
+      {{ loadingMore() ? 'A carregar…' : 'Carregar mais' }}
+    </button>
+    }
+    }
+  </main>
+</div>

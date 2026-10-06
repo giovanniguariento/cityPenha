@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
+import { canCreatePostsGuard } from './guards/can-create-posts.guard';
 import { adminGuard } from './modules/admin/admin.guard';
 
 export const routes: Routes = [
@@ -19,6 +20,24 @@ export const routes: Routes = [
     loadComponent: () => import('./modules/discovery/topics/detail/detail.page').then(m => m.DiscoveryTopicDetailPage),
   },
   { path: 'artigos/:categorySlug/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
+  {
+    path: 'criar-postagem',
+    loadComponent: () =>
+      import('./modules/create-post/create-post.page').then((m) => m.CreatePostPage),
+    canActivate: [authGuard, canCreatePostsGuard],
+  },
+  {
+    path: 'minhas-postagens',
+    loadComponent: () =>
+      import('./modules/my-posts/my-posts.page').then((m) => m.MyPostsPage),
+    canActivate: [authGuard, canCreatePostsGuard],
+  },
+  {
+    path: 'minhas-postagens/:id/editar',
+    loadComponent: () =>
+      import('./modules/my-posts/edit-post.page').then((m) => m.EditPostPage),
+    canActivate: [authGuard, canCreatePostsGuard],
+  },
   { path: 'login', loadComponent: () => import('./modules/login/login.page').then(m => m.LoginPage) },
   { path: 'login/email', loadComponent: () => import('./modules/login/login-email.page').then(m => m.LoginEmailPage) },
   { path: 'login/forgot-password', loadComponent: () => import('./modules/login/forgot-password.page').then(m => m.ForgotPasswordPage) },

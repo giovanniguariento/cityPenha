@@ -13,7 +13,7 @@ import { LegalFooterComponent } from '../../shared/components/legal-footer/legal
 import { SeoService } from '../../shared/services/seo.service';
 import { SITE_URL } from '../../shared/constants/site-url';
 
-type LoginProvider = 'google' | 'facebook';
+type LoginProvider = 'google';
 
 @Component({
   selector: 'app-login-page',
@@ -56,12 +56,7 @@ export class LoginPage {
       return;
     }
 
-    if (provider === 'facebook') {
-      void this.facebookLogin();
-      return;
-    }
-
-    if (provider === 'apple') {
+    if (provider === 'facebook' || provider === 'apple') {
       this.feedback.showComingSoon();
     }
   }
@@ -98,41 +93,6 @@ export class LoginPage {
     } catch {
       this.submittingProvider.set(null);
       this.feedback.showError('Não foi possível iniciar sessão com o Google.');
-    }
-  }
-
-  async facebookLogin(): Promise<void> {
-    if (this.submitting()) {
-      return;
-    }
-    this.submittingProvider.set('facebook');
-    try {
-      const authentication = await this.authService.loginWithFacebook();
-      this.homeService
-        .signup(authentication)
-        .pipe(first())
-        .subscribe({
-          next: (res: PublicUser) => {
-            this.submittingProvider.set(null);
-            if (res?.id) {
-              try {
-                localStorage.setItem('userId', res.id);
-              } catch {
-                // ignore storage errors
-              }
-            }
-            this.router.navigate(['/home']);
-          },
-          error: (err: unknown) => {
-            this.submittingProvider.set(null);
-            this.feedback.showError(
-              apiErrorMessage(err, 'Não foi possível completar o cadastro. Tente novamente.')
-            );
-          },
-        });
-    } catch {
-      this.submittingProvider.set(null);
-      this.feedback.showError('Não foi possível iniciar sessão com o Facebook.');
     }
   }
 

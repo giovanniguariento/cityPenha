@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   FacebookAuthProvider,
   GoogleAuthProvider,
+  OAuthProvider,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -48,6 +49,20 @@ export class AuthService {
       const user = authentication.user;
       if (!user) {
         throw new Error('Facebook-Login error: No user returned');
+      }
+      return authentication;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async loginWithApple(): Promise<UserCredential> {
+    const provider = new OAuthProvider('apple.com');
+    try {
+      const authentication = await signInWithPopup(this.auth, provider);
+      const user = authentication.user;
+      if (!user) {
+        throw new Error('Apple-Login error: No user returned');
       }
       return authentication;
     } catch (error) {

@@ -1,0 +1,217 @@
+<div
+  class="create-post"
+  [class.create-post--picker]="showPicker()"
+  [class.create-post--composer]="showComposer()"
+>
+  <input
+    #fileInput
+    type="file"
+    class="create-post__file"
+    accept="video/*"
+    (change)="onVideoSelected($event)"
+  />
+  <input
+    #coverInput
+    type="file"
+    class="create-post__file"
+    accept="image/*"
+    (change)="onCoverSelected($event)"
+  />
+
+  @if (showPicker()) {
+  <!-- Escolher tipo -->
+  <header class="create-post__top create-post__top--dark">
+    <button type="button" class="create-post__icon-btn create-post__icon-btn--light" (click)="onBack()" aria-label="Fechar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <h1 class="visually-hidden">Nova postagem</h1>
+    <img class="create-post__logo create-post__logo--on-dark" [src]="logoUrl" alt="" width="96" height="32" />
+    <span class="create-post__top-spacer" aria-hidden="true"></span>
+  </header>
+
+  <div class="create-post__type-picker" role="group" aria-label="Tipo de postagem">
+    <button type="button" class="create-post__type-card" (click)="chooseFlow('video')">
+      <span class="create-post__type-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="create-post__type-title">Vídeo</span>
+      <span class="create-post__type-sub">Short com legenda</span>
+    </button>
+    <button type="button" class="create-post__type-card" (click)="chooseFlow('article')">
+      <span class="create-post__type-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M5 4h14v16H5V4Z" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="create-post__type-title">Artigo</span>
+      <span class="create-post__type-sub">Texto completo</span>
+    </button>
+  </div>
+  } @else {
+  <!-- Composer: vídeo ou artigo -->
+  <header class="create-post__top create-post__top--light">
+    <button type="button" class="create-post__icon-btn" (click)="onBack()" aria-label="Voltar">
+      <img src="assets/back.svg" alt="" width="24" height="24" />
+    </button>
+    <h1 class="visually-hidden">{{ flow() === 'article' ? 'Novo artigo' : 'Nova postagem' }}</h1>
+    <img class="create-post__logo" [src]="logoUrl" alt="" width="96" height="32" />
+    <button
+      type="button"
+      class="create-post__share"
+      [disabled]="!canPublish()"
+      (click)="publish()"
+    >
+      @if (publishing()) {
+      Publicando…
+      } @else {
+      Publicar
+      }
+    </button>
+  </header>
+
+  <main class="create-post__body">
+    @if (flow() === 'video') {
+    <section class="create-post__media" aria-label="Pré-visualização do vídeo">
+      <div class="create-post__preview-wrap">
+        <video class="create-post__preview" controls [src]="videoUrl()!" playsinline></video>
+        <button
+          type="button"
+          class="create-post__change"
+          (click)="onPickVideoClick()"
+          aria-label="Trocar vídeo"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M4 12a8 8 0 0 1 13.66-5.66M20 4v5h-5M20 12a8 8 0 0 1-13.66 5.66M4 20v-5h5"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Trocar
+        </button>
+      </div>
+    </section>
+    }
+
+    @if (flow() === 'article') {
+    <section class="create-post__cover" aria-label="Foto de destaque">
+      <span class="create-post__title-label">Foto de destaque</span>
+      @if (coverUrl()) {
+      <div class="create-post__cover-wrap">
+        <img class="create-post__cover-img" [src]="coverUrl()!" alt="Pré-visualização da foto de destaque" />
+        <button
+          type="button"
+          class="create-post__change"
+          (click)="onPickCoverClick()"
+          aria-label="Trocar foto de destaque"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M4 12a8 8 0 0 1 13.66-5.66M20 4v5h-5M20 12a8 8 0 0 1-13.66 5.66M4 20v-5h5"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Trocar
+        </button>
+      </div>
+      } @else {
+      <button
+        type="button"
+        class="create-post__cover-empty"
+        (click)="onPickCoverClick()"
+      >
+        <span class="create-post__cover-empty-icon" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
+            <path d="M3 16l5-4 3 2.5 4-5 6 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="create-post__cover-empty-text">Adicionar foto de destaque</span>
+      </button>
+      }
+    </section>
+    }
+
+    <label class="create-post__title-field">
+      <span class="create-post__title-label">
+        {{ flow() === 'article' ? 'Título' : 'Título (opcional)' }}
+      </span>
+      <input
+        type="text"
+        class="create-post__title-input"
+        maxlength="80"
+        [placeholder]="flow() === 'article' ? 'Título do artigo' : 'Adicionar título'"
+        [ngModel]="title()"
+        (ngModelChange)="title.set($event)"
+      />
+    </label>
+
+    @if (flow() === 'article') {
+    <label class="create-post__title-field create-post__summary-field">
+      <span class="create-post__title-label">Resumo (opcional)</span>
+      <textarea
+        class="create-post__title-input create-post__summary-input"
+        maxlength="280"
+        rows="3"
+        placeholder="Resumo exibido nas listagens. Se vazio, usa o início do conteúdo."
+        [ngModel]="summary()"
+        (ngModelChange)="summary.set($event)"
+      ></textarea>
+      <span class="create-post__summary-count" aria-live="polite">
+        {{ summary().length }}/280
+      </span>
+    </label>
+    }
+
+    <section class="create-post__caption" [attr.aria-label]="flow() === 'article' ? 'Conteúdo' : 'Legenda'">
+      <span class="create-post__title-label">
+        {{ flow() === 'article' ? 'Conteúdo' : 'Legenda' }}
+      </span>
+      <app-post-content-editor
+        [mode]="flow() === 'article' ? 'article' : 'caption'"
+        [placeholder]="flow() === 'article' ? 'Escreva o artigo…' : 'Escreva uma legenda…'"
+        [ariaLabel]="flow() === 'article' ? 'Conteúdo do artigo' : 'Legenda da postagem'"
+        [ngModel]="contentHtml()"
+        (ngModelChange)="onContentHtmlChange($event)"
+        (plainTextChange)="onContentPlainChange($event)"
+      />
+    </section>
+
+    <section class="create-post__category" aria-label="Categoria">
+      <span class="create-post__title-label">Categoria</span>
+      @if (categoriesLoading()) {
+      <p class="create-post__category-hint">A carregar categorias…</p>
+      } @else if (categories().length === 0) {
+      <p class="create-post__category-hint">Nenhuma categoria disponível.</p>
+      } @else {
+      <div class="create-post__chips" role="listbox" aria-label="Escolher categoria">
+        @for (cat of categories(); track cat.id) {
+        <button
+          type="button"
+          role="option"
+          class="create-post__chip"
+          [class.create-post__chip--active]="selectedCategoryId() === cat.id"
+          [attr.aria-selected]="selectedCategoryId() === cat.id"
+          (click)="selectCategory(cat.id)"
+        >
+          {{ cat.name }}
+        </button>
+        }
+      </div>
+      }
+    </section>
+  </main>
+  }
+</div>

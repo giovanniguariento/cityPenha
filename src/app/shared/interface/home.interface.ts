@@ -74,7 +74,7 @@ export interface PostVideo {
 export interface PostDetail extends Post {
   content: string | SafeHtml;
   img?: string;
-  resume?: string;
+  resume?: string | SafeHtml;
   date?: string;
   onlyVideo?: boolean;
   video?: PostVideo;
@@ -126,6 +126,8 @@ export interface RecordAnonymousViewResponse {
 export interface Category {
   id: number;
   name: string;
+  /** Presente em GET /home. */
+  slug?: string;
   posts: Post[];
 }
 
@@ -214,6 +216,7 @@ export interface PublicUser {
   firebaseUid?: string | null;
   xp?: number | null;
   coins?: number | null;
+  canCreatePosts?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
 }

@@ -2,7 +2,18 @@
   display: block;
 }
 
+.admin-table-wrap.wp-table-wrap {
+  overflow-x: auto;
+}
+
 .wp-table {
+  @media (min-width: 721px) {
+    th,
+    td {
+      padding: 12px 14px;
+    }
+  }
+
   td.when {
     color: var(--admin-text-muted);
     font-variant-numeric: tabular-nums;
@@ -28,8 +39,10 @@
 
   code.mono {
     min-width: 0;
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -105,5 +118,34 @@
   .wp-table td.actions {
     justify-content: flex-start;
     padding-top: 8px;
+  }
+}
+
+.wp-post-toggle {
+  gap: 10px;
+  white-space: nowrap;
+
+  &__label {
+    min-width: 60px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--admin-text-muted);
+    transition: color 0.15s ease;
+  }
+
+  &.is-on &__label {
+    color: var(--admin-success);
+  }
+
+  &.is-busy {
+    cursor: progress;
+
+    input:disabled {
+      cursor: progress;
+    }
+
+    .wp-post-toggle__label {
+      color: var(--admin-text-soft);
+    }
   }
 }
