@@ -1,0 +1,52 @@
+<div class="media-insert" role="dialog" aria-modal="true" [attr.aria-labelledby]="'media-insert-title'">
+  <h2 mat-dialog-title id="media-insert-title" class="media-insert__title">{{ title }}</h2>
+
+  <div mat-dialog-content class="media-insert__content">
+    @if (step() === 'choose') {
+      <p class="media-insert__hint">Escolha de onde vem a mídia.</p>
+      <div class="media-insert__choices">
+        <button mat-stroked-button type="button" class="media-insert__choice" (click)="chooseGallery()">
+          Galeria do celular
+        </button>
+        <button mat-stroked-button type="button" class="media-insert__choice" (click)="chooseUrl()">
+          Colar URL
+        </button>
+      </div>
+    } @else {
+      <label class="media-insert__field">
+        <span class="visually-hidden">URL</span>
+        <span class="media-insert__shell">
+          <input
+            #urlInput
+            class="media-insert__input"
+            type="url"
+            inputmode="url"
+            autocomplete="url"
+            [placeholder]="urlPlaceholder"
+            [ngModel]="value"
+            (ngModelChange)="onValueChange($event)"
+            (keydown.enter)="$event.preventDefault(); confirmUrl()"
+          />
+        </span>
+      </label>
+      @if (error(); as err) {
+        <p class="media-insert__error" role="alert">{{ err }}</p>
+      }
+    }
+  </div>
+
+  <div mat-dialog-actions align="end" class="media-insert__actions">
+    @if (step() === 'url') {
+      <button mat-button type="button" class="media-insert__btn-cancel" (click)="backToChoose()">
+        Voltar
+      </button>
+      <button mat-flat-button color="primary" type="button" class="media-insert__btn-confirm" (click)="confirmUrl()">
+        Inserir
+      </button>
+    } @else {
+      <button mat-button type="button" class="media-insert__btn-cancel" (click)="cancel()">
+        Cancelar
+      </button>
+    }
+  </div>
+</div>

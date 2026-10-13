@@ -71,6 +71,7 @@ export class CreatePostPage implements OnInit, OnDestroy {
   readonly categories = signal<CreateCategoryOption[]>([]);
   readonly selectedCategoryId = signal<number | null>(null);
   readonly categoriesLoading = signal(true);
+  readonly categorySearchQuery = signal('');
 
   readonly showPicker = computed(() => this.flow() === null);
   readonly showComposer = computed(
@@ -79,25 +80,36 @@ export class CreatePostPage implements OnInit, OnDestroy {
       (this.flow() === 'video' && !!this.videoUrl())
   );
 
+  readonly filteredCategories = computed(() => {
+    const q = this.categorySearchQuery().trim().toLowerCase();
+    const list = this.categories();
+    if (!q) return list;
+    return list.filter((c) => c.name.toLowerCase().includes(q));
+  });
+
   readonly canPublish = computed(() => {
     const flow = this.flow();
     if (flow == null || this.publishing() || this.categoriesLoading()) return false;
     if (this.selectedCategoryId() == null) return false;
-    if (!this.contentPlain().trim()) return false;
-    if (flow === 'video' && !this.videoFile()) return false;
+    if (flow === 'video') {
+      if (!this.videoFile() || !this.contentPlain().trim()) return false;
+      return true;
+    }
     if (flow === 'article') {
       if (!this.title().trim() || !this.coverFile()) return false;
+      if (isEmptyPostHtml(this.contentHtml())) return false;
+      return true;
     }
-    return true;
+    return false;
   });
 
   ngOnInit(): void {
-    this.homeService
-      .getResourcesHome()
+    this.createPost
+      .listCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (home) => {
-          const opts = (home.categories ?? []).map((c) => ({ id: c.id, name: c.name }));
+        next: (list) => {
+          const opts = list.map((c) => ({ id: c.id, name: c.name }));
           this.categories.set(opts);
           if (opts.length && this.selectedCategoryId() == null) {
             this.selectedCategoryId.set(opts[0].id);
@@ -109,6 +121,10 @@ export class CreatePostPage implements OnInit, OnDestroy {
           this.feedback.showError('Não foi possível carregar as categorias.');
         },
       });
+  }
+
+  onCategorySearchInput(event: Event): void {
+    this.categorySearchQuery.set((event.target as HTMLInputElement).value);
   }
 
   ngOnDestroy(): void {
@@ -279,11 +295,11 @@ export class CreatePostPage implements OnInit, OnDestroy {
     }
 
     const contentHtml = sanitizePostArticleHtml(rawHtml);
-    const descriptionText = plainTextFromPostHtml(contentHtml);
-    if (!descriptionText) {
+    if (isEmptyPostHtml(contentHtml)) {
       this.feedback.showError('Escreva o conteúdo do artigo antes de publicar.');
       return;
     }
+    const descriptionText = plainTextFromPostHtml(contentHtml);
 
     this.publishing.set(true);
     from(prepareCoverImage(cover))
@@ -295,7 +311,7 @@ export class CreatePostPage implements OnInit, OnDestroy {
           return this.createPost.create({
             type: 'article',
             contentHtml,
-            descriptionText,
+            descriptionText: descriptionText || undefined,
             categoryId,
             title,
             summary: this.summary().trim() || undefined,

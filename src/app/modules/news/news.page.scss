@@ -368,6 +368,19 @@
     vertical-align: bottom;
   }
 
+  .article-body {
+    iframe,
+    video {
+      display: block;
+      box-sizing: border-box;
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      border: 0;
+    }
+  }
+
   .img-post {
     border-radius: 30px;
   }

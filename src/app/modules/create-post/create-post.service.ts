@@ -13,9 +13,47 @@ export interface CreatePostResult {
   onlyVideo: boolean;
 }
 
+export interface CreatePostCategory {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface ArticleMediaUploadResult {
+  id: number;
+  sourceUrl: string;
+  mimeType: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CreatePostService {
   private readonly http = inject(HttpClient);
+
+  listCategories(): Observable<CreatePostCategory[]> {
+    return this.http
+      .get<ApiSuccessEnvelope<{ categories: CreatePostCategory[] }>>(
+        `${environment.apiUrl}/post/categories`
+      )
+      .pipe(map((r) => r.data.categories ?? []));
+  }
+
+  /** Upload inline article image/video to WordPress Media Library. */
+  uploadArticleMedia(file: File | Blob, filename?: string): Observable<ArticleMediaUploadResult> {
+    const form = new FormData();
+    const part =
+      file instanceof File
+        ? file
+        : new File([file], filename || 'media.bin', {
+            type: file.type || 'application/octet-stream',
+          });
+    form.append('file', part);
+    return this.http
+      .post<ApiSuccessEnvelope<ArticleMediaUploadResult>>(
+        `${environment.apiUrl}/post/media`,
+        form
+      )
+      .pipe(map((r) => r.data));
+  }
 
   create(input: {
     type?: CreatePostType;

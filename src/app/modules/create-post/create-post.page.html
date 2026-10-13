@@ -196,8 +196,29 @@
       } @else if (categories().length === 0) {
       <p class="create-post__category-hint">Nenhuma categoria disponível.</p>
       } @else {
+      <div class="create-post__category-search" role="search">
+        <img
+          class="create-post__category-search-icon"
+          src="assets/search.svg"
+          alt=""
+          width="18"
+          height="18"
+        />
+        <input
+          type="search"
+          class="create-post__category-search-input"
+          placeholder="Pesquisar categoria"
+          autocomplete="off"
+          aria-label="Pesquisar categoria"
+          [value]="categorySearchQuery()"
+          (input)="onCategorySearchInput($event)"
+        />
+      </div>
+      @if (filteredCategories().length === 0) {
+      <p class="create-post__category-hint">Nenhuma categoria encontrada.</p>
+      } @else {
       <div class="create-post__chips" role="listbox" aria-label="Escolher categoria">
-        @for (cat of categories(); track cat.id) {
+        @for (cat of filteredCategories(); track cat.id) {
         <button
           type="button"
           role="option"
@@ -210,6 +231,7 @@
         </button>
         }
       </div>
+      }
       }
     </section>
   </main>

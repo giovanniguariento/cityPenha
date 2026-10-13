@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   OnDestroy,
   PLATFORM_ID,
+  ViewChild,
   effect,
   forwardRef,
   inject,
@@ -22,10 +24,26 @@ import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import { TiptapEditorDirective } from 'ngx-tiptap';
+import { finalize, from, switchMap } from 'rxjs';
 import {
   UrlPromptDialogComponent,
   UrlPromptDialogData,
 } from '../url-prompt-dialog/url-prompt-dialog.component';
+import {
+  MediaInsertDialogComponent,
+  MediaInsertDialogData,
+  MediaInsertDialogResult,
+  MediaInsertKind,
+} from '../media-insert-dialog/media-insert-dialog.component';
+import { CreatePostService } from '../../../modules/create-post/create-post.service';
+import { FeedbackService } from '../../services/feedback.service';
+import { apiErrorMessage } from '../../utils/api-error-message';
+import { prepareCoverImage } from '../../utils/prepare-cover-image';
+import { normalizeVideoEmbedUrl } from '../../utils/normalize-video-embed-url';
+import {
+  ArticleIframe,
+  ArticleVideo,
+} from '../../utils/tiptap-article-media.extensions';
 
 export type PostContentEditorMode = 'caption' | 'article';
 
@@ -48,9 +66,14 @@ export class PostContentEditorComponent implements ControlValueAccessor, OnDestr
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
+  private readonly createPost = inject(CreatePostService);
+  private readonly feedback = inject(FeedbackService);
   private lastMode: PostContentEditorMode | null = null;
 
-  /** Caption = short allowlist; article = headings, quote, hr, image. */
+  @ViewChild('imageFileInput') private readonly imageFileInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('videoFileInput') private readonly videoFileInput?: ElementRef<HTMLInputElement>;
+
+  /** Caption = short allowlist; article = headings, quote, hr, image, video. */
   readonly mode = input<PostContentEditorMode>('caption');
   readonly placeholder = input('Escreva…');
   readonly ariaLabel = input('Conteúdo da postagem');
@@ -59,6 +82,7 @@ export class PostContentEditorComponent implements ControlValueAccessor, OnDestr
   readonly plainTextChange = output<string>();
 
   readonly editor = signal<Editor | null>(null);
+  readonly uploading = signal(false);
   readonly active = signal({
     bold: false,
     italic: false,
@@ -204,33 +228,204 @@ export class PostContentEditorComponent implements ControlValueAccessor, OnDestr
   }
 
   insertImage(): void {
-    const ed = this.editor();
-    if (!ed || this.mode() !== 'article') return;
-    const data: UrlPromptDialogData = {
-      title: 'URL da imagem',
-      placeholder: 'https://',
-      initialValue: '',
-      allowEmpty: false,
-      mode: 'image',
-      confirmLabel: 'Inserir',
-    };
+    this.openMediaInsert('image');
+  }
+
+  insertVideo(): void {
+    this.openMediaInsert('video');
+  }
+
+  onImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || this.mode() !== 'article') return;
+    if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+      this.feedback.showError('Selecione uma imagem (JPEG, PNG ou WebP).');
+      return;
+    }
+    this.uploadAndInsertImage(file);
+  }
+
+  onVideoFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || this.mode() !== 'article') return;
+    if (!/^video\/(mp4|webm|quicktime)$/i.test(file.type)) {
+      this.feedback.showError('Selecione um vídeo (MP4, WebM ou MOV).');
+      return;
+    }
+    this.uploadAndInsertVideo(file);
+  }
+
+  private openMediaInsert(kind: MediaInsertKind): void {
+    if (this.mode() !== 'article' || this.uploading()) return;
 
     this.dialog
-      .open<UrlPromptDialogComponent, UrlPromptDialogData, string | null>(UrlPromptDialogComponent, {
-        data,
+      .open<
+        MediaInsertDialogComponent,
+        MediaInsertDialogData,
+        MediaInsertDialogResult | null
+      >(MediaInsertDialogComponent, {
+        data: { kind },
         width: 'min(92vw, 420px)',
         autoFocus: false,
         restoreFocus: true,
       })
       .afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((url) => {
-        if (!url?.trim()) return;
-        const current = this.editor();
-        if (!current || this.mode() !== 'article') return;
-        const trimmed = url.trim();
-        if (!/^https:\/\//i.test(trimmed)) return;
-        current.chain().focus().setImage({ src: trimmed, alt: '' }).run();
+      .subscribe((result) => {
+        if (!result || this.mode() !== 'article') return;
+        if (result.source === 'gallery') {
+          queueMicrotask(() => {
+            const el =
+              kind === 'image'
+                ? this.imageFileInput?.nativeElement
+                : this.videoFileInput?.nativeElement;
+            el?.click();
+          });
+          return;
+        }
+        if (kind === 'image') {
+          this.insertImageFromUrl(result.url, { requireHttps: true });
+        } else {
+          this.insertVideoFromUrl(result.url);
+        }
+      });
+  }
+
+  private insertImageFromUrl(url: string, opts?: { requireHttps?: boolean }): void {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    const requireHttps = opts?.requireHttps !== false;
+    // Pasted URLs must be https; WP uploads may return http:// or root-relative `/`.
+    if (requireHttps && !/^https:\/\//i.test(trimmed)) return;
+    if (!requireHttps && !isSafeMediaSrc(trimmed)) return;
+    const current = this.editor();
+    if (!current || this.mode() !== 'article') return;
+    current
+      .chain()
+      .focus('end')
+      .insertContent({
+        type: 'image',
+        attrs: { src: trimmed, alt: '' },
+      })
+      .run();
+  }
+
+  private insertVideoFromUrl(url: string): void {
+    const normalized = normalizeVideoEmbedUrl(url);
+    if (!normalized) {
+      this.feedback.showError(
+        'Use um link https de arquivo (mp4/webm), YouTube ou Vimeo.'
+      );
+      return;
+    }
+    const current = this.editor();
+    if (!current || this.mode() !== 'article') return;
+
+    if (normalized.kind === 'embed') {
+      current
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'articleIframe',
+          attrs: {
+            src: normalized.src,
+            width: '560',
+            height: '315',
+            title: 'Vídeo embutido',
+            allow:
+              'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+            allowfullscreen: true,
+            referrerpolicy: 'strict-origin-when-cross-origin',
+            loading: 'lazy',
+            frameborder: '0',
+          },
+        })
+        .run();
+      return;
+    }
+
+    current
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'articleVideo',
+        attrs: { src: normalized.src, controls: true },
+      })
+      .run();
+  }
+
+  private uploadAndInsertImage(file: File): void {
+    this.uploading.set(true);
+    from(prepareCoverImage(file))
+      .pipe(
+        switchMap((prepared) => {
+          if (!prepared) {
+            throw new Error('IMAGE_PREPARE_FAILED');
+          }
+          return this.createPost.uploadArticleMedia(prepared, 'article-image.jpg');
+        }),
+        finalize(() => this.uploading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (media) => {
+          const src = (media.sourceUrl ?? '').trim();
+          if (!src || !isSafeMediaSrc(src)) {
+            this.feedback.showError('URL de imagem inválida após o envio.');
+            return;
+          }
+          // Keep WP URL as-is (often http://localhost in dev). Do not force https.
+          this.insertImageFromUrl(src, { requireHttps: false });
+        },
+        error: (err) => {
+          if (err instanceof Error && err.message === 'IMAGE_PREPARE_FAILED') {
+            this.feedback.showError(
+              'Não foi possível processar a imagem. Tente outra foto.'
+            );
+            return;
+          }
+          this.feedback.showError(
+            apiErrorMessage(err, 'Não foi possível enviar a imagem.')
+          );
+        },
+      });
+  }
+
+  private uploadAndInsertVideo(file: File): void {
+    this.uploading.set(true);
+    this.createPost
+      .uploadArticleMedia(file)
+      .pipe(
+        finalize(() => this.uploading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (media) => {
+          const src = (media.sourceUrl ?? '').trim();
+          if (!src || !isSafeMediaSrc(src)) {
+            this.feedback.showError('URL de vídeo inválida após o envio.');
+            return;
+          }
+          const current = this.editor();
+          if (!current || this.mode() !== 'article') return;
+          current
+            .chain()
+            .focus('end')
+            .insertContent({
+              type: 'articleVideo',
+              attrs: { src, controls: true },
+            })
+            .run();
+        },
+        error: (err) => {
+          this.feedback.showError(
+            apiErrorMessage(err, 'Não foi possível enviar o vídeo.')
+          );
+        },
       });
   }
 
@@ -264,6 +459,8 @@ export class PostContentEditorComponent implements ControlValueAccessor, OnDestr
                 allowBase64: false,
                 HTMLAttributes: { loading: 'lazy' },
               }),
+              ArticleVideo,
+              ArticleIframe,
             ]
           : []),
       ],
@@ -320,6 +517,15 @@ function isSafeHref(href: string): boolean {
   return (
     trimmed.startsWith('http://') ||
     trimmed.startsWith('https://') ||
+    trimmed.startsWith('/')
+  );
+}
+
+function isSafeMediaSrc(src: string): boolean {
+  const trimmed = src.trim();
+  return (
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('http://') ||
     trimmed.startsWith('/')
   );
 }

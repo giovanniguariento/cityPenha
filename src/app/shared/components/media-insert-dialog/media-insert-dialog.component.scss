@@ -1,0 +1,122 @@
+@use '../../../../styles/variables' as v;
+
+:host {
+  display: block;
+}
+
+.media-insert {
+  padding: 8px 4px 0;
+  min-width: min(100%, 320px);
+  font-family: 'Lato', sans-serif;
+  color: v.$text-primary;
+}
+
+.media-insert__title {
+  margin: 0 0 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #242424;
+}
+
+.media-insert__content {
+  padding-top: 4px;
+  overflow: visible;
+}
+
+.media-insert__hint {
+  margin: 0 0 12px 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: v.$text-muted;
+}
+
+.media-insert__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.media-insert__choice {
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.media-insert__field {
+  display: block;
+  margin: 0;
+}
+
+.media-insert__shell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  min-height: 56px;
+  border-radius: 999px;
+  background: #f1f1f1;
+  box-sizing: border-box;
+}
+
+.media-insert__shell:focus-within {
+  outline: 2px solid v.$brand-primary;
+  outline-offset: 2px;
+}
+
+.media-insert__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  color: v.$text-primary;
+  outline: none;
+
+  &::placeholder {
+    color: #9098a3;
+  }
+}
+
+.media-insert__error {
+  margin: 10px 0 0 4px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: #b3261e;
+}
+
+.media-insert__actions {
+  padding-top: 16px;
+  gap: 8px;
+}
+
+.media-insert__btn-cancel {
+  font-weight: 600;
+  border-radius: 6px;
+  text-transform: none;
+}
+
+.media-insert__btn-confirm {
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

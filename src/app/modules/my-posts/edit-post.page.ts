@@ -21,6 +21,7 @@ import {
 } from '../../shared/utils/sanitize-post-description-html';
 import { PostContentEditorComponent } from '../../shared/components/post-content-editor/post-content-editor.component';
 import { HomeService } from '../home/services/home.service';
+import { CreatePostService } from '../create-post/create-post.service';
 import { MyPostDetail, MyPostsService, MyPostType } from './my-posts.service';
 
 interface CategoryOption {
@@ -40,6 +41,7 @@ export class EditPostPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly myPosts = inject(MyPostsService);
+  private readonly createPost = inject(CreatePostService);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
   private readonly destroyRef = inject(DestroyRef);
@@ -58,16 +60,28 @@ export class EditPostPage implements OnInit {
   readonly categories = signal<CategoryOption[]>([]);
   readonly selectedCategoryId = signal<number | null>(null);
   readonly categoriesLoading = signal(true);
+  readonly categorySearchQuery = signal('');
   readonly videoUrl = signal<string | null>(null);
   readonly thumbnailUrl = signal<string | null>(null);
   /** Slug carregado na edição — usado para limpar o cache do detalhe após salvar. */
   private originalSlug: string | null = null;
 
+  readonly filteredCategories = computed(() => {
+    const q = this.categorySearchQuery().trim().toLowerCase();
+    const list = this.categories();
+    if (!q) return list;
+    return list.filter((c) => c.name.toLowerCase().includes(q));
+  });
+
   readonly canSave = computed(() => {
     if (this.loading() || this.saving() || this.categoriesLoading()) return false;
     if (this.selectedCategoryId() == null) return false;
+    if (this.postType() === 'article') {
+      if (!this.title().trim()) return false;
+      if (isEmptyPostHtml(this.contentHtml())) return false;
+      return true;
+    }
     if (!this.contentPlain().trim()) return false;
-    if (this.postType() === 'article' && !this.title().trim()) return false;
     return true;
   });
 
@@ -80,12 +94,12 @@ export class EditPostPage implements OnInit {
     }
     this.postId.set(id);
 
-    this.homeService
-      .getResourcesHome()
+    this.createPost
+      .listCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (home) => {
-          const opts = (home.categories ?? []).map((c) => ({ id: c.id, name: c.name }));
+        next: (list) => {
+          const opts = list.map((c) => ({ id: c.id, name: c.name }));
           this.categories.set(opts);
           this.categoriesLoading.set(false);
         },
@@ -105,6 +119,10 @@ export class EditPostPage implements OnInit {
           this.loadError.set(apiErrorMessage(err, 'Não foi possível carregar a postagem.'));
         },
       });
+  }
+
+  onCategorySearchInput(event: Event): void {
+    this.categorySearchQuery.set((event.target as HTMLInputElement).value);
   }
 
   onBack(): void {
@@ -196,7 +214,7 @@ export class EditPostPage implements OnInit {
       return;
     }
     const contentHtml = sanitizePostArticleHtml(rawHtml);
-    if (!plainTextFromPostHtml(contentHtml)) {
+    if (isEmptyPostHtml(contentHtml)) {
       this.feedback.showError('Escreva o conteúdo do artigo antes de salvar.');
       return;
     }

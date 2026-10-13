@@ -95,11 +95,49 @@
     <button type="button" class="post-content-editor__btn" (click)="insertHorizontalRule()" aria-label="Separador">
       ―
     </button>
-    <button type="button" class="post-content-editor__btn" (click)="insertImage()" aria-label="Imagem">
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      (click)="insertImage()"
+      aria-label="Imagem"
+      [disabled]="uploading()"
+    >
       Img
+    </button>
+    <button
+      type="button"
+      class="post-content-editor__btn"
+      (click)="insertVideo()"
+      aria-label="Vídeo"
+      [disabled]="uploading()"
+    >
+      Vídeo
     </button>
     }
   </div>
+
+  <input
+    #imageFileInput
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    class="post-content-editor__file"
+    (change)="onImageFileSelected($event)"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+  <input
+    #videoFileInput
+    type="file"
+    accept="video/mp4,video/webm,video/quicktime"
+    class="post-content-editor__file"
+    (change)="onVideoFileSelected($event)"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+
+  @if (uploading()) {
+  <p class="post-content-editor__upload" role="status">A enviar mídia…</p>
+  }
 
   @if (editor(); as ed) {
   <tiptap-editor class="post-content-editor__surface" [editor]="ed"></tiptap-editor>
