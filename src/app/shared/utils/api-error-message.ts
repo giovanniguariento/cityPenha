@@ -32,6 +32,9 @@ export function apiErrorMessage(err: unknown, fallback = GENERIC): string {
     if (err.status === 0) {
       return 'Sem ligação à internet. Verifique a rede e tente de novo.';
     }
+    if (err.status === 413) {
+      return 'O ficheiro é demasiado grande. Use no máximo 100 MB.';
+    }
     // Erros de servidor (5xx) nunca expõem detalhe técnico ao utilizador.
     // O corpo cru (ex.: "pool timeout...") vai apenas para o console/monitoramento.
     if (err.status >= 500) {

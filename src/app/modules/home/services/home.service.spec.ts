@@ -33,13 +33,37 @@ describe('HomeService', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/user/me/avatar`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toBeInstanceOf(FormData);
-    expect((req.request.body as FormData).get('file')).toBe(file);
+    const uploaded = (req.request.body as FormData).get('file');
+    expect(uploaded).toBeInstanceOf(File);
+    expect((uploaded as File).name).toBe('avatar.png');
     req.flush({
       data: {
         id: 'u1',
         email: 'a@b.com',
         name: 'User',
         photoUrl: 'https://cdn.example/avatar.png',
+      },
+    });
+  });
+
+  it('uploadAvatar appends Blob as avatar.jpg', () => {
+    const blob = new Blob(['x'], { type: 'image/jpeg' });
+
+    service.uploadAvatar(blob).subscribe((res) => {
+      expect(res.photoUrl).toBe('https://cdn.example/avatar.jpg');
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/user/me/avatar`);
+    expect(req.request.method).toBe('POST');
+    const uploaded = (req.request.body as FormData).get('file');
+    expect(uploaded).toBeInstanceOf(File);
+    expect((uploaded as File).name).toBe('avatar.jpg');
+    req.flush({
+      data: {
+        id: 'u1',
+        email: 'a@b.com',
+        name: 'User',
+        photoUrl: 'https://cdn.example/avatar.jpg',
       },
     });
   });

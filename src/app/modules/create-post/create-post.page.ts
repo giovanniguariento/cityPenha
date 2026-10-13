@@ -14,6 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { APP_ASSETS } from '../../shared/constants/app-assets';
+import { SHORT_VIDEO_MAX_BYTES } from '../../shared/constants/media-upload-limits';
 import { FeedbackService } from '../../shared/services/feedback.service';
 import { apiErrorMessage } from '../../shared/utils/api-error-message';
 import { captureVideoPoster } from '../../shared/utils/capture-video-poster';
@@ -172,6 +173,10 @@ export class CreatePostPage implements OnInit, OnDestroy {
     if (!file) return;
     if (!file.type.startsWith('video/')) {
       this.feedback.showError('Selecione um arquivo de vídeo.');
+      return;
+    }
+    if (file.size > SHORT_VIDEO_MAX_BYTES) {
+      this.feedback.showError('O vídeo deve ter no máximo 100 MB.');
       return;
     }
     this.revokePreview();

@@ -17,8 +17,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { forkJoin, from } from 'rxjs';
+import { switchMap, take } from 'rxjs/operators';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
 import { LegalFooterComponent } from '../../../shared/components/legal-footer/legal-footer.component';
 import { ProfilePageHeaderComponent } from '../../../shared/components/profile-page-header/profile-page-header.component';
@@ -26,11 +26,18 @@ import { UpdateMeRequest } from '../../../shared/interface/home.interface';
 import { FeedbackService } from '../../../shared/services/feedback.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { apiErrorMessage } from '../../../shared/utils/api-error-message';
+import { prepareAvatarImage } from '../../../shared/utils/prepare-avatar-image';
 import { UserStateService } from '../../../core/state/user-state.service';
 import { HomeService } from '../../home/services/home.service';
 
-const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 const AVATAR_ACCEPT = ['image/jpeg', 'image/png', 'image/webp'] as const;
+
+/** Human-readable size in MB for lay user feedback (original file, before compress). */
+function formatFileSizeMb(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  const rounded = mb >= 10 ? mb.toFixed(0) : mb.toFixed(1);
+  return `${rounded.replace('.', ',')} MB`;
+}
 
 function nicknameOptionalMinLength(control: AbstractControl): ValidationErrors | null {
   const v = (control.value ?? '').toString().trim();
@@ -143,22 +150,30 @@ export class EditProfilePage implements OnInit {
       this.feedback.showError('Use JPEG, PNG ou WebP.');
       return;
     }
-    if (file.size > AVATAR_MAX_BYTES) {
-      this.feedback.showError('A imagem deve ter no máximo 2 MB.');
-      return;
-    }
 
     const previousUrl = this.persistedAvatarUrl;
-    this.revokePreviewObjectUrl();
-    this.previewObjectUrl = URL.createObjectURL(file);
-    this.avatarUrl.set(this.previewObjectUrl);
-
     this.avatarUploading.set(true);
     this.cdr.markForCheck();
 
-    this.homeService
-      .uploadAvatar(file)
-      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+    const originalSizeLabel = formatFileSizeMb(file.size);
+
+    from(prepareAvatarImage(file))
+      .pipe(
+        switchMap((prepared) => {
+          if (!prepared.ok) {
+            throw new Error(
+              prepared.reason === 'too_large' ? 'AVATAR_TOO_LARGE' : 'AVATAR_PREPARE_FAILED'
+            );
+          }
+          this.revokePreviewObjectUrl();
+          this.previewObjectUrl = URL.createObjectURL(prepared.blob);
+          this.avatarUrl.set(this.previewObjectUrl);
+          this.cdr.markForCheck();
+          return this.homeService.uploadAvatar(prepared.blob);
+        }),
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe({
         next: (user) => {
           const newUrl = (user.photoUrl && user.photoUrl.trim()) || null;
@@ -178,7 +193,15 @@ export class EditProfilePage implements OnInit {
           this.revokePreviewObjectUrl();
           this.avatarUrl.set(previousUrl);
           this.avatarUploading.set(false);
-          this.feedback.showError(apiErrorMessage(err, 'Não foi possível atualizar a foto.'));
+          if (err instanceof Error && err.message === 'AVATAR_TOO_LARGE') {
+            this.feedback.showError(
+              `Não foi possível reduzir sua imagem de ${originalSizeLabel} para o limite de 2 MB. Tente outra foto.`
+            );
+          } else if (err instanceof Error && err.message === 'AVATAR_PREPARE_FAILED') {
+            this.feedback.showError('Não foi possível processar a imagem. Tente outra foto.');
+          } else {
+            this.feedback.showError(apiErrorMessage(err, 'Não foi possível atualizar a foto.'));
+          }
           this.cdr.markForCheck();
         },
       });

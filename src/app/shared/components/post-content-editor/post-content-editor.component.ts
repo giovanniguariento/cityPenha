@@ -36,6 +36,10 @@ import {
   MediaInsertKind,
 } from '../media-insert-dialog/media-insert-dialog.component';
 import { CreatePostService } from '../../../modules/create-post/create-post.service';
+import {
+  ARTICLE_IMAGE_MAX_BYTES,
+  SHORT_VIDEO_MAX_BYTES,
+} from '../../constants/media-upload-limits';
 import { FeedbackService } from '../../services/feedback.service';
 import { apiErrorMessage } from '../../utils/api-error-message';
 import { prepareCoverImage } from '../../utils/prepare-cover-image';
@@ -244,6 +248,10 @@ export class PostContentEditorComponent implements ControlValueAccessor, OnDestr
       this.feedback.showError('Selecione uma imagem (JPEG, PNG ou WebP).');
       return;
     }
+    if (file.size > ARTICLE_IMAGE_MAX_BYTES) {
+      this.feedback.showError('A imagem deve ter no máximo 5 MB.');
+      return;
+    }
     this.uploadAndInsertImage(file);
   }
 
@@ -254,6 +262,10 @@ export class PostContentEditorComponent implements ControlValueAccessor, OnDestr
     if (!file || this.mode() !== 'article') return;
     if (!/^video\/(mp4|webm|quicktime)$/i.test(file.type)) {
       this.feedback.showError('Selecione um vídeo (MP4, WebM ou MOV).');
+      return;
+    }
+    if (file.size > SHORT_VIDEO_MAX_BYTES) {
+      this.feedback.showError('O vídeo deve ter no máximo 100 MB.');
       return;
     }
     this.uploadAndInsertVideo(file);

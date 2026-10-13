@@ -195,10 +195,10 @@ export class HomeService {
       .pipe(this.unwrapData<PublicUser>());
   }
 
-  /** POST /user/me/avatar — multipart, campo `file` (JPEG/PNG/WebP, máx. 2 MB). */
-  uploadAvatar(file: File): Observable<PublicUser> {
+  /** POST /user/me/avatar — multipart, campo `file` (máx. 2 MB após compressão no cliente). */
+  uploadAvatar(file: File | Blob): Observable<PublicUser> {
     const form = new FormData();
-    form.append('file', file);
+    form.append('file', file, file instanceof File ? file.name : 'avatar.jpg');
     return this.http
       .post<ApiSuccessEnvelope<PublicUser>>(`${environment.apiUrl}/user/me/avatar`, form)
       .pipe(this.unwrapData<PublicUser>());
