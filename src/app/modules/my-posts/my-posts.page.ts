@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { APP_ASSETS } from '../../shared/constants/app-assets';
@@ -17,12 +16,20 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { MineListCardComponent } from '../../shared/components/mine-list-card/mine-list-card.component';
 import { MyPostListItem, MyPostsService } from './my-posts.service';
+
+function formatPostDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
 
 @Component({
   selector: 'app-my-posts',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, MineListCardComponent],
   templateUrl: './my-posts.page.html',
   styleUrl: './my-posts.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -98,7 +105,16 @@ export class MyPostsPage implements OnInit {
       });
   }
 
-  statusLabel(status: string): string {
+  subtitleFor(item: MyPostListItem): string[] {
+    const date = formatPostDate(item.date);
+    return [
+      item.type === 'video' ? 'Vídeo' : 'Artigo',
+      this.statusLabel(item.status),
+      ...(date ? [date] : []),
+    ];
+  }
+
+  private statusLabel(status: string): string {
     switch (status) {
       case 'publish':
         return 'Publicado';
@@ -109,10 +125,6 @@ export class MyPostsPage implements OnInit {
       default:
         return status;
     }
-  }
-
-  typeLabel(type: MyPostListItem['type']): string {
-    return type === 'video' ? 'Vídeo' : 'Artigo';
   }
 
   private deletePost(item: MyPostListItem): void {

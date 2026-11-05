@@ -217,6 +217,7 @@ export interface PublicUser {
   xp?: number | null;
   coins?: number | null;
   canCreatePosts?: boolean;
+  canCreateExperiences?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
 }

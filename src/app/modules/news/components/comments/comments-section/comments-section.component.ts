@@ -19,6 +19,7 @@ import { Auth } from '@angular/fire/auth';
 import { takeUntil } from 'rxjs';
 import { CommentView } from '../../../../../shared/interface/home.interface';
 import { CommentService } from '../../../services/comment.service';
+import { ExperienceService } from '../../../../experiences/services/experience.service';
 import { HomeService } from '../../../../home/services/home.service';
 import { FeedbackService } from '../../../../../shared/services/feedback.service';
 import { MissionFeedbackService } from '../../../../../shared/services/mission-feedback.service';
@@ -28,7 +29,7 @@ import { apiErrorMessage } from '../../../../../shared/utils/api-error-message';
 import { ReadRewardToastComponent } from '../../../../../shared/components/read-reward-toast/read-reward-toast.component';
 import { LoginRequiredDialogComponent } from '../../../../../shared/components/login-required-dialog/login-required-dialog.component';
 import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
-import { CommentItemComponent } from '../comment-item/comment-item.component';
+import { CommentItemComponent, CommentTargetKind } from '../comment-item/comment-item.component';
 import { CommentInputComponent } from '../comment-input/comment-input.component';
 
 @Component({
@@ -46,12 +47,16 @@ import { CommentInputComponent } from '../comment-input/comment-input.component'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommentsSectionComponent extends Destroyable implements OnInit {
-  @Input({ required: true }) wordpressPostId!: number;
+  /** WordPress post comments (news). Mutually exclusive with `experienceId`. */
+  @Input() wordpressPostId: number | null = null;
+  /** Agenda experience comments. Mutually exclusive with `wordpressPostId`. */
+  @Input() experienceId: string | null = null;
   @Input() currentUserId: string | null = null;
   readonly pastArticleStart = input(false);
 
   private readonly platformId = inject(PLATFORM_ID);
   private readonly commentService = inject(CommentService);
+  private readonly experienceService = inject(ExperienceService);
   private readonly homeService = inject(HomeService);
   private readonly feedback = inject(FeedbackService);
   private readonly missionFeedback = inject(MissionFeedbackService);
@@ -188,24 +193,38 @@ export class CommentsSectionComponent extends Destroyable implements OnInit {
     }
   }
 
+  get targetKind(): CommentTargetKind {
+    return this.experienceId ? 'experience' : 'post';
+  }
+
   private loadComments(cursor?: string): void {
     this.loading.set(true);
     this.loadError.set(null);
 
-    this.commentService
-      .listTopLevel(this.wordpressPostId, { cursor, limit: 10 })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.loading.set(false);
-          this.comments.update((prev) => cursor ? [...prev, ...res.data] : res.data);
-          this.nextCursor.set(res.meta.nextCursor);
-        },
-        error: (err: unknown) => {
-          this.loading.set(false);
-          this.loadError.set(apiErrorMessage(err, 'Não foi possível carregar os comentários.'));
-        },
-      });
+    const list$ =
+      this.experienceId
+        ? this.experienceService.listComments(this.experienceId, { cursor, limit: 10 })
+        : this.wordpressPostId != null
+          ? this.commentService.listTopLevel(this.wordpressPostId, { cursor, limit: 10 })
+          : null;
+
+    if (!list$) {
+      this.loading.set(false);
+      this.loadError.set('Comentários indisponíveis.');
+      return;
+    }
+
+    list$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.loading.set(false);
+        this.comments.update((prev) => (cursor ? [...prev, ...res.data] : res.data));
+        this.nextCursor.set(res.meta.nextCursor);
+      },
+      error: (err: unknown) => {
+        this.loading.set(false);
+        this.loadError.set(apiErrorMessage(err, 'Não foi possível carregar os comentários.'));
+      },
+    });
   }
 
   loadMore(): void {
@@ -222,53 +241,68 @@ export class CommentsSectionComponent extends Destroyable implements OnInit {
     }
 
     this.submitting.set(true);
-    this.commentService
-      .create(this.wordpressPostId, event.content, event.parentId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.submitting.set(false);
+    const create$ =
+      this.experienceId
+        ? this.experienceService.createComment(this.experienceId, event.content, event.parentId)
+        : this.wordpressPostId != null
+          ? this.commentService.create(this.wordpressPostId, event.content, event.parentId)
+          : null;
 
-          if (event.parentId) {
-            this.comments.update((list) =>
-              list.map((c) =>
-                c.id === event.parentId
-                  ? { ...c, replyCount: (c.replyCount ?? 0) + 1 }
-                  : c
-              )
-            );
-          } else {
-            this.comments.update((list) => [res.comment, ...list]);
-          }
+    if (!create$) {
+      this.submitting.set(false);
+      return;
+    }
 
-          this.replyingTo.set(null);
+    create$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.submitting.set(false);
 
+        if (event.parentId) {
+          this.comments.update((list) =>
+            list.map((c) =>
+              c.id === event.parentId
+                ? { ...c, replyCount: (c.replyCount ?? 0) + 1 }
+                : c
+            )
+          );
+        } else {
+          this.comments.update((list) => [res.comment, ...list]);
+        }
+
+        this.replyingTo.set(null);
+
+        if (!this.experienceId) {
           this.homeService.invalidateHomeFeedCache();
+        }
 
-          if (res.missions) {
-            this.missionFeedback.handleMissionsUpdate(res.missions);
-          }
+        if (res.missions) {
+          this.missionFeedback.handleMissionsUpdate(res.missions);
+        }
 
-          const xpReward = res.rewards?.find((r) => r.source?.startsWith('COMMENT_XP'));
-          if (xpReward && xpReward.xpDelta > 0) {
-            try {
-              this.snackBar.openFromComponent(ReadRewardToastComponent, {
-                data: { points: xpReward.xpDelta },
-                duration: 3500,
-                horizontalPosition: 'right',
-                verticalPosition: 'bottom',
-                panelClass: ['read-reward-snackbar'],
-              });
-            } catch {
-              this.feedback.showSuccess(`+${xpReward.xpDelta} XP por comentar!`);
-            }
+        const xpReward = res.rewards?.find(
+          (r) =>
+            r.source?.startsWith('COMMENT_XP') ||
+            r.source?.startsWith('EXPERIENCE_COMMENT_XP')
+        );
+        if (xpReward && xpReward.xpDelta > 0) {
+          try {
+            this.snackBar.openFromComponent(ReadRewardToastComponent, {
+              data: { points: xpReward.xpDelta },
+              duration: 3500,
+              horizontalPosition: 'right',
+              verticalPosition: 'bottom',
+              panelClass: ['read-reward-snackbar'],
+            });
+          } catch {
+            this.feedback.showSuccess(`+${xpReward.xpDelta} XP por comentar!`);
           }
-        },
-        error: (err: unknown) => {
-          this.submitting.set(false);
-          this.feedback.showError(apiErrorMessage(err, 'Não foi possível publicar o comentário.'));
-        },
-      });
+        }
+      },
+      error: (err: unknown) => {
+        this.submitting.set(false);
+        this.feedback.showError(apiErrorMessage(err, 'Não foi possível publicar o comentário.'));
+      },
+    });
   }
 
   onLikeComment(event: { commentId: string; liked: boolean; likeCount: number }): void {
@@ -303,18 +337,20 @@ export class CommentsSectionComponent extends Destroyable implements OnInit {
       .subscribe((confirmed) => {
         if (!confirmed) return;
 
-        this.commentService
-          .delete(commentId)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: () => {
-              this.comments.update((list) => list.filter((c) => c.id !== commentId));
-              this.lastDeletedCommentId.set(commentId);
-            },
-            error: (err: unknown) => {
-              this.feedback.showError(apiErrorMessage(err, 'Não foi possível excluir o comentário.'));
-            },
-          });
+        const delete$ =
+          this.experienceId
+            ? this.experienceService.deleteComment(commentId)
+            : this.commentService.delete(commentId);
+
+        delete$.pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.comments.update((list) => list.filter((c) => c.id !== commentId));
+            this.lastDeletedCommentId.set(commentId);
+          },
+          error: (err: unknown) => {
+            this.feedback.showError(apiErrorMessage(err, 'Não foi possível excluir o comentário.'));
+          },
+        });
       });
   }
 

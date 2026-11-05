@@ -129,6 +129,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
   readonly apiError = signal<string | null>(null);
   /** Shown when the user can create short posts / articles. */
   readonly canCreatePosts = signal(false);
+  readonly canCreateExperiences = signal(false);
 
   constructor() {
     super();
@@ -164,6 +165,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
           if (!fbUser) {
             this.stats = [];
             this.canCreatePosts.set(false);
+            this.canCreateExperiences.set(false);
             this.apiLoading.set(false);
             this.apiError.set(null);
             return of<UserMePayload | null>(null);
@@ -227,6 +229,7 @@ export class ProfilePage extends Destroyable implements AfterViewInit {
       level: res.level?.levelNumber ?? current.level,
     }));
     this.canCreatePosts.set(u.canCreatePosts === true);
+    this.canCreateExperiences.set(u.canCreateExperiences === true);
     const missionsCount = Number(res.completedMissionsCount ?? 0);
     this.stats = this.buildStats(u, missionsCount);
     this.missions.set(res.missions ?? []);

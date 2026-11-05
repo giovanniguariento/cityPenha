@@ -264,6 +264,39 @@ export class AdminWordpressAccessPage {
       });
   }
 
+  toggleCanCreateExperiences(item: AdminWordpressAccessItem, input: HTMLInputElement): void {
+    const enabled = input.checked;
+    if (this.togglingUserId() || item.canCreateExperiences === enabled) {
+      input.checked = item.canCreateExperiences;
+      return;
+    }
+
+    this.togglingUserId.set(item.userId);
+    this.admin
+      .setCanCreateExperiences(item.userId, enabled)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.items.update((list) =>
+            list.map((it) => (it.userId === item.userId ? updated : it))
+          );
+          this.togglingUserId.set(null);
+          this.feedback.showSuccess(
+            enabled
+              ? 'Agenda liberada para o usuário.'
+              : 'Agenda bloqueada para o usuário.'
+          );
+        },
+        error: (err) => {
+          input.checked = item.canCreateExperiences;
+          this.togglingUserId.set(null);
+          this.feedback.showError(
+            apiErrorMessage(err, 'Não foi possível atualizar a permissão da Agenda.')
+          );
+        },
+      });
+  }
+
   private runProvision(userId: string, force = false): void {
     this.provisioningUserId.set(userId);
     this.admin

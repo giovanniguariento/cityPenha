@@ -33,14 +33,14 @@ export class HeaderComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly logoUrl = APP_ASSETS.logo;
-  readonly canCreatePosts = signal(false);
+  readonly canCreate = signal(false);
 
   ngOnInit(): void {
     from(this.auth.authStateReady())
       .pipe(
         switchMap(() => {
           if (!this.auth.currentUser) {
-            this.canCreatePosts.set(false);
+            this.canCreate.set(false);
             return EMPTY;
           }
           return this.homeService.getMe();
@@ -48,12 +48,16 @@ export class HeaderComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: (me) => this.canCreatePosts.set(me.user.canCreatePosts === true),
-        error: () => this.canCreatePosts.set(false),
+        next: (me) => {
+          this.canCreate.set(
+            me.user.canCreatePosts === true || me.user.canCreateExperiences === true
+          );
+        },
+        error: () => this.canCreate.set(false),
       });
   }
 
-  onCreatePostClick(): void {
+  onCreateClick(): void {
     void this.router.navigate(['/criar-postagem']);
   }
 

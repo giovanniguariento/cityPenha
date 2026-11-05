@@ -1,0 +1,116 @@
+@if (loading()) {
+  <div class="exp-detail-skeleton" aria-busy="true" aria-label="A carregar experiência">
+    <div class="exp-detail-skeleton__hero exp-detail-skeleton--pulse"></div>
+    <div class="exp-detail-skeleton__body">
+      <div class="exp-detail-skeleton__badge exp-detail-skeleton--pulse"></div>
+      <div class="exp-detail-skeleton__title exp-detail-skeleton--pulse"></div>
+      <div class="exp-detail-skeleton__line exp-detail-skeleton--pulse"></div>
+      <div class="exp-detail-skeleton__line exp-detail-skeleton__line--short exp-detail-skeleton--pulse"></div>
+    </div>
+  </div>
+} @else if (error()) {
+  <div class="exp-detail-state exp-detail-state--error">
+    <p>{{ error() }}</p>
+    <div class="exp-detail-state__actions">
+      <button type="button" class="exp-detail-state__retry" (click)="retry()">Tentar novamente</button>
+      <a routerLink="/experiencias" class="exp-detail-state__back">Voltar às experiências</a>
+    </div>
+  </div>
+} @else if (experience()) {
+  <app-detail-hero
+    [imageUrl]="experience()!.coverUrl"
+    backHref="/experiencias"
+    backAriaLabel="Voltar às experiências"
+    shareAriaLabel="Compartilhar experiência"
+    (share)="share()"
+  />
+
+  <app-detail-sheet>
+    <div class="exp-detail__badge-row">
+      <app-xp-badge [amount]="experience()!.xpReward" />
+      <button type="button" class="exp-detail__qr" aria-label="Escanear QR Code" (click)="onQrClick()">
+        <img src="assets/qrcode.svg" alt="" width="22" height="22" />
+      </button>
+    </div>
+
+    <h1 class="exp-detail__title">{{ experience()!.title }}</h1>
+
+    <app-experience-event-meta [meta]="experience()!.meta" [compact]="false" />
+
+    <section class="exp-detail__description" aria-labelledby="exp-desc-heading">
+      <h2 id="exp-desc-heading" class="exp-detail__section-title">Descrição do evento</h2>
+      <p class="exp-detail__body">{{ experience()!.description }}</p>
+    </section>
+
+    <app-tag-chips [tags]="experience()!.tags" />
+
+    <section class="exp-feedback-card" aria-labelledby="exp-feedback-heading">
+      <h2 id="exp-feedback-heading" class="exp-feedback-card__title">Gostou do evento?</h2>
+      <p class="exp-feedback-card__description">
+        Curta, compartilhe ou comente — cada interação rende XP.
+      </p>
+      <div class="exp-feedback-card__actions">
+        <button
+          type="button"
+          class="exp-feedback-card__like"
+          [class.exp-feedback-card__like--active]="liked()"
+          (click)="onLikeClick()"
+          [disabled]="likePending()"
+          [attr.aria-busy]="likePending()"
+          [attr.aria-pressed]="liked()"
+          [attr.aria-label]="liked() ? 'Remover curtida deste evento' : 'Curtir este evento'"
+        >
+          @if (liked()) {
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path
+                d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z"
+                fill="currentColor"
+              />
+            </svg>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path
+                d="M8 14s-6-3.6-6-8.1C2 3.8 3.4 2.4 5.1 2.4c1.1 0 2.1.5 2.9 1.3.8-.8 1.8-1.3 2.9-1.3 1.7 0 3.1 1.4 3.1 3.5C14 10.4 8 14 8 14Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linejoin="round"
+              />
+            </svg>
+          }
+          <span>Curtir</span>
+          @if (likeCount() > 0) {
+            <span class="exp-feedback-card__likes-count" [attr.aria-label]="likeCount() + ' curtidas'">
+              {{ likeCount() }}
+            </span>
+          }
+        </button>
+        <button
+          type="button"
+          class="exp-feedback-card__share"
+          (click)="share()"
+          [disabled]="sharePending()"
+          aria-label="Compartilhar este evento"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path
+              d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.34C12.11 16.55 12.08 16.77 12.08 17C12.08 18.61 13.39 19.91 15 19.91C16.61 19.91 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2ZM3 11C2.45 11 2 10.55 2 10C2 9.45 2.45 9 3 9C3.55 9 4 9.45 4 10C4 10.55 3.55 11 3 11ZM15 18C14.45 18 14 17.55 14 17C14 16.45 14.45 16 15 16C15.55 16 16 16.45 16 17C16 17.55 15.55 18 15 18Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span>Compartilhar</span>
+        </button>
+      </div>
+      @if (likeThankYou()) {
+        <p class="exp-feedback-card__thankyou" role="status">Obrigado pelo feedback!</p>
+      }
+    </section>
+  </app-detail-sheet>
+
+  <app-comments-section [experienceId]="experience()!.id" [currentUserId]="currentUserId()" />
+}
+
+@if (!loading() && experience()) {
+  <app-legal-footer [aboveNav]="true" />
+  <app-nav />
+}

@@ -35,6 +35,11 @@ export class NavComponent extends Destroyable {
       });
   }
 
+  isDiscoverActive(): boolean {
+    const path = this.currentPath();
+    return path.includes('discovery') || path.includes('experiencias');
+  }
+
   onQrCodeClick(): void {
     this.feedback.showComingSoon();
   }

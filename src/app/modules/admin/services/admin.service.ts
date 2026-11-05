@@ -234,6 +234,19 @@ export class AdminService {
       )
       .pipe(this.unwrap<AdminWordpressAccessItem>());
   }
+
+  /** PATCH /admin/users/:userId/can-create-experiences — libera/revoga Agenda. */
+  setCanCreateExperiences(
+    userId: string,
+    enabled: boolean
+  ): Observable<AdminWordpressAccessItem> {
+    return this.http
+      .patch<ApiSuccessEnvelope<AdminWordpressAccessItem>>(
+        `${this.base}/users/${userId}/can-create-experiences`,
+        { enabled }
+      )
+      .pipe(this.unwrap<AdminWordpressAccessItem>());
+  }
 }
 
 /** Mantém o tipo exportado para conveniência em consumidores do service. */

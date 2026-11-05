@@ -13,9 +13,12 @@ import { CommonModule } from '@angular/common';
 import { takeUntil } from 'rxjs';
 import { CommentView } from '../../../../../shared/interface/home.interface';
 import { CommentService } from '../../../services/comment.service';
+import { ExperienceService } from '../../../../experiences/services/experience.service';
 import { FeedbackService } from '../../../../../shared/services/feedback.service';
 import { Destroyable } from '../../../../../shared/utils/destroyable';
 import { apiErrorMessage } from '../../../../../shared/utils/api-error-message';
+
+export type CommentTargetKind = 'post' | 'experience';
 
 function avatarColor(authorId: string): string {
   const colors = ['#e57373', '#f06292', '#ba68c8', '#64b5f6', '#4db6ac', '#81c784', '#ffd54f', '#ff8a65'];
@@ -46,6 +49,8 @@ export class CommentItemComponent extends Destroyable implements OnChanges {
   @Input() currentUserId: string | null = null;
   @Input() isReply = false;
   @Input() lastDeletedCommentId: string | null = null;
+  /** Defaults to post comments; set to `experience` for Agenda comments. */
+  @Input() targetKind: CommentTargetKind = 'post';
 
   @Output() likeToggled = new EventEmitter<{ commentId: string; liked: boolean; likeCount: number }>();
   @Output() replyRequested = new EventEmitter<CommentView>();
@@ -53,6 +58,7 @@ export class CommentItemComponent extends Destroyable implements OnChanges {
   @Output() authRequired = new EventEmitter<void>();
 
   private readonly commentService = inject(CommentService);
+  private readonly experienceService = inject(ExperienceService);
   private readonly feedback = inject(FeedbackService);
 
   readonly liked = signal(false);
@@ -103,23 +109,25 @@ export class CommentItemComponent extends Destroyable implements OnChanges {
     this.likeCount.set(newCount);
     this.likePending.set(true);
 
-    this.commentService
-      .toggleLike(this.comment.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.likePending.set(false);
-          this.liked.set(res.liked);
-          this.likeCount.set(res.likeCount);
-          this.likeToggled.emit({ commentId: this.comment.id, liked: res.liked, likeCount: res.likeCount });
-        },
-        error: (err: unknown) => {
-          this.likePending.set(false);
-          this.liked.set(prevLiked);
-          this.likeCount.set(prevCount);
-          this.feedback.showError(apiErrorMessage(err, 'Não foi possível registrar a curtida.'));
-        },
-      });
+    const like$ =
+      this.targetKind === 'experience'
+        ? this.experienceService.toggleCommentLike(this.comment.id)
+        : this.commentService.toggleLike(this.comment.id);
+
+    like$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.likePending.set(false);
+        this.liked.set(res.liked);
+        this.likeCount.set(res.likeCount);
+        this.likeToggled.emit({ commentId: this.comment.id, liked: res.liked, likeCount: res.likeCount });
+      },
+      error: (err: unknown) => {
+        this.likePending.set(false);
+        this.liked.set(prevLiked);
+        this.likeCount.set(prevCount);
+        this.feedback.showError(apiErrorMessage(err, 'Não foi possível registrar a curtida.'));
+      },
+    });
   }
 
   toggleReplies(): void {
@@ -132,21 +140,23 @@ export class CommentItemComponent extends Destroyable implements OnChanges {
 
   private loadReplies(cursor?: string): void {
     this.loadingReplies.set(true);
-    this.commentService
-      .listReplies(this.comment.id, { cursor, limit: 10 })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.loadingReplies.set(false);
-          this.replies.update((prev) => cursor ? [...prev, ...res.data] : res.data);
-          this.repliesNextCursor.set(res.meta.nextCursor);
-          this.repliesLoaded = true;
-        },
-        error: (err: unknown) => {
-          this.loadingReplies.set(false);
-          this.feedback.showError(apiErrorMessage(err, 'Não foi possível carregar as respostas.'));
-        },
-      });
+    const replies$ =
+      this.targetKind === 'experience'
+        ? this.experienceService.listCommentReplies(this.comment.id, { cursor, limit: 10 })
+        : this.commentService.listReplies(this.comment.id, { cursor, limit: 10 });
+
+    replies$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.loadingReplies.set(false);
+        this.replies.update((prev) => (cursor ? [...prev, ...res.data] : res.data));
+        this.repliesNextCursor.set(res.meta.nextCursor);
+        this.repliesLoaded = true;
+      },
+      error: (err: unknown) => {
+        this.loadingReplies.set(false);
+        this.feedback.showError(apiErrorMessage(err, 'Não foi possível carregar as respostas.'));
+      },
+    });
   }
 
   loadMoreReplies(): void {

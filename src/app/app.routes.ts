@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { canCreatePostsGuard } from './guards/can-create-posts.guard';
+import { canCreateExperiencesGuard } from './guards/can-create-experiences.guard';
+import { canCreateHubGuard } from './guards/can-create-hub.guard';
 import { adminGuard } from './modules/admin/admin.guard';
 
 export const routes: Routes = [
@@ -19,12 +21,48 @@ export const routes: Routes = [
     path: 'discovery/topics/:slug',
     loadComponent: () => import('./modules/discovery/topics/detail/detail.page').then(m => m.DiscoveryTopicDetailPage),
   },
+  {
+    path: 'experiencias',
+    loadComponent: () =>
+      import('./modules/experiences/experiences.page').then((m) => m.ExperiencesPage),
+  },
+  {
+    path: 'experiencias/:slug',
+    loadComponent: () =>
+      import('./modules/experiences/detail/experience-detail.page').then(
+        (m) => m.ExperienceDetailPage,
+      ),
+  },
+  {
+    path: 'criar-experiencia',
+    loadComponent: () =>
+      import('./modules/experiences/create-experience/create-experience.page').then(
+        (m) => m.CreateExperiencePage,
+      ),
+    canActivate: [authGuard, canCreateExperiencesGuard],
+  },
+  {
+    path: 'minhas-experiencias',
+    loadComponent: () =>
+      import('./modules/experiences/my-experiences/my-experiences.page').then(
+        (m) => m.MyExperiencesPage,
+      ),
+    canActivate: [authGuard, canCreateExperiencesGuard],
+  },
+  {
+    path: 'minhas-experiencias/:id/editar',
+    loadComponent: () =>
+      import('./modules/experiences/edit-experience/edit-experience.page').then(
+        (m) => m.EditExperiencePage,
+      ),
+    canActivate: [authGuard, canCreateExperiencesGuard],
+  },
   { path: 'artigos/:categorySlug/:slug', loadComponent: () => import('./modules/news/news.page').then(m => m.NewsPageComponent) },
   {
     path: 'criar-postagem',
     loadComponent: () =>
       import('./modules/create-post/create-post.page').then((m) => m.CreatePostPage),
-    canActivate: [authGuard, canCreatePostsGuard],
+    canActivate: [authGuard, canCreateHubGuard],
   },
   {
     path: 'minhas-postagens',

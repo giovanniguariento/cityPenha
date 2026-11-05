@@ -1,0 +1,17 @@
+<a
+  class="list-item"
+  [routerLink]="['/experiencias', item().slug]"
+  [attr.aria-label]="item().title"
+>
+  <div class="list-item__thumb" [style.backgroundImage]="'url(\'' + item().coverUrl + '\')'">
+    <app-xp-badge class="list-item__xp" [amount]="item().xpReward" [onDark]="true" />
+    @if (item().isAd) {
+      <span class="list-item__ad">Ad</span>
+    }
+  </div>
+
+  <div class="list-item__body">
+    <h3 class="list-item__title">{{ item().title }}</h3>
+    <app-experience-event-meta [meta]="item().meta" [compact]="true" />
+  </div>
+</a>

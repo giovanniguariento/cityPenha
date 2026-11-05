@@ -1,8 +1,8 @@
 <header>
   <img [src]="logoUrl" alt="City Penha Digital" class="logo">
   <div>
-    @if (canCreatePosts()) {
-    <button type="button" class="icon-button" aria-label="Nova postagem" (click)="onCreatePostClick()">
+    @if (canCreate()) {
+    <button type="button" class="icon-button" aria-label="Criar" (click)="onCreateClick()">
       <img src="assets/create.svg" alt="">
     </button>
     }

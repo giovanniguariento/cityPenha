@@ -1,0 +1,18 @@
+<a
+  class="featured-card"
+  [routerLink]="['/experiencias', item().slug]"
+  [style.backgroundImage]="'url(\'' + item().coverUrl + '\')'"
+  [attr.aria-label]="item().title"
+>
+  <div class="featured-card__top">
+    <app-xp-badge [amount]="item().xpReward" [onDark]="true" />
+    <span class="featured-card__more" aria-hidden="true">
+      <img src="assets/vector.svg" alt="" width="22" height="6" />
+    </span>
+  </div>
+
+  <div class="featured-card__bottom">
+    <h2 class="featured-card__title">{{ item().title }}</h2>
+    <app-experience-event-meta [meta]="item().meta" [compact]="true" [onDark]="true" />
+  </div>
+</a>

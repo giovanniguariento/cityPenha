@@ -87,6 +87,17 @@
     </a>
     }
 
+    @if (canCreateExperiences()) {
+    <a routerLink="/minhas-experiencias" class="my-posts-link">
+      <span class="my-posts-link__icon material-icons" aria-hidden="true">event</span>
+      <span class="my-posts-link__text">
+        <strong>Minhas experiências</strong>
+        <span>Gerenciar eventos da Agenda</span>
+      </span>
+      <span class="material-icons my-posts-link__chevron" aria-hidden="true">chevron_right</span>
+    </a>
+    }
+
     <div class="medals-section">
       <div class="section-header">
         <h2>Medalhas</h2>

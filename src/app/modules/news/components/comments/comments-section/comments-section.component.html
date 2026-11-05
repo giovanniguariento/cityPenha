@@ -29,6 +29,7 @@
       [comment]="comment"
       [currentUserId]="isAuthenticated() ? currentUserId : null"
       [lastDeletedCommentId]="lastDeletedCommentId()"
+      [targetKind]="targetKind"
       (likeToggled)="onLikeComment($event)"
       (replyRequested)="onReplyRequested($event)"
       (deleteRequested)="onDeleteRequested($event)"

@@ -1,0 +1,103 @@
+<div class="experiences">
+  <header class="experiences__top">
+    <div class="experiences__header">
+      <a routerLink="/discovery" class="experiences__back" aria-label="Voltar para descoberta">
+        <svg class="experiences__back-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <h1 class="experiences__title">Experiências</h1>
+    </div>
+
+    <div class="experiences__search" role="search">
+      <img class="experiences__search-icon" src="assets/search.svg" alt="" width="20" height="20" />
+      <input
+        type="search"
+        class="experiences__search-input"
+        placeholder="Pesquisar experiências"
+        autocomplete="off"
+        aria-label="Pesquisar experiências"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+      />
+      <button
+        type="button"
+        class="experiences__search-filter"
+        aria-label="Filtros"
+        (click)="onFilterClick()"
+      >
+        <img src="assets/filter-sliders.svg" alt="" width="20" height="20" />
+      </button>
+    </div>
+  </header>
+
+  <main class="experiences__main">
+    @if (loading()) {
+      <div class="experiences__skeleton" aria-busy="true" aria-label="A carregar experiências">
+        <div class="experiences__skeleton-carousel experiences__skeleton--pulse"></div>
+        <div class="experiences__skeleton-heading experiences__skeleton--pulse"></div>
+        @for (_ of [1, 2, 3]; track $index) {
+          <div class="experiences__skeleton-row">
+            <div class="experiences__skeleton-thumb experiences__skeleton--pulse"></div>
+            <div class="experiences__skeleton-text">
+              <div class="experiences__skeleton-line experiences__skeleton-line--title experiences__skeleton--pulse"></div>
+              <div class="experiences__skeleton-line experiences__skeleton-line--sub experiences__skeleton--pulse"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (error()) {
+      <app-state-view
+        variant="error"
+        title="Não foi possível carregar"
+        [message]="error()!"
+        [fill]="true"
+        (retry)="retry()"
+      />
+    } @else {
+      @if (!searchQuery().trim() && featured().length) {
+        <section class="experiences__carousel" aria-label="Experiências em destaque">
+          <swiper-container
+            class="experiences__swiper"
+            pagination="true"
+            rewind="true"
+            speed="320"
+            slides-per-view="1.08"
+            space-between="12"
+          >
+            @for (item of featured(); track trackById($index, item)) {
+              <swiper-slide>
+                <app-experience-featured-card [item]="item" />
+              </swiper-slide>
+            }
+          </swiper-container>
+        </section>
+      }
+
+      <section #listSection class="experiences__list-section" aria-labelledby="experiences-upcoming-heading">
+        <div class="experiences__section-head">
+          <h2 id="experiences-upcoming-heading" class="experiences__section-title">Próximos eventos</h2>
+          <a href="#experiences-upcoming-heading" class="experiences__view-all" (click)="scrollToList($event)">
+            Ver tudo
+          </a>
+        </div>
+
+        @if (!filteredItems().length) {
+          <p class="experiences__empty">Nenhuma experiência encontrada.</p>
+        } @else {
+          <ul class="experiences__list">
+            @for (item of filteredItems(); track trackById($index, item)) {
+              <li class="experiences__list-item">
+                <app-experience-list-item [item]="item" />
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </main>
+</div>
+
+<app-legal-footer [aboveNav]="true" />
+<app-nav />

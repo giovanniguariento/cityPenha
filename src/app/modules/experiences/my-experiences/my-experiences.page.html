@@ -1,0 +1,58 @@
+<div class="mine-list" (click)="closeMenu()">
+  <header class="mine-list__top">
+    <a routerLink="/profile" class="mine-list__icon-btn" aria-label="Voltar">
+      <img src="assets/back-dark.svg" alt="" width="24" height="24" />
+    </a>
+    <h1 class="mine-list__title">Minhas experiências</h1>
+    <img class="mine-list__logo" [src]="logoUrl" alt="" width="96" height="32" />
+    <a
+      routerLink="/criar-experiencia"
+      class="mine-list__icon-btn mine-list__new"
+      aria-label="Nova experiência"
+    >
+      <span class="material-icons" aria-hidden="true">add</span>
+    </a>
+  </header>
+
+  <main class="mine-list__body">
+    @if (loading()) {
+    <ul class="mine-list__list" aria-busy="true">
+      @for (_ of [1, 2, 3]; track $index) {
+      <li class="mine-list__card--skeleton" aria-hidden="true">
+        <div class="mine-list__thumb--skeleton"></div>
+        <div class="mine-list__skel-meta">
+          <div class="mine-list__skel-line"></div>
+          <div class="mine-list__skel-line mine-list__skel-line--short"></div>
+        </div>
+      </li>
+      }
+    </ul>
+    } @else if (error()) {
+    <p class="mine-list__state mine-list__state--error">{{ error() }}</p>
+    } @else if (items().length === 0) {
+    <div class="mine-list__empty">
+      <p>Você ainda não publicou nenhuma experiência.</p>
+      <a routerLink="/criar-experiencia" class="mine-list__cta">Criar experiência</a>
+    </div>
+    } @else {
+    <ul class="mine-list__list">
+      @for (item of items(); track item.id) {
+      <li
+        app-mine-list-card
+        [title]="item.title"
+        [thumbnailUrl]="item.coverUrl || null"
+        [subtitleParts]="subtitleFor(item)"
+        [excerpt]="item.meta.venue || null"
+        [busy]="deletingId() === item.id"
+        [menuOpen]="openMenuId() === item.id"
+        [deleteDisabled]="deletingId() === item.id"
+        (open)="viewItem(item)"
+        (edit)="editItem(item)"
+        (remove)="confirmDelete(item)"
+        (menuToggle)="toggleMenu(item.id, $event)"
+      ></li>
+      }
+    </ul>
+    }
+  </main>
+</div>

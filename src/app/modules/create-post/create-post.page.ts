@@ -73,6 +73,9 @@ export class CreatePostPage implements OnInit, OnDestroy {
   readonly selectedCategoryId = signal<number | null>(null);
   readonly categoriesLoading = signal(true);
   readonly categorySearchQuery = signal('');
+  readonly canCreatePosts = signal(false);
+  readonly canCreateExperiences = signal(false);
+  readonly permissionsReady = signal(false);
 
   readonly showPicker = computed(() => this.flow() === null);
   readonly showComposer = computed(
@@ -105,6 +108,32 @@ export class CreatePostPage implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.homeService
+      .getMe()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (me) => {
+          const posts = me.user.canCreatePosts === true;
+          const experiences = me.user.canCreateExperiences === true;
+          this.canCreatePosts.set(posts);
+          this.canCreateExperiences.set(experiences);
+          this.permissionsReady.set(true);
+          if (posts) {
+            this.loadCategories();
+          } else {
+            this.categoriesLoading.set(false);
+          }
+        },
+        error: () => {
+          this.permissionsReady.set(true);
+          this.categoriesLoading.set(false);
+          this.feedback.showError('Não foi possível carregar suas permissões.');
+        },
+      });
+  }
+
+  private loadCategories(): void {
+    this.categoriesLoading.set(true);
     this.createPost
       .listCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -122,6 +151,10 @@ export class CreatePostPage implements OnInit, OnDestroy {
           this.feedback.showError('Não foi possível carregar as categorias.');
         },
       });
+  }
+
+  chooseExperience(): void {
+    void this.router.navigate(['/criar-experiencia']);
   }
 
   onCategorySearchInput(event: Event): void {

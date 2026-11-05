@@ -137,6 +137,7 @@ export interface AdminWordpressAccessItem {
   wordpressLoginUrl: string;
   credentialsStatus: WordpressCredentialsStatus;
   canCreatePosts: boolean;
+  canCreateExperiences: boolean;
 }
 
 export interface WordpressAccessListResponse {

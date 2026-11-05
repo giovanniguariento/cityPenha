@@ -1,0 +1,56 @@
+<button type="button" class="mine-card__main" (click)="open.emit()">
+  <div
+    class="mine-card__thumb"
+    [class.mine-card__thumb--empty]="!thumbnailUrl()"
+    [style.background-image]="thumbnailUrl() ? 'url(' + thumbnailUrl() + ')' : null"
+  >
+    @if (showPlayBadge()) {
+    <span class="mine-card__type-badge" aria-hidden="true">
+      <span class="material-icons">play_arrow</span>
+    </span>
+    }
+  </div>
+  <div class="mine-card__meta">
+    <h2 class="mine-card__title">{{ title() || 'Sem título' }}</h2>
+    @if (subtitleParts().length) {
+    <p class="mine-card__sub">
+      @for (part of subtitleParts(); track $index; let last = $last) {
+      <span>{{ part }}</span>
+      @if (!last) {
+      <span aria-hidden="true">·</span>
+      }
+      }
+    </p>
+    }
+    @if (excerpt()) {
+    <p class="mine-card__excerpt">{{ excerpt() }}</p>
+    }
+  </div>
+</button>
+
+<div class="mine-card__actions" (click)="$event.stopPropagation()">
+  <button
+    type="button"
+    class="mine-card__icon-btn"
+    [attr.aria-expanded]="menuOpen()"
+    aria-label="Mais opções"
+    (click)="menuToggle.emit($event)"
+  >
+    <span class="material-icons" aria-hidden="true">more_vert</span>
+  </button>
+  @if (menuOpen()) {
+  <div class="mine-card__menu" role="menu">
+    <button type="button" role="menuitem" (click)="open.emit()">Ver</button>
+    <button type="button" role="menuitem" (click)="edit.emit()">Editar</button>
+    <button
+      type="button"
+      role="menuitem"
+      class="mine-card__menu-danger"
+      [disabled]="deleteDisabled()"
+      (click)="remove.emit()"
+    >
+      Excluir
+    </button>
+  </div>
+  }
+</div>

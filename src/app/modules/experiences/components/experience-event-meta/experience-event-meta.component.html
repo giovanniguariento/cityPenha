@@ -1,0 +1,56 @@
+<div
+  class="exp-meta"
+  [class.exp-meta--compact]="compact()"
+  [class.exp-meta--on-dark]="onDark()"
+  [class.exp-meta--detail]="!compact()"
+>
+  <div class="exp-meta__row">
+    <svg class="exp-meta__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"
+        fill="currentColor" />
+    </svg>
+    <div class="exp-meta__text">
+      <span class="exp-meta__primary">{{ meta().venue }}</span>
+      @if (!compact() && meta().address) {
+        <span class="exp-meta__secondary">{{ meta().address }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="exp-meta__row">
+    <svg class="exp-meta__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"
+        fill="currentColor" />
+    </svg>
+    <div class="exp-meta__text">
+      <span class="exp-meta__primary">{{ meta().dateLabel }}</span>
+      @if (!compact()) {
+        <span class="exp-meta__secondary">{{ meta().timeLabel }}</span>
+      }
+    </div>
+    @if (compact()) {
+      <svg class="exp-meta__icon exp-meta__icon--gap" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 11H7v-2h4V5h2v8z"
+          fill="currentColor" />
+      </svg>
+      <span class="exp-meta__primary">{{ meta().timeLabel }}</span>
+    }
+  </div>
+
+  @if (!compact() && meta().conditionLabel) {
+    <div class="exp-meta__row">
+      <svg class="exp-meta__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+          fill="currentColor" />
+      </svg>
+      <div class="exp-meta__text">
+        <span class="exp-meta__primary">Condição</span>
+        <span class="exp-meta__secondary">{{ meta().conditionLabel }}</span>
+      </div>
+    </div>
+  }
+</div>
